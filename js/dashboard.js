@@ -309,21 +309,21 @@ const Dashboard = {
                     <a href="${service.document_url}" target="_blank" class="flex-1 text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
                         Download PDF
                     </a>
-                    <a href="${config.renewUrl}" class="flex-1 text-center border border-navy-200 hover:bg-navy-50 text-navy-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
+                    <button onclick="Dashboard.openPurchaseModal('arbitration')" class="flex-1 text-center border border-navy-200 hover:bg-navy-50 text-navy-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
                         Renew
-                    </a>
+                    </button>
                 `;
             } else if (service.status === 'expired') {
                 actionsHtml = `
-                    <a href="${config.renewUrl}" class="flex-1 text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
+                    <button onclick="Dashboard.openPurchaseModal('arbitration')" class="flex-1 text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
                         Renew Now
-                    </a>
+                    </button>
                 `;
             } else if (!service.active && service.status !== 'pending') {
                 actionsHtml = `
-                    <a href="${config.enrollUrl}" class="flex-1 text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
-                        Enroll Now
-                    </a>
+                    <button onclick="Dashboard.openPurchaseModal('arbitration')" class="flex-1 text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
+                        Buy Now - $99
+                    </button>
                 `;
             }
         } else if (prefix === 'tariff') {
@@ -335,9 +335,9 @@ const Dashboard = {
                 `;
             } else if (service.status !== 'pending' && service.status !== 'in_progress') {
                 actionsHtml = `
-                    <a href="${config.orderUrl}" class="flex-1 text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
-                        Order Now
-                    </a>
+                    <button onclick="Dashboard.openPurchaseModal('tariff')" class="flex-1 text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
+                        Buy Now - $299
+                    </button>
                 `;
             } else {
                 actionsHtml = '<p class="text-sm text-navy-500">Processing...</p>';
@@ -345,9 +345,9 @@ const Dashboard = {
         } else if (prefix === 'boc3') {
             if (!service.active && service.status !== 'pending' && service.status !== 'filed') {
                 actionsHtml = `
-                    <a href="${config.orderUrl}" class="flex-1 text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
-                        File Now
-                    </a>
+                    <button onclick="Dashboard.openPurchaseModal('boc3')" class="flex-1 text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
+                        Buy Now - $99
+                    </button>
                 `;
             } else if (service.status === 'pending') {
                 actionsHtml = '<p class="text-sm text-navy-500">Processing your filing...</p>';
@@ -397,7 +397,7 @@ const Dashboard = {
                     <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                     </svg>
-                </a>
+                </button>
             </div>
         `).join('');
     },
@@ -413,7 +413,7 @@ const Dashboard = {
             container.innerHTML = `
                 <tr>
                     <td colspan="4" class="px-6 py-8 text-center text-navy-500">
-                        No orders yet. <a href="/pricing" class="text-gold-600 hover:text-gold-700">Get started</a> with our services.
+                        No orders yet. <a href="/pricing" class="text-gold-600 hover:text-gold-700">Get started</button> with our services.
                     </td>
                 </tr>
             `;
@@ -648,17 +648,101 @@ const Dashboard = {
             this.eventSource.close();
         }
     }
+    },
+
+    // Square Payment Integration
+    square: null,
+    card: null,
+    currentProduct: null,
+
+    products: {
+        arbitration: { name: 'Arbitration Program', price: 9900, display: '$99.00', period: '/year' },
+        tariff: { name: 'Tariff Publishing', price: 29900, display: '$299.00', period: ' one-time' },
+        boc3: { name: 'BOC-3 Process Agent', price: 9900, display: '$99.00', period: '/year' }
+    },
+
+    async openPurchaseModal(productType) {
+        const product = this.products[productType];
+        if (!product) return;
+        this.currentProduct = productType;
+        document.getElementById('purchase-title').textContent = 'Purchase ' + product.name;
+        document.getElementById('purchase-description').textContent = 'Complete your purchase below.';
+        document.getElementById('purchase-product').textContent = product.name;
+        document.getElementById('purchase-price').textContent = product.display + product.period;
+        document.getElementById('purchase-btn-text').textContent = 'Pay ' + product.display;
+        document.getElementById('purchase-content').classList.remove('hidden');
+        document.getElementById('purchase-success').classList.add('hidden');
+        document.getElementById('purchase-error').classList.add('hidden');
+        document.getElementById('purchase-btn').disabled = true;
+        document.getElementById('purchase-modal').classList.remove('hidden');
+        await this.initializeSquare();
+    },
+
+    closePurchaseModal() {
+        document.getElementById('purchase-modal').classList.add('hidden');
+        this.currentProduct = null;
+        if (this.card) { this.card.destroy(); this.card = null; }
+    },
+
+    async initializeSquare() {
+        const cardContainer = document.getElementById('card-container');
+        cardContainer.innerHTML = '<div class="border border-navy-200 rounded-lg p-4 min-h-[50px]"><p class="text-navy-400 text-sm">Loading payment form...</p></div>';
+        try {
+            if (!this.square) {
+                this.square = await Square.payments('sq0idp-7GJn4RN8zcdsw3S1kJaNOA', 'L6WP06SMJKJSB');
+            }
+            this.card = await this.square.card();
+            cardContainer.innerHTML = '';
+            await this.card.attach('#card-container');
+            document.getElementById('purchase-btn').disabled = false;
+        } catch (error) {
+            console.error('Square init error:', error);
+            cardContainer.innerHTML = '<div class="border border-red-200 rounded-lg p-4"><p class="text-red-600 text-sm">Payment form unavailable.</p></div>';
+        }
+    },
+
+    async processPurchase() {
+        if (!this.card || !this.currentProduct) return;
+        const btn = document.getElementById('purchase-btn');
+        const btnText = document.getElementById('purchase-btn-text');
+        const btnLoading = document.getElementById('purchase-btn-loading');
+        const errorDiv = document.getElementById('purchase-error');
+        btn.disabled = true;
+        btnText.classList.add('hidden');
+        btnLoading.classList.remove('hidden');
+        errorDiv.classList.add('hidden');
+        try {
+            const result = await this.card.tokenize();
+            if (result.status !== 'OK') throw new Error(result.errors?.[0]?.message || 'Card verification failed');
+            const paymentResult = await Auth.request('/payments/process', {
+                method: 'POST',
+                body: JSON.stringify({ source_id: result.token, product_type: this.currentProduct, buyer_email_address: Auth.getUser()?.email })
+            });
+            if (!paymentResult.success) throw new Error(paymentResult.message || 'Payment failed');
+            let orderResult;
+            if (this.currentProduct === 'arbitration') {
+                orderResult = await Auth.request('/enrollments/arbitration', { method: 'POST', body: JSON.stringify({ payment_id: paymentResult.data.payment_id, payment_amount: paymentResult.data.amount / 100 }) });
+            } else if (this.currentProduct === 'tariff') {
+                orderResult = await Auth.request('/orders/tariff', { method: 'POST', body: JSON.stringify({ pricing_method: 'weight', service_territory: 'nationwide', accessorials: ['packing', 'storage', 'stairs'], payment_id: paymentResult.data.payment_id, payment_amount: paymentResult.data.amount / 100 }) });
+            } else if (this.currentProduct === 'boc3') {
+                orderResult = await Auth.request('/orders/boc3', { method: 'POST', body: JSON.stringify({ filing_type: 'new_authority', payment_id: paymentResult.data.payment_id, payment_amount: paymentResult.data.amount / 100 }) });
+            }
+            if (!orderResult?.success) throw new Error(orderResult?.message || 'Order creation failed');
+            document.getElementById('purchase-content').classList.add('hidden');
+            document.getElementById('purchase-success').classList.remove('hidden');
+        } catch (error) {
+            console.error('Purchase error:', error);
+            errorDiv.textContent = error.message || 'Purchase failed.';
+            errorDiv.classList.remove('hidden');
+        } finally {
+            btn.disabled = false;
+            btnText.classList.remove('hidden');
+            btnLoading.classList.add('hidden');
+        }
+    }
 };
 
 // Initialize dashboard on load
-document.addEventListener('DOMContentLoaded', () => {
-    Dashboard.init();
-});
-
-// Cleanup on page unload
-window.addEventListener('beforeunload', () => {
-    Dashboard.cleanup();
-});
-
-// Export for use in other scripts
+document.addEventListener('DOMContentLoaded', () => { Dashboard.init(); });
+window.addEventListener('beforeunload', () => { Dashboard.cleanup(); });
 window.Dashboard = Dashboard;
