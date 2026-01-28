@@ -53,6 +53,22 @@ router.post('/tariff', authenticateToken, sanitizeBody, async (req, res) => {
       payment_amount
     } = req.body;
 
+
+    // Require payment
+    if (!payment_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment is required to place this order'
+      });
+    }
+
+    if (!payment_amount || payment_amount < 299) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid payment amount is required'
+      });
+    }
+
     if (!pricing_method || !service_territory) {
       return res.status(400).json({
         success: false,
@@ -171,6 +187,21 @@ router.post('/boc3', authenticateToken, sanitizeBody, async (req, res) => {
       payment_amount
     } = req.body;
 
+    // Require payment
+    if (!payment_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment is required to place this order'
+      });
+    }
+
+    if (!payment_amount || payment_amount < 99) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid payment amount is required'
+      });
+    }
+
     if (!filing_type) {
       return res.status(400).json({
         success: false,
@@ -178,7 +209,7 @@ router.post('/boc3', authenticateToken, sanitizeBody, async (req, res) => {
       });
     }
 
-    const validFilingTypes = ['new', 'transfer', 'reinstatement'];
+    const validFilingTypes = ['new', 'new_authority', 'transfer', 'reinstatement'];
     if (!validFilingTypes.includes(filing_type)) {
       return res.status(400).json({
         success: false,
@@ -259,6 +290,21 @@ router.post('/bundles', authenticateToken, sanitizeBody, async (req, res) => {
       tariff_data,
       boc3_data
     } = req.body;
+
+    // Require payment
+    if (!payment_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment is required to place this order'
+      });
+    }
+
+    if (!payment_amount || payment_amount < 179) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid payment amount is required'
+      });
+    }
 
     const validBundleTypes = ['startup', 'essentials', 'renewal'];
     if (!validBundleTypes.includes(bundle_type)) {

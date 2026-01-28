@@ -647,7 +647,6 @@ const Dashboard = {
         if (this.eventSource) {
             this.eventSource.close();
         }
-    }
     },
 
     // Square Payment Integration
