@@ -5,8 +5,17 @@ const { sendBOC3FilingComplete, sendDocumentReadyWithAttachment, sendTariffDocum
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const router = express.Router();
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 // Admin emails - add your admin emails here
 const ADMIN_EMAILS = [
@@ -25,34 +34,55 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../../uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + '-' + file.originalname);
-  }
-});
+// Configure multer for file uploads - use Cloudinary if configured, otherwise local
+let storage;
+let upload;
 
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['.pdf', '.doc', '.docx', '.png', '.jpg', '.jpeg'];
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (allowedTypes.includes(ext)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Invalid file type. Allowed: PDF, DOC, DOCX, PNG, JPG'));
+if (process.env.CLOUDINARY_CLOUD_NAME) {
+  // Use Cloudinary storage for production
+  storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'mover-compliance-documents',
+      allowed_formats: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg'],
+      resource_type: 'auto'
     }
-  }
-});
+  });
+
+  upload = multer({
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+  });
+} else {
+  // Fallback to local storage for development
+  storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadDir = path.join(__dirname, '../../uploads');
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, uniqueSuffix + '-' + file.originalname);
+    }
+  });
+
+  upload = multer({
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = ['.pdf', '.doc', '.docx', '.png', '.jpg', '.jpeg'];
+      const ext = path.extname(file.originalname).toLowerCase();
+      if (allowedTypes.includes(ext)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Invalid file type. Allowed: PDF, DOC, DOCX, PNG, JPG'));
+      }
+    }
+  });
+}
 
 // ==================== DASHBOARD ====================
 
@@ -416,8 +446,8 @@ router.post('/upload/:type/:id', authenticateToken, requireAdmin, upload.single(
         return res.status(400).json({ success: false, message: 'Invalid order type' });
     }
 
-    // Generate document URL
-    const documentUrl = `/uploads/${req.file.filename}`;
+    // Get document URL - Cloudinary returns path property, local returns filename
+    const documentUrl = req.file.path || `/uploads/${req.file.filename}`;
 
     // Update order with document URL
     const result = await query(
@@ -429,21 +459,24 @@ router.post('/upload/:type/:id', authenticateToken, requireAdmin, upload.single(
     );
 
     if (result.rows.length === 0) {
-      // Delete uploaded file if order not found
-      fs.unlinkSync(req.file.path);
+      // Try to delete if local file
+      if (req.file.path && !req.file.path.startsWith('http')) {
+        try { fs.unlinkSync(req.file.path); } catch (e) {}
+      }
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
     const order = result.rows[0];
 
-    // Send customer notification with document attached
+    // Send customer notification
     if (notify_customer) {
       try {
         const userResult = await query('SELECT * FROM users WHERE id = $1', [order.user_id]);
         if (userResult.rows.length > 0) {
           const user = userResult.rows[0];
-          // Send email with attachment
-          sendDocumentReadyWithAttachment(user, type, order, req.file.path);
+          // Send email (with attachment only for local files)
+          const attachmentPath = req.file.path && !req.file.path.startsWith('http') ? req.file.path : null;
+          sendDocumentReadyWithAttachment(user, type, order, attachmentPath);
         }
       } catch (emailError) {
         console.error('Failed to send document notification:', emailError);
@@ -460,10 +493,6 @@ router.post('/upload/:type/:id', authenticateToken, requireAdmin, upload.single(
     });
   } catch (error) {
     console.error('Upload error:', error);
-    // Clean up file on error
-    if (req.file) {
-      try { fs.unlinkSync(req.file.path); } catch (e) {}
-    }
     res.status(500).json({ success: false, message: 'Failed to upload document' });
   }
 });
