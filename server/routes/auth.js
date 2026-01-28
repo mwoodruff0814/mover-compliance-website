@@ -406,6 +406,54 @@ router.get('/debug/email-config', async (req, res) => {
   });
 });
 
+// TEMPORARY: Direct password reset (remove after use)
+router.post('/debug/reset-password-direct', async (req, res) => {
+  try {
+    const { email, new_password } = req.body;
+
+    if (!email || !new_password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and new_password required'
+      });
+    }
+
+    // Find user
+    const userResult = await query(
+      'SELECT id FROM users WHERE email = $1',
+      [email.toLowerCase()]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Hash new password
+    const saltRounds = 12;
+    const password_hash = await bcrypt.hash(new_password, saltRounds);
+
+    // Update password
+    await query(
+      'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE id = $2',
+      [password_hash, userResult.rows[0].id]
+    );
+
+    res.json({
+      success: true,
+      message: 'Password reset successfully. You can now login.'
+    });
+  } catch (error) {
+    console.error('Direct password reset error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reset password'
+    });
+  }
+});
+
 // Debug endpoint - check if user exists (temporary)
 router.get('/debug/check-user/:email', async (req, res) => {
   try {
