@@ -391,7 +391,7 @@ router.post('/reset-password', sanitizeBody, async (req, res) => {
   }
 });
 
-// Debug endpoint - check email configuration (admin only)
+// Debug endpoint - check email configuration
 router.get('/debug/email-config', async (req, res) => {
   res.json({
     success: true,
@@ -404,6 +404,43 @@ router.get('/debug/email-config', async (req, res) => {
       FRONTEND_URL: process.env.FRONTEND_URL || 'NOT SET'
     }
   });
+});
+
+// Debug endpoint - check if user exists (temporary)
+router.get('/debug/check-user/:email', async (req, res) => {
+  try {
+    const email = req.params.email.toLowerCase();
+    const result = await query(
+      'SELECT id, email, company_name, created_at FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (result.rows.length === 0) {
+      return res.json({
+        success: false,
+        message: 'User not found',
+        email: email
+      });
+    }
+
+    const user = result.rows[0];
+    res.json({
+      success: true,
+      message: 'User exists',
+      user: {
+        id: user.id,
+        email: user.email,
+        company_name: user.company_name,
+        created_at: user.created_at
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Database error',
+      error: error.message
+    });
+  }
 });
 
 module.exports = router;
