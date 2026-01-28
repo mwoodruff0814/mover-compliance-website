@@ -102,6 +102,19 @@ if (process.env.CLOUDINARY_CLOUD_NAME) {
   });
 }
 
+// ==================== DEBUG ====================
+
+// Check Cloudinary config (temporary debug endpoint)
+router.get('/debug/cloudinary', authenticateToken, requireAdmin, (req, res) => {
+  res.json({
+    success: true,
+    cloudinary_configured: !!process.env.CLOUDINARY_CLOUD_NAME,
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? 'set' : 'missing',
+    api_key: process.env.CLOUDINARY_API_KEY ? 'set' : 'missing',
+    api_secret: process.env.CLOUDINARY_API_SECRET ? 'set' : 'missing'
+  });
+});
+
 // ==================== DASHBOARD ====================
 
 // Admin dashboard stats
@@ -446,7 +459,18 @@ router.post('/orders/cleanup', authenticateToken, requireAdmin, async (req, res)
 // ==================== DOCUMENT UPLOAD ====================
 
 // Upload document for an order
-router.post('/upload/:type/:id', authenticateToken, requireAdmin, upload.single('document'), async (req, res) => {
+router.post('/upload/:type/:id', authenticateToken, requireAdmin, (req, res, next) => {
+  upload.single('document')(req, res, (err) => {
+    if (err) {
+      console.error('Multer/Cloudinary upload error:', err);
+      return res.status(400).json({
+        success: false,
+        message: 'Upload failed: ' + err.message
+      });
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     const { type, id } = req.params;
     const notify_customer = req.body.notify_customer !== 'false'; // Default to true
