@@ -2,7 +2,7 @@ const express = require('express');
 const { query } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
 const { sanitizeBody, formatMCNumber, formatUSDOT } = require('../middleware/validation');
-const { sendOrderConfirmation, sendTariffDocumentReady } = require('../utils/email');
+const { sendOrderConfirmation, sendTariffDocumentReady, sendAdminPurchaseNotification } = require('../utils/email');
 const { generateTariffPDF } = require('../utils/pdf');
 
 const router = express.Router();
@@ -129,6 +129,9 @@ router.post('/tariff', authenticateToken, sanitizeBody, async (req, res) => {
       }
     }
 
+    // Send admin notification
+    sendAdminPurchaseNotification(req.user, 'tariff', order);
+
     res.status(201).json({
       success: true,
       message: order.status === 'completed'
@@ -239,6 +242,9 @@ router.post('/boc3', authenticateToken, sanitizeBody, async (req, res) => {
     } catch (emailError) {
       console.error('Email send error:', emailError);
     }
+
+    // Send admin notification
+    sendAdminPurchaseNotification(req.user, 'boc3', order);
 
     res.status(201).json({
       success: true,
@@ -392,6 +398,9 @@ router.post('/bundles', authenticateToken, sanitizeBody, async (req, res) => {
     } catch (emailError) {
       console.error('Email send error:', emailError);
     }
+
+    // Send admin notification
+    sendAdminPurchaseNotification(req.user, 'bundle', bundleOrder);
 
     res.status(201).json({
       success: true,

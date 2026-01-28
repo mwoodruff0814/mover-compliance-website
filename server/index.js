@@ -11,6 +11,7 @@ const paymentsRoutes = require('./routes/payments');
 const verifyRoutes = require('./routes/verify');
 const dashboardRoutes = require('./routes/dashboard');
 const contactRoutes = require('./routes/contact');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -33,6 +34,9 @@ app.use((req, res, next) => {
 });
 
 // Serve static files from root directory (excluding .html - they'll be handled by routes)
+// Serve uploaded documents
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 app.use(express.static(path.join(__dirname, '..'), {
   extensions: ['css', 'js', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'ico', 'woff', 'woff2', 'ttf', 'eot'],
   index: false
@@ -46,6 +50,7 @@ app.use('/api/payments', paymentsRoutes);
 app.use('/api/verify', verifyRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -53,7 +58,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Clean URL routing - serve HTML files without .html extension
-const pages = ['login', 'register', 'forgot-password', 'dashboard', 'arbitration-program', 'tariff', 'boc-3', 'pricing', 'verify', 'contact', 'about', 'faqs'];
+const pages = ['admin', 'login', 'register', 'forgot-password', 'dashboard', 'arbitration-program', 'tariff', 'boc-3', 'pricing', 'verify', 'contact', 'about', 'faqs'];
 
 pages.forEach(page => {
   app.get(`/${page}`, (req, res) => {

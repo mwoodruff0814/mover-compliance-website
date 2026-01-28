@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Interstate Compliance Solutions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: { 50: '#f0f3f9', 100: '#d9e0ed', 200: '#b3c1db', 300: '#8da2c9', 400: '#6783b7', 500: '#4164a5', 600: '#345084', 700: '#273c63', 800: '#1a2842', 900: '#0a1628', 950: '#050b14' },
+                        gold: { 50: '#fdf9ef', 100: '#f9f0d6', 200: '#f2deac', 300: '#eac978', 400: '#e2b44e', 500: '#c9a227', 600: '#b8891d', 700: '#966a19', 800: '#7a551b', 900: '#65461a', 950: '#39240b' },
+                        cream: { 50: '#fefdfb', 100: '#fdf9f3', 200: '#faf3e6' }
+                    },
+                    fontFamily: { sans: ['DM Sans', 'sans-serif'], display: ['Fraunces', 'serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        input, select, textarea { color: #0a1628 !important; background-color: #fff !important; }
+        .tab-btn.active { background-color: #c9a227; color: #0a1628; }
+    </style>
+</head>
+<body class="font-sans bg-navy-900 min-h-screen text-white">
+    <!-- Header -->
+    <header class="bg-navy-800 border-b border-navy-700 px-6 py-4">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="w-10 h-10 bg-gold-500 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-navy-900" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/>
+                    </svg>
+                </div>
+                <h1 class="font-display text-2xl font-bold">Admin Dashboard</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span id="admin-email" class="text-navy-300 text-sm"></span>
+                <button onclick="Auth.logout()" class="text-navy-300 hover:text-white">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Loading -->
+    <div id="loading" class="flex items-center justify-center h-64">
+        <div class="text-center">
+            <svg class="animate-spin h-12 w-12 text-gold-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <p class="text-navy-400">Loading admin dashboard...</p>
+        </div>
+    </div>
+
+    <!-- Access Denied -->
+    <div id="access-denied" class="hidden flex items-center justify-center h-64">
+        <div class="text-center">
+            <svg class="w-16 h-16 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <h2 class="text-xl font-bold text-red-500 mb-2">Access Denied</h2>
+            <p class="text-navy-400">You don't have admin privileges.</p>
+            <a href="/dashboard" class="inline-block mt-4 text-gold-400 hover:text-gold-300">Go to Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main id="main-content" class="hidden max-w-7xl mx-auto px-6 py-8">
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-navy-800 rounded-xl p-6">
+                <p class="text-navy-400 text-sm">Total Users</p>
+                <p class="text-3xl font-bold text-white" id="stat-users">-</p>
+            </div>
+            <div class="bg-navy-800 rounded-xl p-6">
+                <p class="text-navy-400 text-sm">Pending Orders</p>
+                <p class="text-3xl font-bold text-yellow-400" id="stat-pending">-</p>
+            </div>
+            <div class="bg-navy-800 rounded-xl p-6">
+                <p class="text-navy-400 text-sm">Completed Orders</p>
+                <p class="text-3xl font-bold text-green-400" id="stat-completed">-</p>
+            </div>
+            <div class="bg-navy-800 rounded-xl p-6">
+                <p class="text-navy-400 text-sm">Active Services</p>
+                <p class="text-3xl font-bold text-gold-400" id="stat-active">-</p>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex space-x-2 mb-6">
+            <button class="tab-btn active px-4 py-2 rounded-lg font-medium" data-tab="orders">Orders</button>
+            <button class="tab-btn bg-navy-800 hover:bg-navy-700 px-4 py-2 rounded-lg font-medium" data-tab="users">Users</button>
+            <button class="tab-btn bg-navy-800 hover:bg-navy-700 px-4 py-2 rounded-lg font-medium" data-tab="cleanup">Cleanup</button>
+        </div>
+
+        <!-- Orders Tab -->
+        <div id="tab-orders" class="tab-content">
+            <div class="bg-navy-800 rounded-xl overflow-hidden">
+                <div class="p-4 border-b border-navy-700 flex items-center justify-between">
+                    <h2 class="font-semibold">Recent Orders</h2>
+                    <div class="flex space-x-2">
+                        <select id="filter-type" class="text-sm rounded-lg px-3 py-1.5">
+                            <option value="">All Types</option>
+                            <option value="tariff">Tariff</option>
+                            <option value="boc3">BOC-3</option>
+                            <option value="arbitration">Arbitration</option>
+                        </select>
+                        <select id="filter-status" class="text-sm rounded-lg px-3 py-1.5">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="completed">Completed</option>
+                            <option value="active">Active</option>
+                            <option value="filed">Filed</option>
+                        </select>
+                        <button onclick="Admin.loadOrders()" class="bg-gold-500 hover:bg-gold-600 text-navy-900 px-4 py-1.5 rounded-lg text-sm font-medium">Refresh</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-navy-900">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">Type</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">User</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">Company</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">Date</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">Status</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">Amount</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="orders-table" class="divide-y divide-navy-700">
+                            <tr><td colspan="7" class="px-4 py-8 text-center text-navy-400">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="tab-users" class="tab-content hidden">
+            <div class="bg-navy-800 rounded-xl overflow-hidden">
+                <div class="p-4 border-b border-navy-700 flex items-center justify-between">
+                    <h2 class="font-semibold">Users</h2>
+                    <div class="flex space-x-2">
+                        <input type="text" id="user-search" placeholder="Search email or company..." class="text-sm rounded-lg px-3 py-1.5 w-64">
+                        <button onclick="Admin.searchUsers()" class="bg-gold-500 hover:bg-gold-600 text-navy-900 px-4 py-1.5 rounded-lg text-sm font-medium">Search</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-navy-900">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">Email</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">Company</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">MC#</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">Joined</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table" class="divide-y divide-navy-700">
+                            <tr><td colspan="5" class="px-4 py-8 text-center text-navy-400">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cleanup Tab -->
+        <div id="tab-cleanup" class="tab-content hidden">
+            <div class="bg-navy-800 rounded-xl p-6">
+                <h2 class="font-semibold mb-4">Cleanup Orders</h2>
+                <p class="text-navy-400 text-sm mb-6">Delete orders that don't have valid payment.</p>
+                <div class="space-y-4">
+                    <button onclick="Admin.cleanup('boc3')" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium">
+                        Delete BOC-3 Orders Without Payment
+                    </button>
+                    <button onclick="Admin.cleanup('tariff')" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg font-medium ml-4">
+                        Delete Tariff Orders Without Payment
+                    </button>
+                </div>
+                <div id="cleanup-result" class="mt-4 text-sm"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-black bg-opacity-50" onclick="Admin.closeUploadModal()"></div>
+            <div class="relative bg-navy-800 rounded-2xl shadow-xl max-w-md w-full p-6">
+                <h3 class="font-display text-xl font-bold mb-4">Upload Document</h3>
+                <p class="text-navy-400 text-sm mb-4">Upload a document for order <span id="upload-order-id" class="text-gold-400"></span></p>
+                <form id="upload-form" enctype="multipart/form-data">
+                    <input type="hidden" id="upload-type">
+                    <input type="hidden" id="upload-id">
+                    <input type="file" id="upload-file" accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" class="w-full mb-4 text-sm">
+                    <div class="flex space-x-3">
+                        <button type="submit" class="flex-1 bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold py-2 rounded-lg">Upload</button>
+                        <button type="button" onclick="Admin.closeUploadModal()" class="flex-1 bg-navy-700 hover:bg-navy-600 text-white py-2 rounded-lg">Cancel</button>
+                    </div>
+                </form>
+                <div id="upload-status" class="mt-4 text-sm"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Detail Modal -->
+    <div id="order-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-black bg-opacity-50" onclick="Admin.closeOrderModal()"></div>
+            <div class="relative bg-navy-800 rounded-2xl shadow-xl max-w-lg w-full p-6">
+                <h3 class="font-display text-xl font-bold mb-4">Edit Order</h3>
+                <form id="order-form">
+                    <input type="hidden" id="order-type">
+                    <input type="hidden" id="order-id">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-navy-300 mb-1">Status</label>
+                            <select id="order-status" class="w-full rounded-lg px-3 py-2">
+                                <option value="pending">Pending</option>
+                                <option value="completed">Completed</option>
+                                <option value="active">Active</option>
+                                <option value="filed">Filed</option>
+                                <option value="expired">Expired</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-navy-300 mb-1">Document URL</label>
+                            <input type="text" id="order-document-url" class="w-full rounded-lg px-3 py-2">
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-6">
+                        <button type="submit" class="flex-1 bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold py-2 rounded-lg">Save</button>
+                        <button type="button" onclick="Admin.closeOrderModal()" class="flex-1 bg-navy-700 hover:bg-navy-600 text-white py-2 rounded-lg">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        const Admin = {
+            async init() {
+                if (!Auth.isLoggedIn()) {
+                    window.location.href = '/login';
+                    return;
+                }
+
+                document.getElementById('admin-email').textContent = Auth.getUser()?.email;
+
+                // Check admin access
+                try {
+                    const result = await Auth.request('/admin/stats');
+                    if (!result.success) throw new Error('Not admin');
+
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('main-content').classList.remove('hidden');
+
+                    this.renderStats(result.data);
+                    this.loadOrders();
+                    this.loadUsers();
+                    this.initTabs();
+                    this.initForms();
+                } catch (error) {
+                    document.getElementById('loading').classList.add('hidden');
+                    document.getElementById('access-denied').classList.remove('hidden');
+                }
+            },
+
+            renderStats(data) {
+                document.getElementById('stat-users').textContent = data.total_users;
+
+                let pending = 0, completed = 0, active = 0;
+                [...data.tariff_orders, ...data.boc3_orders, ...data.arbitration_enrollments].forEach(s => {
+                    if (s.status === 'pending') pending += parseInt(s.count);
+                    if (s.status === 'completed' || s.status === 'filed') completed += parseInt(s.count);
+                    if (s.status === 'active') active += parseInt(s.count);
+                });
+
+                document.getElementById('stat-pending').textContent = pending;
+                document.getElementById('stat-completed').textContent = completed;
+                document.getElementById('stat-active').textContent = active;
+            },
+
+            initTabs() {
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+                        document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
+                    });
+                });
+            },
+
+            initForms() {
+                document.getElementById('upload-form').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const type = document.getElementById('upload-type').value;
+                    const id = document.getElementById('upload-id').value;
+                    const file = document.getElementById('upload-file').files[0];
+
+                    if (!file) return alert('Please select a file');
+
+                    const formData = new FormData();
+                    formData.append('document', file);
+
+                    try {
+                        const response = await fetch(`/api/admin/upload/${type}/${id}`, {
+                            method: 'POST',
+                            headers: { 'Authorization': 'Bearer ' + Auth.getToken() },
+                            body: formData
+                        });
+                        const result = await response.json();
+
+                        if (result.success) {
+                            document.getElementById('upload-status').innerHTML = '<span class="text-green-400">Upload successful!</span>';
+                            setTimeout(() => { this.closeUploadModal(); this.loadOrders(); }, 1500);
+                        } else {
+                            document.getElementById('upload-status').innerHTML = '<span class="text-red-400">' + result.message + '</span>';
+                        }
+                    } catch (error) {
+                        document.getElementById('upload-status').innerHTML = '<span class="text-red-400">Upload failed</span>';
+                    }
+                });
+
+                document.getElementById('order-form').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const type = document.getElementById('order-type').value;
+                    const id = document.getElementById('order-id').value;
+
+                    const result = await Auth.request(`/admin/orders/${type}/${id}`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({
+                            status: document.getElementById('order-status').value,
+                            document_url: document.getElementById('order-document-url').value || null
+                        })
+                    });
+
+                    if (result.success) {
+                        this.closeOrderModal();
+                        this.loadOrders();
+                    } else {
+                        alert(result.message);
+                    }
+                });
+            },
+
+            async loadOrders() {
+                const type = document.getElementById('filter-type').value;
+                const status = document.getElementById('filter-status').value;
+
+                let url = '/admin/orders?limit=50';
+                if (type) url += '&type=' + type;
+                if (status) url += '&status=' + status;
+
+                const result = await Auth.request(url);
+                const tbody = document.getElementById('orders-table');
+
+                if (!result.success || !result.data.orders.length) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-navy-400">No orders found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = result.data.orders.map(order => `
+                    <tr class="hover:bg-navy-700">
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 rounded text-xs font-medium ${order.order_type === 'tariff' ? 'bg-blue-900 text-blue-300' : order.order_type === 'boc3' ? 'bg-green-900 text-green-300' : 'bg-gold-900 text-gold-300'}">
+                                ${order.order_type.toUpperCase()}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm">${order.email}</td>
+                        <td class="px-4 py-3 text-sm">${order.company_name || '-'}</td>
+                        <td class="px-4 py-3 text-sm text-navy-400">${new Date(order.created_at).toLocaleDateString()}</td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 rounded text-xs font-medium ${order.status === 'completed' || order.status === 'active' || order.status === 'filed' ? 'bg-green-900 text-green-300' : order.status === 'pending' ? 'bg-yellow-900 text-yellow-300' : 'bg-gray-700 text-gray-300'}">
+                                ${order.status}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm">$${parseFloat(order.amount_paid || 0).toFixed(2)}</td>
+                        <td class="px-4 py-3 text-sm">
+                            <button onclick="Admin.editOrder('${order.order_type}', ${order.id}, '${order.status}', '${order.document_url || ''}')" class="text-gold-400 hover:text-gold-300 mr-2">Edit</button>
+                            <button onclick="Admin.uploadDocument('${order.order_type}', ${order.id})" class="text-blue-400 hover:text-blue-300 mr-2">Upload</button>
+                            <button onclick="Admin.deleteOrder('${order.order_type}', ${order.id})" class="text-red-400 hover:text-red-300">Delete</button>
+                        </td>
+                    </tr>
+                `).join('');
+            },
+
+            async loadUsers() {
+                const result = await Auth.request('/admin/users');
+                const tbody = document.getElementById('users-table');
+
+                if (!result.success || !result.data.users.length) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-navy-400">No users found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = result.data.users.map(user => `
+                    <tr class="hover:bg-navy-700">
+                        <td class="px-4 py-3 text-sm">${user.email}</td>
+                        <td class="px-4 py-3 text-sm">${user.company_name || '-'}</td>
+                        <td class="px-4 py-3 text-sm">${user.mc_number || '-'}</td>
+                        <td class="px-4 py-3 text-sm text-navy-400">${new Date(user.created_at).toLocaleDateString()}</td>
+                        <td class="px-4 py-3 text-sm">
+                            <button onclick="Admin.viewUser(${user.id})" class="text-gold-400 hover:text-gold-300">View</button>
+                        </td>
+                    </tr>
+                `).join('');
+            },
+
+            async searchUsers() {
+                const q = document.getElementById('user-search').value;
+                if (!q) return this.loadUsers();
+
+                const result = await Auth.request('/admin/users/search?q=' + encodeURIComponent(q));
+                const tbody = document.getElementById('users-table');
+
+                if (!result.success || !result.data.users.length) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-navy-400">No users found</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = result.data.users.map(user => `
+                    <tr class="hover:bg-navy-700">
+                        <td class="px-4 py-3 text-sm">${user.email}</td>
+                        <td class="px-4 py-3 text-sm">${user.company_name || '-'}</td>
+                        <td class="px-4 py-3 text-sm">${user.mc_number || '-'}</td>
+                        <td class="px-4 py-3 text-sm text-navy-400">${new Date(user.created_at).toLocaleDateString()}</td>
+                        <td class="px-4 py-3 text-sm">
+                            <button onclick="Admin.viewUser(${user.id})" class="text-gold-400 hover:text-gold-300">View</button>
+                        </td>
+                    </tr>
+                `).join('');
+            },
+
+            async viewUser(id) {
+                const result = await Auth.request('/admin/users/' + id);
+                if (result.success) {
+                    alert('User: ' + result.data.user.email + '\nCompany: ' + result.data.user.company_name + '\nMC#: ' + result.data.user.mc_number + '\nOrders: ' + (result.data.tariff_orders.length + result.data.boc3_orders.length + result.data.arbitration_enrollments.length));
+                }
+            },
+
+            editOrder(type, id, status, documentUrl) {
+                document.getElementById('order-type').value = type;
+                document.getElementById('order-id').value = id;
+                document.getElementById('order-status').value = status;
+                document.getElementById('order-document-url').value = documentUrl;
+                document.getElementById('order-modal').classList.remove('hidden');
+            },
+
+            closeOrderModal() {
+                document.getElementById('order-modal').classList.add('hidden');
+            },
+
+            uploadDocument(type, id) {
+                document.getElementById('upload-type').value = type;
+                document.getElementById('upload-id').value = id;
+                document.getElementById('upload-order-id').textContent = type.toUpperCase() + ' #' + id;
+                document.getElementById('upload-file').value = '';
+                document.getElementById('upload-status').innerHTML = '';
+                document.getElementById('upload-modal').classList.remove('hidden');
+            },
+
+            closeUploadModal() {
+                document.getElementById('upload-modal').classList.add('hidden');
+            },
+
+            async deleteOrder(type, id) {
+                if (!confirm('Delete this order? This cannot be undone.')) return;
+
+                const result = await Auth.request(`/admin/orders/${type}/${id}`, { method: 'DELETE' });
+                if (result.success) {
+                    this.loadOrders();
+                } else {
+                    alert(result.message);
+                }
+            },
+
+            async cleanup(type) {
+                if (!confirm(`Delete all ${type.toUpperCase()} orders without payment?`)) return;
+
+                const result = await Auth.request('/admin/orders/cleanup', {
+                    method: 'POST',
+                    body: JSON.stringify({ type: type, no_payment: true })
+                });
+
+                const resultDiv = document.getElementById('cleanup-result');
+                if (result.success) {
+                    resultDiv.innerHTML = `<span class="text-green-400">Deleted ${result.data.deleted[type]} orders</span>`;
+                    this.loadOrders();
+                } else {
+                    resultDiv.innerHTML = `<span class="text-red-400">${result.message}</span>`;
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => Admin.init());
+    </script>
+</body>
+</html>

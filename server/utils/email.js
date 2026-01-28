@@ -1,5 +1,8 @@
 const nodemailer = require('nodemailer');
 
+// Admin email for notifications
+const ADMIN_EMAIL = 'matt@worryfreemovers.com';
+
 // Create transporter
 const createTransporter = () => {
   return nodemailer.createTransport({
@@ -237,6 +240,138 @@ const templates = {
     `
   }),
 
+  adminNewAccount: (user) => ({
+    subject: `New Account Created - ${user.company_name}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #0a1628; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #0a1628; color: white; padding: 20px; text-align: center; }
+          .header h1 { margin: 0; color: #c9a227; font-size: 20px; }
+          .content { padding: 20px; background: #f9f9f9; }
+          .details { background: white; padding: 15px; border-radius: 8px; margin: 15px 0; }
+          .label { color: #666; font-size: 12px; text-transform: uppercase; }
+          .value { font-weight: bold; margin-bottom: 10px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🆕 New Account Created</h1>
+          </div>
+          <div class="content">
+            <p>A new customer account has been created.</p>
+
+            <div class="details">
+              <p class="label">Company Name</p>
+              <p class="value">${user.company_name}</p>
+
+              <p class="label">Contact Email</p>
+              <p class="value">${user.email}</p>
+
+              <p class="label">MC Number</p>
+              <p class="value">${user.mc_number || 'Not provided'}</p>
+
+              <p class="label">USDOT Number</p>
+              <p class="value">${user.usdot_number || 'Not provided'}</p>
+
+              <p class="label">Phone</p>
+              <p class="value">${user.phone || 'Not provided'}</p>
+
+              <p class="label">Created At</p>
+              <p class="value">${new Date().toLocaleString()}</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  }),
+
+  adminPurchaseNotification: (user, orderType, order) => {
+    const orderNames = {
+      tariff: 'Tariff Publishing',
+      boc3: 'BOC-3 Process Agent',
+      arbitration: 'Arbitration Program',
+      bundle: `${order.bundle_type?.charAt(0).toUpperCase()}${order.bundle_type?.slice(1)} Bundle`
+    };
+
+    return {
+      subject: `💰 New Purchase - ${orderNames[orderType]} - ${user.company_name}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #0a1628; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #22c55e; color: white; padding: 20px; text-align: center; }
+            .header h1 { margin: 0; font-size: 20px; }
+            .content { padding: 20px; background: #f9f9f9; }
+            .details { background: white; padding: 15px; border-radius: 8px; margin: 15px 0; }
+            .label { color: #666; font-size: 12px; text-transform: uppercase; }
+            .value { font-weight: bold; margin-bottom: 10px; }
+            .amount { font-size: 24px; color: #22c55e; font-weight: bold; }
+            .product { font-size: 18px; color: #c9a227; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>💰 New Purchase!</h1>
+            </div>
+            <div class="content">
+              <p style="text-align: center;"><span class="product">${orderNames[orderType]}</span></p>
+              <p style="text-align: center;"><span class="amount">$${order.amount_paid?.toFixed(2) || 'N/A'}</span></p>
+
+              <div class="details">
+                <p class="label">Customer</p>
+                <p class="value">${user.company_name}</p>
+
+                <p class="label">Email</p>
+                <p class="value">${user.email}</p>
+
+                <p class="label">MC Number</p>
+                <p class="value">${user.mc_number || 'N/A'}</p>
+
+                <p class="label">Order ID</p>
+                <p class="value">#${order.id}</p>
+
+                <p class="label">Payment ID</p>
+                <p class="value">${order.payment_id || 'N/A'}</p>
+
+                <p class="label">Status</p>
+                <p class="value">${order.status}</p>
+
+                <p class="label">Date</p>
+                <p class="value">${new Date().toLocaleString()}</p>
+              </div>
+
+              ${orderType === 'tariff' ? `
+                <div class="details">
+                  <p class="label">Tariff Details</p>
+                  <p><strong>Pricing Method:</strong> ${order.pricing_method}</p>
+                  <p><strong>Service Territory:</strong> ${order.service_territory}</p>
+                </div>
+              ` : ''}
+
+              ${orderType === 'boc3' ? `
+                <div class="details">
+                  <p class="label">BOC-3 Details</p>
+                  <p><strong>Filing Type:</strong> ${order.filing_type}</p>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+  },
+
   tariffDocumentReady: (user, order) => ({
     subject: 'Your Tariff Document is Ready! - Interstate Compliance Solutions',
     html: `
@@ -346,6 +481,26 @@ const sendTariffDocumentReady = async (user, order) => {
   await sendEmail(user.email, templates.tariffDocumentReady(user, order));
 };
 
+const sendAdminNewAccountNotification = async (user) => {
+  try {
+    await sendEmail(ADMIN_EMAIL, templates.adminNewAccount(user));
+    console.log('Admin notification sent for new account:', user.email);
+  } catch (error) {
+    console.error('Failed to send admin new account notification:', error);
+    // Don't throw - this shouldn't block the registration
+  }
+};
+
+const sendAdminPurchaseNotification = async (user, orderType, order) => {
+  try {
+    await sendEmail(ADMIN_EMAIL, templates.adminPurchaseNotification(user, orderType, order));
+    console.log('Admin notification sent for purchase:', orderType, order.id);
+  } catch (error) {
+    console.error('Failed to send admin purchase notification:', error);
+    // Don't throw - this shouldn't block the order
+  }
+};
+
 module.exports = {
   sendEmail,
   sendEnrollmentConfirmation,
@@ -353,5 +508,7 @@ module.exports = {
   sendPasswordResetEmail,
   sendContactNotification,
   sendContactConfirmation,
-  sendTariffDocumentReady
+  sendTariffDocumentReady,
+  sendAdminNewAccountNotification,
+  sendAdminPurchaseNotification
 };
