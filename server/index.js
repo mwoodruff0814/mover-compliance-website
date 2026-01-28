@@ -82,12 +82,21 @@ app.use((req, res, next) => {
   next();
 });
 
-// Serve static files from root directory (excluding .html - they'll be handled by routes)
+// Serve static files
 // Serve uploaded documents
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
+// Serve CSS files
+app.use('/css', express.static(path.join(__dirname, '../css')));
+
+// Serve JS files
+app.use('/js', express.static(path.join(__dirname, '../js')));
+
+// Serve images
+app.use('/images', express.static(path.join(__dirname, '../images')));
+
+// Serve other static assets from root (fonts, favicon, etc.)
 app.use(express.static(path.join(__dirname, '..'), {
-  extensions: ['css', 'js', 'png', 'jpg', 'jpeg', 'gif', 'svg', 'ico', 'woff', 'woff2', 'ttf', 'eot'],
   index: false
 }));
 
