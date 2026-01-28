@@ -1043,7 +1043,654 @@ const generateTariffPDF = async (user, order, returnBuffer = false) => {
   });
 };
 
+/**
+ * Generate "Your Rights and Responsibilities When You Move" PDF
+ * Required FMCSA document for all HHG shippers
+ * @param {Object} user - User data
+ * @param {boolean} returnBuffer - If true, returns buffer instead of file path
+ * @returns {Promise<string|Buffer>} - File path or buffer
+ */
+const generateRightsAndResponsibilitiesPDF = async (user, returnBuffer = false) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        margins: { top: 72, bottom: 72, left: 72, right: 72 },
+        info: {
+          Title: 'Your Rights and Responsibilities When You Move',
+          Author: user.company_name || 'Interstate Compliance Solutions',
+          Subject: 'FMCSA Required Consumer Information'
+        }
+      });
+
+      const chunks = [];
+
+      if (returnBuffer) {
+        doc.on('data', chunk => chunks.push(chunk));
+        doc.on('end', () => resolve(Buffer.concat(chunks)));
+      } else {
+        const fileName = `rights-responsibilities-${user.mc_number?.replace(/[^a-zA-Z0-9]/g, '') || user.id}-${Date.now()}.pdf`;
+        const filePath = path.join(tempDir, fileName);
+        const writeStream = fs.createWriteStream(filePath);
+        doc.pipe(writeStream);
+        writeStream.on('finish', () => resolve(`/temp/${fileName}`));
+      }
+
+      const navy = '#0a1628';
+      const gold = '#c9a227';
+
+      // Helper functions
+      const sectionHeader = (title) => {
+        doc.moveDown(1);
+        doc.fillColor(navy)
+          .fontSize(14)
+          .font('Helvetica-Bold')
+          .text(title);
+        doc.strokeColor(gold).lineWidth(1).moveTo(72, doc.y + 2).lineTo(540, doc.y + 2).stroke();
+        doc.moveDown(0.5);
+        doc.fontSize(10).font('Helvetica');
+      };
+
+      const paragraph = (text) => {
+        doc.fillColor(navy).fontSize(10).font('Helvetica').text(text, { align: 'justify' });
+        doc.moveDown(0.5);
+      };
+
+      const bulletPoint = (text) => {
+        doc.fillColor(navy).fontSize(10).font('Helvetica').text(`• ${text}`, { indent: 20 });
+      };
+
+      // ==================== COVER PAGE ====================
+      doc.moveDown(3);
+
+      doc.fillColor(navy)
+        .fontSize(28)
+        .font('Helvetica-Bold')
+        .text('YOUR RIGHTS AND', { align: 'center' });
+      doc.text('RESPONSIBILITIES', { align: 'center' });
+      doc.text('WHEN YOU MOVE', { align: 'center' });
+
+      doc.moveDown(1);
+      doc.strokeColor(gold).lineWidth(3).moveTo(150, doc.y).lineTo(462, doc.y).stroke();
+      doc.moveDown(1);
+
+      doc.fontSize(14)
+        .font('Helvetica')
+        .text('Federal Motor Carrier Safety Administration', { align: 'center' });
+      doc.text('Required Consumer Information', { align: 'center' });
+
+      doc.moveDown(2);
+
+      // Carrier info box
+      doc.fillColor(navy).rect(100, doc.y, 412, 100).fill();
+      const boxY = doc.y;
+      doc.fillColor('white').fontSize(12).font('Helvetica-Bold');
+      doc.text('PROVIDED BY:', 120, boxY + 15, { width: 372, align: 'center' });
+      doc.fontSize(14).text(user.company_name || 'Your Moving Company', 120, boxY + 35, { width: 372, align: 'center' });
+      doc.fontSize(10).font('Helvetica');
+      doc.text(`MC Number: ${user.mc_number || 'N/A'}`, 120, boxY + 55, { width: 372, align: 'center' });
+      doc.text(`USDOT: ${user.usdot_number || 'N/A'}`, 120, boxY + 70, { width: 372, align: 'center' });
+      doc.text(`Phone: ${user.phone || 'N/A'}`, 120, boxY + 85, { width: 372, align: 'center' });
+
+      doc.y = boxY + 120;
+      doc.moveDown(2);
+
+      doc.fillColor('#666').fontSize(9);
+      doc.text('This booklet is required by federal regulations (49 CFR Part 375)', { align: 'center' });
+      doc.text('to be provided to every shipper before an interstate move.', { align: 'center' });
+
+      // ==================== PAGE 2: INTRODUCTION ====================
+      doc.addPage();
+
+      doc.fillColor(navy).fontSize(18).font('Helvetica-Bold').text('INTRODUCTION', { align: 'center' });
+      doc.moveDown(1);
+
+      paragraph('Moving to a new home can be exciting but also stressful. This booklet explains your rights and responsibilities when you hire a moving company for an interstate move (a move from one state to another).');
+
+      paragraph('Federal law requires your mover to give you this booklet. Please read it carefully and ask your mover about anything you don\'t understand.');
+
+      sectionHeader('WHAT THIS BOOKLET COVERS');
+
+      bulletPoint('How to choose a mover');
+      bulletPoint('What estimates mean');
+      bulletPoint('Your liability protection options');
+      bulletPoint('What to expect on moving day');
+      bulletPoint('How to file a claim if something goes wrong');
+      bulletPoint('Your rights under federal law');
+
+      sectionHeader('BEFORE YOU START');
+
+      paragraph('Before you hire a mover:');
+
+      bulletPoint('Get written estimates from several movers');
+      bulletPoint('Verify the mover\'s USDOT number at www.safersys.gov');
+      bulletPoint('Check for complaints with FMCSA and the Better Business Bureau');
+      bulletPoint('Ask about valuation coverage options');
+      bulletPoint('Read all documents before signing');
+
+      // ==================== PAGE 3: ESTIMATES ====================
+      doc.addPage();
+
+      sectionHeader('TYPES OF ESTIMATES');
+
+      doc.fillColor(navy).fontSize(12).font('Helvetica-Bold').text('Binding Estimate');
+      doc.moveDown(0.3);
+      paragraph('A binding estimate is an agreement that guarantees the total cost of the move based on the items to be moved and the services requested. You cannot be required to pay more than the estimate amount, even if the actual cost is higher. However, if you add items or request additional services not included in the original estimate, the mover may charge extra.');
+
+      doc.fillColor(navy).fontSize(12).font('Helvetica-Bold').text('Non-Binding Estimate');
+      doc.moveDown(0.3);
+      paragraph('A non-binding estimate is the carrier\'s approximation of the cost. The actual charges will be based on the actual weight of your shipment and services provided. At delivery, the mover cannot require you to pay more than the original estimate plus 10%. You must pay any remaining charges within 30 days.');
+
+      doc.fillColor(navy).fontSize(12).font('Helvetica-Bold').text('Binding Not-to-Exceed Estimate');
+      doc.moveDown(0.3);
+      paragraph('This combines features of both types. You won\'t pay more than the estimate, but you may pay less if the actual weight is lower than estimated.');
+
+      sectionHeader('IMPORTANT ABOUT ESTIMATES');
+
+      bulletPoint('All estimates must be in writing');
+      bulletPoint('Estimates must list all services and charges');
+      bulletPoint('Get copies of all estimates for your records');
+      bulletPoint('Estimates are not contracts - the Bill of Lading is your contract');
+
+      // ==================== PAGE 4: VALUATION/LIABILITY ====================
+      doc.addPage();
+
+      sectionHeader('VALUATION AND LIABILITY PROTECTION');
+
+      paragraph('Valuation is the degree of worth of your shipment. It determines the mover\'s maximum liability for loss or damage. You must choose one of these options:');
+
+      doc.fillColor(navy).fontSize(12).font('Helvetica-Bold').text('Option 1: Released Value (Basic Coverage)');
+      doc.moveDown(0.3);
+      paragraph('This is the most economical option but provides minimal protection. The mover\'s liability is limited to 60 cents per pound per article. This is provided at no additional charge.');
+      doc.fontSize(10).font('Helvetica-Oblique');
+      doc.text('Example: If a 50-pound stereo system worth $1,000 is lost or destroyed, you would receive only $30 (50 lbs × $0.60).', { indent: 20 });
+      doc.font('Helvetica');
+      doc.moveDown(0.5);
+
+      doc.fillColor(navy).fontSize(12).font('Helvetica-Bold').text('Option 2: Full Value Protection');
+      doc.moveDown(0.3);
+      paragraph('Under this option, the mover is liable for the replacement value of lost or damaged goods. The mover must either repair the item, replace it with a similar item, or make a cash settlement for the current market replacement value. This option has an additional cost based on the declared value of your shipment.');
+
+      sectionHeader('HIGH-VALUE ITEMS');
+
+      paragraph('Articles valued at more than $100 per pound (such as jewelry, electronics, or antiques) must be specifically listed on the "High-Value Inventory" form. If you don\'t list these items, the mover\'s liability may be limited to $100 per pound for these items.');
+
+      // ==================== PAGE 5: MOVING DAY ====================
+      doc.addPage();
+
+      sectionHeader('BEFORE MOVING DAY');
+
+      bulletPoint('Confirm dates and times with your mover');
+      bulletPoint('Prepare an inventory of all items');
+      bulletPoint('Set aside items you will transport yourself (medications, valuables, important documents)');
+      bulletPoint('Arrange payment method (cash, check, credit card)');
+      bulletPoint('Confirm delivery address and contact information');
+
+      sectionHeader('ON MOVING DAY - LOADING');
+
+      bulletPoint('Be present when the mover arrives');
+      bulletPoint('Walk through each room with the driver');
+      bulletPoint('Watch as the inventory is prepared');
+      bulletPoint('Note the condition of each item on the inventory');
+      bulletPoint('Don\'t sign the inventory until you agree with the descriptions');
+      bulletPoint('Get a copy of the Bill of Lading and inventory');
+
+      sectionHeader('ON MOVING DAY - DELIVERY');
+
+      bulletPoint('Be present when the mover arrives');
+      bulletPoint('Check each item against the inventory as it\'s unloaded');
+      bulletPoint('Note any damage or missing items on the delivery receipt BEFORE signing');
+      bulletPoint('Inspect items carefully - you can note "subject to further inspection"');
+      bulletPoint('Pay as agreed (unless you have a legitimate dispute)');
+      bulletPoint('Keep all paperwork and receipts');
+
+      // ==================== PAGE 6: CLAIMS ====================
+      doc.addPage();
+
+      sectionHeader('IF SOMETHING GOES WRONG - FILING A CLAIM');
+
+      paragraph('If your belongings are lost or damaged, you have the right to file a claim with the moving company.');
+
+      doc.fillColor(navy).fontSize(12).font('Helvetica-Bold').text('Time Limits for Filing Claims');
+      doc.moveDown(0.3);
+      bulletPoint('You must file a written claim within 9 months of delivery');
+      bulletPoint('The mover must acknowledge your claim within 30 days');
+      bulletPoint('The mover must pay, deny, or make a settlement offer within 120 days');
+
+      doc.moveDown(0.5);
+      doc.fillColor(navy).fontSize(12).font('Helvetica-Bold').text('What to Include in Your Claim');
+      doc.moveDown(0.3);
+      bulletPoint('Your name and contact information');
+      bulletPoint('The mover\'s name and address');
+      bulletPoint('Date of delivery');
+      bulletPoint('Description of loss or damage');
+      bulletPoint('Amount claimed');
+      bulletPoint('Supporting documents (photos, receipts, repair estimates)');
+
+      sectionHeader('ARBITRATION');
+
+      paragraph('If you\'re not satisfied with the mover\'s response to your claim, you may request arbitration. This is an alternative to court that\'s usually faster and less expensive.');
+
+      bulletPoint('For claims of $10,000 or less, the mover must participate if you request it');
+      bulletPoint('For claims over $10,000, both parties must agree to arbitration');
+      bulletPoint('The arbitrator\'s decision may be binding or non-binding depending on your agreement');
+
+      // ==================== PAGE 7: YOUR RIGHTS ====================
+      doc.addPage();
+
+      sectionHeader('YOUR RIGHTS');
+
+      paragraph('Federal law gives you certain rights when you use a moving company for an interstate move:');
+
+      bulletPoint('The right to a written estimate');
+      bulletPoint('The right to choose your level of liability coverage');
+      bulletPoint('The right to be present at weighing');
+      bulletPoint('The right to receive required documents');
+      bulletPoint('The right to file a claim for loss or damage');
+      bulletPoint('The right to arbitration for disputes');
+
+      sectionHeader('YOUR RESPONSIBILITIES');
+
+      paragraph('You also have responsibilities:');
+
+      bulletPoint('Provide accurate information about your shipment');
+      bulletPoint('Be available at pickup and delivery');
+      bulletPoint('Note damage on inventory and delivery documents');
+      bulletPoint('Pay charges as agreed');
+      bulletPoint('File claims within required time limits');
+
+      sectionHeader('WHERE TO GET HELP');
+
+      paragraph('If you have a complaint about a mover:');
+
+      doc.fontSize(10).font('Helvetica');
+      doc.text('Federal Motor Carrier Safety Administration (FMCSA)');
+      doc.text('National Consumer Complaint Database: 1-888-368-7238');
+      doc.text('Website: www.fmcsa.dot.gov');
+      doc.moveDown(0.5);
+      doc.text('Better Business Bureau: www.bbb.org');
+      doc.text('State Attorney General\'s Consumer Protection Office');
+
+      // ==================== FINAL PAGE ====================
+      doc.addPage();
+
+      doc.moveDown(2);
+      doc.fillColor(navy).fontSize(16).font('Helvetica-Bold').text('ACKNOWLEDGMENT', { align: 'center' });
+      doc.moveDown(1);
+
+      paragraph('I acknowledge that I have received this booklet explaining my rights and responsibilities when moving. I understand that I should read this information carefully and ask my mover any questions I have before my move.');
+
+      doc.moveDown(2);
+
+      doc.fillColor(lightGray || '#f5f5f5').rect(72, doc.y, 468, 120).fill();
+      doc.fillColor(navy).fontSize(10);
+      const sigY = doc.y;
+      doc.text('Shipper\'s Signature: _________________________________', 90, sigY + 20);
+      doc.text('Printed Name: _________________________________', 90, sigY + 45);
+      doc.text('Date: _________________________________', 90, sigY + 70);
+      doc.text('Move Date: _________________________________', 90, sigY + 95);
+
+      doc.y = sigY + 140;
+      doc.moveDown(2);
+
+      doc.fillColor('#666').fontSize(8);
+      doc.text(`Document provided by: ${user.company_name || 'Moving Company'}`, { align: 'center' });
+      doc.text(`MC#: ${user.mc_number || 'N/A'} | USDOT#: ${user.usdot_number || 'N/A'}`, { align: 'center' });
+      doc.text('This document complies with 49 CFR Part 375', { align: 'center' });
+
+      doc.end();
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+/**
+ * Generate "Ready to Move" Guide PDF
+ * FMCSA recommended consumer preparation guide
+ * @param {Object} user - User data
+ * @param {boolean} returnBuffer - If true, returns buffer instead of file path
+ * @returns {Promise<string|Buffer>} - File path or buffer
+ */
+const generateReadyToMovePDF = async (user, returnBuffer = false) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        margins: { top: 72, bottom: 72, left: 72, right: 72 },
+        info: {
+          Title: 'Ready to Move Guide',
+          Author: user.company_name || 'Interstate Compliance Solutions',
+          Subject: 'Moving Preparation Checklist'
+        }
+      });
+
+      const chunks = [];
+
+      if (returnBuffer) {
+        doc.on('data', chunk => chunks.push(chunk));
+        doc.on('end', () => resolve(Buffer.concat(chunks)));
+      } else {
+        const fileName = `ready-to-move-${user.mc_number?.replace(/[^a-zA-Z0-9]/g, '') || user.id}-${Date.now()}.pdf`;
+        const filePath = path.join(tempDir, fileName);
+        const writeStream = fs.createWriteStream(filePath);
+        doc.pipe(writeStream);
+        writeStream.on('finish', () => resolve(`/temp/${fileName}`));
+      }
+
+      const navy = '#0a1628';
+      const gold = '#c9a227';
+      const green = '#22c55e';
+      const lightGray = '#f5f5f5';
+
+      // ==================== COVER PAGE ====================
+      doc.moveDown(3);
+
+      doc.fillColor(navy)
+        .fontSize(32)
+        .font('Helvetica-Bold')
+        .text('READY TO MOVE', { align: 'center' });
+
+      doc.fontSize(18)
+        .font('Helvetica')
+        .text('Your Complete Moving Preparation Guide', { align: 'center' });
+
+      doc.moveDown(1);
+      doc.strokeColor(gold).lineWidth(3).moveTo(150, doc.y).lineTo(462, doc.y).stroke();
+      doc.moveDown(2);
+
+      doc.fillColor(navy).rect(100, doc.y, 412, 80).fill();
+      const boxY = doc.y;
+      doc.fillColor('white').fontSize(14).font('Helvetica-Bold');
+      doc.text(user.company_name || 'Your Moving Company', 120, boxY + 15, { width: 372, align: 'center' });
+      doc.fontSize(10).font('Helvetica');
+      doc.text(`MC: ${user.mc_number || 'N/A'} | USDOT: ${user.usdot_number || 'N/A'}`, 120, boxY + 40, { width: 372, align: 'center' });
+      doc.text(`Phone: ${user.phone || 'N/A'}`, 120, boxY + 55, { width: 372, align: 'center' });
+
+      doc.y = boxY + 100;
+      doc.moveDown(2);
+
+      doc.fillColor(navy).fontSize(12).text('This guide will help you prepare for a smooth, stress-free move.', { align: 'center' });
+
+      // ==================== 8 WEEKS BEFORE ====================
+      doc.addPage();
+
+      doc.fillColor(navy).fontSize(20).font('Helvetica-Bold').text('8 WEEKS BEFORE YOUR MOVE', { align: 'center' });
+      doc.strokeColor(gold).lineWidth(2).moveTo(72, doc.y + 5).lineTo(540, doc.y + 5).stroke();
+      doc.moveDown(1);
+
+      const checkbox = '☐';
+      doc.fontSize(10).font('Helvetica');
+
+      const weeks8 = [
+        'Research and get estimates from at least 3 moving companies',
+        'Verify mover credentials at www.safersys.gov',
+        'Check reviews and complaints with BBB and FMCSA',
+        'Create a moving binder for all documents and receipts',
+        'Start decluttering - donate, sell, or discard unwanted items',
+        'Create a home inventory for insurance purposes',
+        'If renting, give notice to your landlord',
+        'Start using up frozen foods and pantry items',
+        'Research schools, doctors, and services in your new area',
+        'Begin collecting free boxes from stores and friends'
+      ];
+
+      weeks8.forEach(item => {
+        doc.fillColor(navy).text(`${checkbox}  ${item}`);
+        doc.moveDown(0.4);
+      });
+
+      // ==================== 6 WEEKS BEFORE ====================
+      doc.moveDown(1);
+      doc.fillColor(navy).fontSize(16).font('Helvetica-Bold').text('6 WEEKS BEFORE YOUR MOVE');
+      doc.strokeColor(gold).lineWidth(1).moveTo(72, doc.y + 3).lineTo(400, doc.y + 3).stroke();
+      doc.moveDown(0.7);
+      doc.fontSize(10).font('Helvetica');
+
+      const weeks6 = [
+        'Choose your moving company and confirm dates',
+        'Get a written estimate (binding or non-binding)',
+        'Arrange time off work for moving day',
+        'Start packing items you won\'t need before the move',
+        'Arrange to transfer or close utilities',
+        'Notify important parties of address change (see checklist)',
+        'Arrange for pet and plant transportation if needed',
+        'Start collecting packing supplies'
+      ];
+
+      weeks6.forEach(item => {
+        doc.fillColor(navy).text(`${checkbox}  ${item}`);
+        doc.moveDown(0.4);
+      });
+
+      // ==================== 4 WEEKS BEFORE ====================
+      doc.addPage();
+
+      doc.fillColor(navy).fontSize(20).font('Helvetica-Bold').text('4 WEEKS BEFORE YOUR MOVE', { align: 'center' });
+      doc.strokeColor(gold).lineWidth(2).moveTo(72, doc.y + 5).lineTo(540, doc.y + 5).stroke();
+      doc.moveDown(1);
+      doc.fontSize(10).font('Helvetica');
+
+      const weeks4 = [
+        'Continue packing room by room',
+        'Label boxes clearly with contents and destination room',
+        'Separate items of high value to transport yourself',
+        'Arrange parking permits if needed for moving truck',
+        'Confirm reservation for elevator if applicable',
+        'Schedule disconnect of utilities at old home',
+        'Schedule connect of utilities at new home',
+        'Notify post office of address change',
+        'Update address for subscriptions and deliveries',
+        'Arrange care for children and pets on moving day'
+      ];
+
+      weeks4.forEach(item => {
+        doc.fillColor(navy).text(`${checkbox}  ${item}`);
+        doc.moveDown(0.4);
+      });
+
+      // ==================== 2 WEEKS BEFORE ====================
+      doc.moveDown(1);
+      doc.fillColor(navy).fontSize(16).font('Helvetica-Bold').text('2 WEEKS BEFORE YOUR MOVE');
+      doc.strokeColor(gold).lineWidth(1).moveTo(72, doc.y + 3).lineTo(400, doc.y + 3).stroke();
+      doc.moveDown(0.7);
+      doc.fontSize(10).font('Helvetica');
+
+      const weeks2 = [
+        'Confirm all details with your moving company',
+        'Finish packing non-essential items',
+        'Clean out refrigerator and freezer',
+        'Arrange appliance servicing (disconnect washer, dryer, etc.)',
+        'Return borrowed items and collect loaned items',
+        'Confirm travel arrangements if moving long distance',
+        'Prepare an "essentials" box for first day at new home',
+        'Take photos of electronics setup for reconnection'
+      ];
+
+      weeks2.forEach(item => {
+        doc.fillColor(navy).text(`${checkbox}  ${item}`);
+        doc.moveDown(0.4);
+      });
+
+      // ==================== 1 WEEK BEFORE ====================
+      doc.addPage();
+
+      doc.fillColor(navy).fontSize(20).font('Helvetica-Bold').text('1 WEEK BEFORE YOUR MOVE', { align: 'center' });
+      doc.strokeColor(gold).lineWidth(2).moveTo(72, doc.y + 5).lineTo(540, doc.y + 5).stroke();
+      doc.moveDown(1);
+      doc.fontSize(10).font('Helvetica');
+
+      const weeks1 = [
+        'Finish packing everything except daily essentials',
+        'Defrost freezer (at least 24 hours before move)',
+        'Drain fuel from lawn equipment and grills',
+        'Dispose of flammable items, chemicals, and hazardous materials',
+        'Confirm payment method and amount with mover',
+        'Pack a suitcase with clothes for moving day and first few days',
+        'Prepare snacks and drinks for moving day',
+        'Disassemble beds and large furniture',
+        'Take final meter readings at old home',
+        'Do final walk-through of old home'
+      ];
+
+      weeks1.forEach(item => {
+        doc.fillColor(navy).text(`${checkbox}  ${item}`);
+        doc.moveDown(0.4);
+      });
+
+      // ==================== MOVING DAY ====================
+      doc.moveDown(1);
+      doc.fillColor(navy).fontSize(16).font('Helvetica-Bold').text('MOVING DAY');
+      doc.strokeColor(gold).lineWidth(1).moveTo(72, doc.y + 3).lineTo(400, doc.y + 3).stroke();
+      doc.moveDown(0.7);
+      doc.fontSize(10).font('Helvetica');
+
+      const movingDay = [
+        'Be present when movers arrive',
+        'Do walk-through with driver and review inventory',
+        'Point out fragile and valuable items',
+        'Keep important documents and valuables with you',
+        'Supervise loading and note any concerns',
+        'Get driver\'s contact info and estimated arrival time',
+        'Do final check of all rooms, closets, and storage areas',
+        'Lock all doors and windows',
+        'Leave keys as arranged with new owner/landlord'
+      ];
+
+      movingDay.forEach(item => {
+        doc.fillColor(navy).text(`${checkbox}  ${item}`);
+        doc.moveDown(0.4);
+      });
+
+      // ==================== ADDRESS CHANGE CHECKLIST ====================
+      doc.addPage();
+
+      doc.fillColor(navy).fontSize(20).font('Helvetica-Bold').text('ADDRESS CHANGE CHECKLIST', { align: 'center' });
+      doc.strokeColor(gold).lineWidth(2).moveTo(72, doc.y + 5).lineTo(540, doc.y + 5).stroke();
+      doc.moveDown(1);
+
+      doc.fontSize(11).font('Helvetica-Bold').text('Government & Legal');
+      doc.fontSize(10).font('Helvetica');
+      ['USPS / Post Office', 'IRS', 'Social Security Administration', 'DMV (license & registration)', 'Voter registration', 'Passport (for future renewals)'].forEach(item => {
+        doc.text(`${checkbox}  ${item}`);
+        doc.moveDown(0.3);
+      });
+
+      doc.moveDown(0.5);
+      doc.fontSize(11).font('Helvetica-Bold').text('Financial');
+      doc.fontSize(10).font('Helvetica');
+      ['Banks and credit unions', 'Credit card companies', 'Investment accounts', 'Loan providers', 'Insurance (auto, home, life, health)'].forEach(item => {
+        doc.text(`${checkbox}  ${item}`);
+        doc.moveDown(0.3);
+      });
+
+      doc.moveDown(0.5);
+      doc.fontSize(11).font('Helvetica-Bold').text('Utilities & Services');
+      doc.fontSize(10).font('Helvetica');
+      ['Electric company', 'Gas company', 'Water/sewer', 'Internet/cable provider', 'Phone/cell phone', 'Trash collection', 'Security system'].forEach(item => {
+        doc.text(`${checkbox}  ${item}`);
+        doc.moveDown(0.3);
+      });
+
+      doc.moveDown(0.5);
+      doc.fontSize(11).font('Helvetica-Bold').text('Medical');
+      doc.fontSize(10).font('Helvetica');
+      ['Doctors and dentists', 'Pharmacies (transfer prescriptions)', 'Health insurance', 'Veterinarian'].forEach(item => {
+        doc.text(`${checkbox}  ${item}`);
+        doc.moveDown(0.3);
+      });
+
+      doc.moveDown(0.5);
+      doc.fontSize(11).font('Helvetica-Bold').text('Other');
+      doc.fontSize(10).font('Helvetica');
+      ['Employer/HR department', 'Schools', 'Subscriptions (magazines, streaming)', 'Online shopping accounts', 'Clubs and memberships', 'Friends and family'].forEach(item => {
+        doc.text(`${checkbox}  ${item}`);
+        doc.moveDown(0.3);
+      });
+
+      // ==================== ESSENTIALS BOX ====================
+      doc.addPage();
+
+      doc.fillColor(navy).fontSize(20).font('Helvetica-Bold').text('YOUR "ESSENTIALS" BOX', { align: 'center' });
+      doc.strokeColor(gold).lineWidth(2).moveTo(72, doc.y + 5).lineTo(540, doc.y + 5).stroke();
+      doc.moveDown(1);
+
+      doc.fontSize(10).font('Helvetica');
+      doc.text('Pack a box (or suitcase) with items you\'ll need immediately at your new home. Keep this with you - don\'t put it on the moving truck!', { align: 'justify' });
+      doc.moveDown(1);
+
+      doc.fontSize(11).font('Helvetica-Bold').text('Personal Items');
+      doc.fontSize(10).font('Helvetica');
+      ['Medications and first-aid kit', 'Toiletries', 'Change of clothes for each family member', 'Phone chargers', 'Important documents', 'Cash and credit cards', 'Keys to new home'].forEach(item => {
+        doc.text(`${checkbox}  ${item}`);
+        doc.moveDown(0.3);
+      });
+
+      doc.moveDown(0.5);
+      doc.fontSize(11).font('Helvetica-Bold').text('Kitchen Basics');
+      doc.fontSize(10).font('Helvetica');
+      ['Paper plates, cups, and utensils', 'Paper towels', 'Snacks and bottled water', 'Coffee maker and coffee', 'Trash bags'].forEach(item => {
+        doc.text(`${checkbox}  ${item}`);
+        doc.moveDown(0.3);
+      });
+
+      doc.moveDown(0.5);
+      doc.fontSize(11).font('Helvetica-Bold').text('Bathroom Basics');
+      doc.fontSize(10).font('Helvetica');
+      ['Toilet paper', 'Soap and hand towels', 'Shower curtain'].forEach(item => {
+        doc.text(`${checkbox}  ${item}`);
+        doc.moveDown(0.3);
+      });
+
+      doc.moveDown(0.5);
+      doc.fontSize(11).font('Helvetica-Bold').text('Bedroom Basics');
+      doc.fontSize(10).font('Helvetica');
+      ['Sheets and pillows', 'Blankets', 'Alarm clock'].forEach(item => {
+        doc.text(`${checkbox}  ${item}`);
+        doc.moveDown(0.3);
+      });
+
+      doc.moveDown(0.5);
+      doc.fontSize(11).font('Helvetica-Bold').text('Tools');
+      doc.fontSize(10).font('Helvetica');
+      ['Screwdriver and basic tools', 'Box cutter', 'Flashlight', 'Light bulbs', 'Step stool'].forEach(item => {
+        doc.text(`${checkbox}  ${item}`);
+        doc.moveDown(0.3);
+      });
+
+      // ==================== FINAL PAGE ====================
+      doc.addPage();
+      doc.moveDown(2);
+
+      doc.fillColor(navy).fontSize(18).font('Helvetica-Bold').text('QUESTIONS? CONTACT US!', { align: 'center' });
+      doc.moveDown(1);
+
+      doc.fillColor(navy).rect(100, doc.y, 412, 100).fill();
+      const contactY = doc.y;
+      doc.fillColor('white').fontSize(14).font('Helvetica-Bold');
+      doc.text(user.company_name || 'Your Moving Company', 120, contactY + 15, { width: 372, align: 'center' });
+      doc.fontSize(11).font('Helvetica');
+      doc.text(`Phone: ${user.phone || 'N/A'}`, 120, contactY + 40, { width: 372, align: 'center' });
+      doc.text(`Email: ${user.email || 'N/A'}`, 120, contactY + 55, { width: 372, align: 'center' });
+      doc.text(`MC#: ${user.mc_number || 'N/A'} | USDOT#: ${user.usdot_number || 'N/A'}`, 120, contactY + 75, { width: 372, align: 'center' });
+
+      doc.y = contactY + 120;
+      doc.moveDown(2);
+
+      doc.fillColor('#666').fontSize(8);
+      doc.text('We\'re here to make your move as smooth as possible!', { align: 'center' });
+      doc.text('Don\'t hesitate to reach out with any questions.', { align: 'center' });
+
+      doc.end();
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 module.exports = {
   generateArbitrationPDF,
-  generateTariffPDF
+  generateTariffPDF,
+  generateRightsAndResponsibilitiesPDF,
+  generateReadyToMovePDF
 };

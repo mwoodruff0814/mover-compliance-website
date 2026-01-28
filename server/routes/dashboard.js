@@ -1,6 +1,7 @@
 const express = require('express');
 const { query } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
+const { generateRightsAndResponsibilitiesPDF, generateReadyToMovePDF } = require('../utils/pdf');
 
 const router = express.Router();
 
@@ -160,6 +161,48 @@ router.get('/documents', authenticateToken, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to load documents'
+    });
+  }
+});
+
+// Generate FMCSA required documents
+router.get('/fmcsa-documents/:type', authenticateToken, async (req, res) => {
+  try {
+    const { type } = req.params;
+    const user = req.user;
+
+    let documentUrl;
+    let filename;
+
+    switch (type) {
+      case 'rights-responsibilities':
+        documentUrl = await generateRightsAndResponsibilitiesPDF(user);
+        filename = `Rights-and-Responsibilities-${user.mc_number || 'document'}.pdf`;
+        break;
+      case 'ready-to-move':
+        documentUrl = await generateReadyToMovePDF(user);
+        filename = `Ready-to-Move-Guide-${user.mc_number || 'document'}.pdf`;
+        break;
+      default:
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid document type. Use: rights-responsibilities or ready-to-move'
+        });
+    }
+
+    res.json({
+      success: true,
+      data: {
+        document_url: documentUrl,
+        filename: filename,
+        type: type
+      }
+    });
+  } catch (error) {
+    console.error('Generate FMCSA document error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate document'
     });
   }
 });
