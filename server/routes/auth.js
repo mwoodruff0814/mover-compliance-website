@@ -100,6 +100,8 @@ router.post('/login', sanitizeBody, validateRequest(schemas.login), async (req, 
   try {
     const { email, password } = req.body;
 
+    console.log('Login attempt for:', email);
+
     // Find user
     const result = await query(
       'SELECT * FROM users WHERE email = $1',
@@ -107,6 +109,7 @@ router.post('/login', sanitizeBody, validateRequest(schemas.login), async (req, 
     );
 
     if (result.rows.length === 0) {
+      console.log('Login failed - user not found:', email);
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
@@ -114,10 +117,12 @@ router.post('/login', sanitizeBody, validateRequest(schemas.login), async (req, 
     }
 
     const user = result.rows[0];
+    console.log('User found:', user.id, user.company_name);
 
     // Verify password
     const validPassword = await bcrypt.compare(password, user.password_hash);
     if (!validPassword) {
+      console.log('Login failed - invalid password for user:', user.id);
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
@@ -126,6 +131,7 @@ router.post('/login', sanitizeBody, validateRequest(schemas.login), async (req, 
 
     // Generate token
     const token = generateToken(user.id);
+    console.log('Login successful for user:', user.id);
 
     // Remove sensitive data
     delete user.password_hash;
@@ -266,6 +272,8 @@ router.post('/forgot-password', sanitizeBody, async (req, res) => {
       });
     }
 
+    console.log('Password reset requested for:', email);
+
     // Find user
     const userResult = await query(
       'SELECT id, email, company_name FROM users WHERE email = $1',
@@ -274,6 +282,7 @@ router.post('/forgot-password', sanitizeBody, async (req, res) => {
 
     // Always return success to prevent email enumeration
     if (userResult.rows.length === 0) {
+      console.log('No user found with email:', email);
       return res.json({
         success: true,
         message: 'If an account exists with this email, you will receive a password reset link'
@@ -281,6 +290,7 @@ router.post('/forgot-password', sanitizeBody, async (req, res) => {
     }
 
     const user = userResult.rows[0];
+    console.log('User found:', user.id, user.company_name);
 
     // Generate reset token
     const token = crypto.randomBytes(32).toString('hex');
@@ -291,12 +301,18 @@ router.post('/forgot-password', sanitizeBody, async (req, res) => {
       'INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)',
       [user.id, token, expiresAt]
     );
+    console.log('Reset token saved to database');
 
     // Send email
     try {
+      console.log('Attempting to send password reset email...');
+      console.log('Email config - HOST:', process.env.EMAIL_HOST, 'USER:', process.env.EMAIL_USER ? 'SET' : 'NOT SET');
       await sendPasswordResetEmail(user.email, user.company_name, token);
+      console.log('Password reset email sent successfully to:', user.email);
     } catch (emailError) {
-      console.error('Failed to send password reset email:', emailError);
+      console.error('Failed to send password reset email:', emailError.message);
+      console.error('Full error:', emailError);
+      // Still return success to not reveal if user exists
     }
 
     res.json({
@@ -373,6 +389,21 @@ router.post('/reset-password', sanitizeBody, async (req, res) => {
       message: 'Failed to reset password'
     });
   }
+});
+
+// Debug endpoint - check email configuration (admin only)
+router.get('/debug/email-config', async (req, res) => {
+  res.json({
+    success: true,
+    config: {
+      EMAIL_HOST: process.env.EMAIL_HOST || 'NOT SET',
+      EMAIL_PORT: process.env.EMAIL_PORT || 'NOT SET',
+      EMAIL_USER: process.env.EMAIL_USER ? 'SET (' + process.env.EMAIL_USER.substring(0, 5) + '...)' : 'NOT SET',
+      EMAIL_PASS: process.env.EMAIL_PASS ? 'SET' : 'NOT SET',
+      EMAIL_FROM: process.env.EMAIL_FROM || 'NOT SET',
+      FRONTEND_URL: process.env.FRONTEND_URL || 'NOT SET'
+    }
+  });
 });
 
 module.exports = router;

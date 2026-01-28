@@ -18,16 +18,36 @@
     --cream-50: #fefdfb;
 }
 
-/* Force white text on dark backgrounds */
-.bg-navy-900, [class*="from-navy-900"] {
-    color: #ffffff !important;
+/* Force white text on dark backgrounds - only direct children, not nested containers */
+.bg-navy-900 > h1, .bg-navy-900 > h2, .bg-navy-900 > h3,
+.bg-navy-900 > p, .bg-navy-900 > span, .bg-navy-900 > a,
+.bg-navy-900 > div > h1, .bg-navy-900 > div > p,
+[class*="from-navy-900"] > h1, [class*="from-navy-900"] > p {
+    color: #ffffff;
 }
 
-.bg-navy-900 h1, .bg-navy-900 h2, .bg-navy-900 h3,
-.bg-navy-900 span, .bg-navy-900 a,
-[style*="background"][style*="#0a1628"] h1,
-[style*="background"][style*="#0a1628"] p {
-    color: inherit;
+/* Ensure white cards have dark text */
+.bg-white, .bg-white * {
+    color: #0a1628;
+}
+
+.bg-white h1, .bg-white h2, .bg-white h3,
+.bg-white label, .bg-white p, .bg-white span {
+    color: #0a1628 !important;
+}
+
+/* But keep links gold colored in white cards */
+.bg-white a {
+    color: #b8891d !important;
+}
+
+.bg-white a:hover {
+    color: #966a19 !important;
+}
+
+/* Navigation should have white text */
+nav.bg-navy-900 * {
+    color: #ffffff;
 }
 
 /* Navigation text */
