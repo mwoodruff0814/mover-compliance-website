@@ -44,19 +44,11 @@ try {
     // Use Cloudinary storage for production
     storage = new CloudinaryStorage({
       cloudinary: cloudinary,
-      params: async (req, file) => {
-        // Determine resource type based on file
-        let resourceType = 'auto';
-        const ext = path.extname(file.originalname).toLowerCase();
-        if (['.pdf', '.doc', '.docx'].includes(ext)) {
-          resourceType = 'raw'; // PDFs and docs need 'raw' type
-        }
-
-        return {
-          folder: 'mover-compliance-documents',
-          resource_type: resourceType,
-          public_id: `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, '')}`
-        };
+      params: {
+        folder: 'mover-compliance-documents',
+        resource_type: 'auto',
+        allowed_formats: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg'],
+        public_id: (req, file) => `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, '')}`
       }
     });
 
@@ -135,7 +127,7 @@ router.get('/users', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const result = await query(`
       SELECT id, email, company_name, mc_number, usdot_number, phone,
-             created_at, email_verified
+             created_at
       FROM users
       ORDER BY created_at DESC
       LIMIT 100

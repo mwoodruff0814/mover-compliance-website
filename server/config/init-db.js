@@ -37,6 +37,7 @@ const initDatabase = async () => {
         payment_id VARCHAR(100),
         amount_paid DECIMAL(10,2),
         document_url TEXT,
+        notes TEXT,
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
       )
@@ -53,6 +54,7 @@ const initDatabase = async () => {
         service_territory TEXT,
         accessorials JSONB,
         special_notes TEXT,
+        notes TEXT,
         payment_id VARCHAR(100),
         amount_paid DECIMAL(10,2),
         document_url TEXT,
@@ -72,6 +74,8 @@ const initDatabase = async () => {
         payment_id VARCHAR(100),
         amount_paid DECIMAL(10,2),
         filed_date DATE,
+        document_url TEXT,
+        notes TEXT,
         created_at TIMESTAMP DEFAULT NOW(),
         updated_at TIMESTAMP DEFAULT NOW()
       )
@@ -137,6 +141,44 @@ const initDatabase = async () => {
       )
     `);
     console.log('Created password_reset_tokens table');
+
+    // Add missing columns to existing tables (for migrations)
+    console.log('Running migrations for existing tables...');
+
+    // Add document_url and notes to boc3_orders if missing
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='boc3_orders' AND column_name='document_url') THEN
+          ALTER TABLE boc3_orders ADD COLUMN document_url TEXT;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='boc3_orders' AND column_name='notes') THEN
+          ALTER TABLE boc3_orders ADD COLUMN notes TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // Add notes to arbitration_enrollments if missing
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='arbitration_enrollments' AND column_name='notes') THEN
+          ALTER TABLE arbitration_enrollments ADD COLUMN notes TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // Add notes to tariff_orders if missing
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tariff_orders' AND column_name='notes') THEN
+          ALTER TABLE tariff_orders ADD COLUMN notes TEXT;
+        END IF;
+      END $$;
+    `);
+
+    console.log('Migrations complete');
 
     // Create indexes for better performance
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);

@@ -2,6 +2,55 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const { query } = require('./config/database');
+
+// Run database migrations on startup
+const runMigrations = async () => {
+  try {
+    console.log('Running database migrations...');
+
+    // Add document_url and notes to boc3_orders if missing
+    await query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='boc3_orders' AND column_name='document_url') THEN
+          ALTER TABLE boc3_orders ADD COLUMN document_url TEXT;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='boc3_orders' AND column_name='notes') THEN
+          ALTER TABLE boc3_orders ADD COLUMN notes TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // Add notes to arbitration_enrollments if missing
+    await query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='arbitration_enrollments' AND column_name='notes') THEN
+          ALTER TABLE arbitration_enrollments ADD COLUMN notes TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // Add notes to tariff_orders if missing
+    await query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tariff_orders' AND column_name='notes') THEN
+          ALTER TABLE tariff_orders ADD COLUMN notes TEXT;
+        END IF;
+      END $$;
+    `);
+
+    console.log('Database migrations complete');
+  } catch (error) {
+    console.error('Migration error (non-fatal):', error.message);
+    // Don't crash the server if migrations fail - tables might not exist yet
+  }
+};
+
+// Run migrations
+runMigrations();
 
 // Import routes
 const authRoutes = require('./routes/auth');
