@@ -42,16 +42,34 @@ if (process.env.CLOUDINARY_CLOUD_NAME) {
   // Use Cloudinary storage for production
   storage = new CloudinaryStorage({
     cloudinary: cloudinary,
-    params: {
-      folder: 'mover-compliance-documents',
-      allowed_formats: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg'],
-      resource_type: 'auto'
+    params: async (req, file) => {
+      // Determine resource type based on file
+      let resourceType = 'auto';
+      const ext = path.extname(file.originalname).toLowerCase();
+      if (['.pdf', '.doc', '.docx'].includes(ext)) {
+        resourceType = 'raw'; // PDFs and docs need 'raw' type
+      }
+
+      return {
+        folder: 'mover-compliance-documents',
+        resource_type: resourceType,
+        public_id: `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, '')}`
+      };
     }
   });
 
   upload = multer({
     storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+    fileFilter: (req, file, cb) => {
+      const allowedTypes = ['.pdf', '.doc', '.docx', '.png', '.jpg', '.jpeg'];
+      const ext = path.extname(file.originalname).toLowerCase();
+      if (allowedTypes.includes(ext)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Invalid file type. Allowed: PDF, DOC, DOCX, PNG, JPG'));
+      }
+    }
   });
 } else {
   // Fallback to local storage for development
