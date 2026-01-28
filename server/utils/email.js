@@ -3,17 +3,36 @@ const nodemailer = require('nodemailer');
 // Admin email for notifications
 const ADMIN_EMAIL = 'matt@worryfreemovers.com';
 
-// Create transporter
+// Create transporter - using Gmail service for better reliability
 const createTransporter = () => {
+  // Use Gmail service (simpler and more reliable than host/port)
+  if (process.env.EMAIL_HOST === 'smtp.gmail.com' || !process.env.EMAIL_HOST) {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+  }
+
+  // Fallback to custom SMTP
   return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+    host: process.env.EMAIL_HOST,
     port: parseInt(process.env.EMAIL_PORT) || 587,
-    secure: false,
+    secure: process.env.EMAIL_PORT === '465',
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS
     }
   });
+};
+
+// Get formatted "from" address with display name
+const getFromAddress = () => {
+  const displayName = process.env.COMPANY_NAME || 'Interstate Compliance Solutions';
+  const email = process.env.EMAIL_FROM || process.env.EMAIL_USER;
+  return `"${displayName}" <${email}>`;
 };
 
 // Email templates
@@ -145,48 +164,54 @@ const templates = {
     };
   },
 
-  passwordReset: (email, companyName, token) => ({
-    subject: 'Password Reset Request - Interstate Compliance Solutions',
-    html: `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #0a1628; }
-          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: #0a1628; color: white; padding: 30px; text-align: center; }
-          .header h1 { margin: 0; color: #c9a227; }
-          .content { padding: 30px; background: #f9f9f9; }
-          .button { display: inline-block; background: #c9a227; color: #0a1628; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; }
-          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
-        </style>
-      </head>
-      <body>
-        <div class="container">
-          <div class="header">
-            <h1>Interstate Compliance Solutions</h1>
-          </div>
-          <div class="content">
-            <h2>Password Reset Request</h2>
-            <p>Hello${companyName ? ` ${companyName}` : ''},</p>
-            <p>We received a request to reset your password. Click the button below to create a new password:</p>
+  passwordReset: (email, companyName, token) => {
+    // Use APP_URL for the actual app (Render), fall back to FRONTEND_URL
+    const appUrl = process.env.APP_URL || process.env.FRONTEND_URL || 'https://mover-compliance-website.onrender.com';
+    const resetUrl = `${appUrl}/forgot-password?token=${token}`;
 
-            <p style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.FRONTEND_URL}/reset-password?token=${token}" class="button">Reset Password</a>
-            </p>
+    return {
+      subject: 'Password Reset Request - Interstate Compliance Solutions',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #0a1628; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #0a1628; color: white; padding: 30px; text-align: center; }
+            .header h1 { margin: 0; color: #c9a227; }
+            .content { padding: 30px; background: #f9f9f9; }
+            .button { display: inline-block; background: #c9a227; color: #0a1628; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Interstate Compliance Solutions</h1>
+            </div>
+            <div class="content">
+              <h2>Password Reset Request</h2>
+              <p>Hello${companyName ? ` ${companyName}` : ''},</p>
+              <p>We received a request to reset your password. Click the button below to create a new password:</p>
 
-            <p>This link will expire in 1 hour.</p>
-            <p>If you didn't request this, you can safely ignore this email. Your password will not be changed.</p>
+              <p style="text-align: center; margin: 30px 0;">
+                <a href="${resetUrl}" class="button">Reset Password</a>
+              </p>
+
+              <p>This link will expire in 1 hour.</p>
+              <p>If you didn't request this, you can safely ignore this email. Your password will not be changed.</p>
+            </div>
+            <div class="footer">
+              <p>If the button doesn't work, copy and paste this link into your browser:</p>
+              <p>${resetUrl}</p>
+            </div>
           </div>
-          <div class="footer">
-            <p>If the button doesn't work, copy and paste this link into your browser:</p>
-            <p>${process.env.FRONTEND_URL}/reset-password?token=${token}</p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `
-  }),
+        </body>
+        </html>
+      `
+    };
+  },
 
   contactNotification: (submission) => ({
     subject: `New Contact Form Submission - ${submission.subject}`,
@@ -653,7 +678,7 @@ const sendEmail = async (to, template, attachments = null) => {
   const transporter = createTransporter();
 
   const mailOptions = {
-    from: process.env.EMAIL_FROM || `"Interstate Compliance Solutions" <${process.env.EMAIL_USER}>`,
+    from: getFromAddress(),
     to,
     subject: template.subject,
     html: template.html
@@ -664,7 +689,13 @@ const sendEmail = async (to, template, attachments = null) => {
     mailOptions.attachments = attachments;
   }
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Email sent successfully to: ${to}`);
+  } catch (error) {
+    console.error(`Failed to send email to ${to}:`, error.message);
+    throw error;
+  }
 };
 
 const sendEnrollmentConfirmation = async (user, enrollment) => {
