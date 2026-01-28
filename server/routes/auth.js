@@ -4,7 +4,7 @@ const crypto = require('crypto');
 const { query } = require('../config/database');
 const { generateToken, authenticateToken } = require('../middleware/auth');
 const { validateRequest, schemas, formatMCNumber, formatUSDOT, sanitizeBody } = require('../middleware/validation');
-const { sendPasswordResetEmail, sendAdminNewAccountNotification } = require('../utils/email');
+const { sendPasswordResetEmail, sendAdminNewAccountNotification, sendWelcomeEmail } = require('../utils/email');
 
 const router = express.Router();
 
@@ -71,6 +71,9 @@ router.post('/register', sanitizeBody, validateRequest(schemas.register), async 
 
     const user = result.rows[0];
     const token = generateToken(user.id);
+
+    // Send welcome email to customer
+    sendWelcomeEmail(user);
 
     // Send admin notification for new account
     sendAdminNewAccountNotification(user);

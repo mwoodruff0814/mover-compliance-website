@@ -1,6 +1,7 @@
 const express = require('express');
 const { query } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
+const { sendBOC3FilingComplete, sendDocumentReadyWithAttachment, sendTariffDocumentReady } = require('../utils/email');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
@@ -228,7 +229,7 @@ router.get('/orders', authenticateToken, requireAdmin, async (req, res) => {
 router.patch('/orders/:type/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { type, id } = req.params;
-    const { status, document_url, notes } = req.body;
+    const { status, document_url, notes, notify_customer } = req.body;
 
     let tableName;
     switch (type) {
@@ -271,10 +272,32 @@ router.patch('/orders/:type/:id', authenticateToken, requireAdmin, async (req, r
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
+    const order = result.rows[0];
+
+    // Send customer notification if status changed to completed/filed and notify_customer is true
+    if (notify_customer !== false && status && ['completed', 'filed', 'active'].includes(status)) {
+      try {
+        // Get user info for email
+        const userResult = await query('SELECT * FROM users WHERE id = $1', [order.user_id]);
+        if (userResult.rows.length > 0) {
+          const user = userResult.rows[0];
+
+          if (type === 'boc3' && (status === 'filed' || status === 'completed')) {
+            sendBOC3FilingComplete(user, order);
+          } else if (type === 'tariff' && status === 'completed') {
+            sendTariffDocumentReady(user, order);
+          }
+          // Can add more notification types here
+        }
+      } catch (emailError) {
+        console.error('Failed to send customer notification:', emailError);
+      }
+    }
+
     res.json({
       success: true,
       message: 'Order updated successfully',
-      data: { order: result.rows[0] }
+      data: { order }
     });
   } catch (error) {
     console.error('Update order error:', error);
@@ -378,6 +401,7 @@ router.post('/orders/cleanup', authenticateToken, requireAdmin, async (req, res)
 router.post('/upload/:type/:id', authenticateToken, requireAdmin, upload.single('document'), async (req, res) => {
   try {
     const { type, id } = req.params;
+    const notify_customer = req.body.notify_customer !== 'false'; // Default to true
 
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
@@ -410,11 +434,27 @@ router.post('/upload/:type/:id', authenticateToken, requireAdmin, upload.single(
       return res.status(404).json({ success: false, message: 'Order not found' });
     }
 
+    const order = result.rows[0];
+
+    // Send customer notification with document attached
+    if (notify_customer) {
+      try {
+        const userResult = await query('SELECT * FROM users WHERE id = $1', [order.user_id]);
+        if (userResult.rows.length > 0) {
+          const user = userResult.rows[0];
+          // Send email with attachment
+          sendDocumentReadyWithAttachment(user, type, order, req.file.path);
+        }
+      } catch (emailError) {
+        console.error('Failed to send document notification:', emailError);
+      }
+    }
+
     res.json({
       success: true,
-      message: 'Document uploaded successfully',
+      message: 'Document uploaded successfully' + (notify_customer ? ' and customer notified' : ''),
       data: {
-        order: result.rows[0],
+        order,
         document_url: documentUrl
       }
     });

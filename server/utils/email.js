@@ -372,6 +372,210 @@ const templates = {
     };
   },
 
+  welcomeEmail: (user) => ({
+    subject: 'Welcome to Interstate Compliance Solutions!',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #0a1628; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #0a1628; color: white; padding: 30px; text-align: center; }
+          .header h1 { margin: 0; color: #c9a227; }
+          .content { padding: 30px; background: #f9f9f9; }
+          .details { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          .highlight { color: #c9a227; font-weight: bold; }
+          .button { display: inline-block; background: #c9a227; color: #0a1628; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 10px 0; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+          .services { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          .service-item { padding: 10px 0; border-bottom: 1px solid #eee; }
+          .service-item:last-child { border-bottom: none; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Interstate Compliance Solutions</h1>
+            <p>FMCSA Compliance Made Simple</p>
+          </div>
+          <div class="content">
+            <h2>Welcome, ${user.contact_name || user.company_name}!</h2>
+            <p>Thank you for creating an account with Interstate Compliance Solutions. We're here to help you stay compliant with FMCSA regulations.</p>
+
+            <div class="details">
+              <h3>Your Account Details</h3>
+              <p><strong>Company:</strong> ${user.company_name}</p>
+              <p><strong>MC Number:</strong> ${user.mc_number || 'Not provided'}</p>
+              <p><strong>USDOT Number:</strong> ${user.usdot_number || 'Not provided'}</p>
+              <p><strong>Email:</strong> ${user.email}</p>
+            </div>
+
+            <div class="services">
+              <h3>Our Services</h3>
+              <div class="service-item">
+                <strong>Tariff Publishing</strong> - $299<br>
+                <small>Custom HHG tariff document compliant with 49 CFR Part 1310</small>
+              </div>
+              <div class="service-item">
+                <strong>BOC-3 Process Agent</strong> - $99/year<br>
+                <small>Blanket agent filing for all 50 states + DC</small>
+              </div>
+              <div class="service-item">
+                <strong>Arbitration Program</strong> - $99/year<br>
+                <small>FMCSA-compliant dispute resolution program</small>
+              </div>
+            </div>
+
+            <p style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL}/dashboard" class="button">Go to Your Dashboard</a>
+            </p>
+
+            <p>If you have any questions, don't hesitate to reach out. We're here to help!</p>
+          </div>
+          <div class="footer">
+            <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  }),
+
+  boc3FilingComplete: (user, order) => ({
+    subject: 'Your BOC-3 Filing is Complete! - Interstate Compliance Solutions',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #0a1628; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #0a1628; color: white; padding: 30px; text-align: center; }
+          .header h1 { margin: 0; color: #c9a227; }
+          .content { padding: 30px; background: #f9f9f9; }
+          .details { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          .success { color: #22c55e; font-weight: bold; }
+          .highlight { color: #c9a227; font-weight: bold; }
+          .button { display: inline-block; background: #c9a227; color: #0a1628; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 10px 0; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+          .info-box { background: #e8f5e9; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #22c55e; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Interstate Compliance Solutions</h1>
+            <p>FMCSA Compliance Made Simple</p>
+          </div>
+          <div class="content">
+            <h2>Your BOC-3 Filing is <span class="success">Complete!</span></h2>
+            <p>Dear ${user.contact_name || user.company_name},</p>
+            <p>Great news! Your BOC-3 (Designation of Process Agents) has been successfully filed with the FMCSA.</p>
+
+            <div class="details">
+              <h3>Filing Details</h3>
+              <p><strong>Company:</strong> ${user.company_name}</p>
+              <p><strong>MC Number:</strong> ${user.mc_number}</p>
+              <p><strong>USDOT Number:</strong> ${user.usdot_number}</p>
+              <p><strong>Filing Type:</strong> ${order.filing_type}</p>
+              <p><strong>Status:</strong> <span class="success">Filed with FMCSA</span></p>
+              <p><strong>Order ID:</strong> #${order.id}</p>
+            </div>
+
+            <div class="info-box">
+              <h4 style="margin-top: 0;">What This Means</h4>
+              <p>Your BOC-3 is now on file with the Federal Motor Carrier Safety Administration. This filing designates process agents in all 50 states plus Washington D.C. who can receive legal documents on your behalf.</p>
+              <p><strong>No action is required on your part.</strong> Your BOC-3 will remain active for as long as you maintain your account.</p>
+            </div>
+
+            ${order.document_url ? `
+              <p style="text-align: center;">
+                <a href="${process.env.FRONTEND_URL}/dashboard" class="button">Download Your BOC-3 Confirmation</a>
+              </p>
+            ` : ''}
+
+            <p>If you have any questions about your BOC-3 filing, please don't hesitate to contact us.</p>
+          </div>
+          <div class="footer">
+            <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  }),
+
+  documentReady: (user, orderType, order) => {
+    const orderNames = {
+      tariff: 'Tariff Document',
+      boc3: 'BOC-3 Confirmation',
+      arbitration: 'Arbitration Program Documents'
+    };
+
+    return {
+      subject: `Your ${orderNames[orderType]} is Ready! - Interstate Compliance Solutions`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <style>
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #0a1628; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #0a1628; color: white; padding: 30px; text-align: center; }
+            .header h1 { margin: 0; color: #c9a227; }
+            .content { padding: 30px; background: #f9f9f9; }
+            .details { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .success { color: #22c55e; font-weight: bold; }
+            .button { display: inline-block; background: #c9a227; color: #0a1628; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 10px 0; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+            .attachment-notice { background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #c9a227; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>Interstate Compliance Solutions</h1>
+              <p>FMCSA Compliance Made Simple</p>
+            </div>
+            <div class="content">
+              <h2>Your ${orderNames[orderType]} is <span class="success">Ready!</span></h2>
+              <p>Dear ${user.contact_name || user.company_name},</p>
+              <p>Your document has been prepared and is ready for download.</p>
+
+              <div class="details">
+                <h3>Order Details</h3>
+                <p><strong>Company:</strong> ${user.company_name}</p>
+                <p><strong>MC Number:</strong> ${user.mc_number}</p>
+                <p><strong>Document:</strong> ${orderNames[orderType]}</p>
+                <p><strong>Order ID:</strong> #${order.id}</p>
+                <p><strong>Status:</strong> <span class="success">Completed</span></p>
+              </div>
+
+              <div class="attachment-notice">
+                <strong>📎 Document Attached</strong><br>
+                <small>Your document is attached to this email. You can also download it from your dashboard at any time.</small>
+              </div>
+
+              <p style="text-align: center;">
+                <a href="${process.env.FRONTEND_URL}/dashboard" class="button">View in Dashboard</a>
+              </p>
+
+              <p>If you have any questions, please don't hesitate to contact us.</p>
+            </div>
+            <div class="footer">
+              <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
+              <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `
+    };
+  },
+
   tariffDocumentReady: (user, order) => ({
     subject: 'Your Tariff Document is Ready! - Interstate Compliance Solutions',
     html: `
@@ -445,15 +649,22 @@ const templates = {
 };
 
 // Send functions
-const sendEmail = async (to, template) => {
+const sendEmail = async (to, template, attachments = null) => {
   const transporter = createTransporter();
 
-  await transporter.sendMail({
+  const mailOptions = {
     from: process.env.EMAIL_FROM || `"Interstate Compliance Solutions" <${process.env.EMAIL_USER}>`,
     to,
     subject: template.subject,
     html: template.html
-  });
+  };
+
+  // Add attachments if provided
+  if (attachments && attachments.length > 0) {
+    mailOptions.attachments = attachments;
+  }
+
+  await transporter.sendMail(mailOptions);
 };
 
 const sendEnrollmentConfirmation = async (user, enrollment) => {
@@ -501,6 +712,50 @@ const sendAdminPurchaseNotification = async (user, orderType, order) => {
   }
 };
 
+const sendWelcomeEmail = async (user) => {
+  try {
+    await sendEmail(user.email, templates.welcomeEmail(user));
+    console.log('Welcome email sent to:', user.email);
+  } catch (error) {
+    console.error('Failed to send welcome email:', error);
+  }
+};
+
+const sendBOC3FilingComplete = async (user, order) => {
+  try {
+    await sendEmail(user.email, templates.boc3FilingComplete(user, order));
+    console.log('BOC-3 filing complete email sent to:', user.email);
+  } catch (error) {
+    console.error('Failed to send BOC-3 filing complete email:', error);
+  }
+};
+
+const sendDocumentReadyWithAttachment = async (user, orderType, order, filePath = null) => {
+  try {
+    let attachments = null;
+
+    // If a file path is provided, attach the document
+    if (filePath) {
+      const path = require('path');
+      const fs = require('fs');
+
+      // Check if file exists
+      if (fs.existsSync(filePath)) {
+        const filename = path.basename(filePath);
+        attachments = [{
+          filename: filename,
+          path: filePath
+        }];
+      }
+    }
+
+    await sendEmail(user.email, templates.documentReady(user, orderType, order), attachments);
+    console.log('Document ready email sent to:', user.email, attachments ? 'with attachment' : 'without attachment');
+  } catch (error) {
+    console.error('Failed to send document ready email:', error);
+  }
+};
+
 module.exports = {
   sendEmail,
   sendEnrollmentConfirmation,
@@ -510,5 +765,8 @@ module.exports = {
   sendContactConfirmation,
   sendTariffDocumentReady,
   sendAdminNewAccountNotification,
-  sendAdminPurchaseNotification
+  sendAdminPurchaseNotification,
+  sendWelcomeEmail,
+  sendBOC3FilingComplete,
+  sendDocumentReadyWithAttachment
 };
