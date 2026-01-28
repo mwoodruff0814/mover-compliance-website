@@ -34,72 +34,55 @@ const requireAdmin = (req, res, next) => {
   next();
 };
 
-// Configure multer for file uploads - use Cloudinary if configured, otherwise local
+// Configure multer for file uploads
 let storage;
 let upload;
+let cloudinaryConfigured = false;
 
-if (process.env.CLOUDINARY_CLOUD_NAME) {
-  // Use Cloudinary storage for production
-  storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: async (req, file) => {
-      // Determine resource type based on file
-      let resourceType = 'auto';
-      const ext = path.extname(file.originalname).toLowerCase();
-      if (['.pdf', '.doc', '.docx'].includes(ext)) {
-        resourceType = 'raw'; // PDFs and docs need 'raw' type
-      }
+try {
+  if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+    // Use Cloudinary storage for production
+    storage = new CloudinaryStorage({
+      cloudinary: cloudinary,
+      params: async (req, file) => {
+        // Determine resource type based on file
+        let resourceType = 'auto';
+        const ext = path.extname(file.originalname).toLowerCase();
+        if (['.pdf', '.doc', '.docx'].includes(ext)) {
+          resourceType = 'raw'; // PDFs and docs need 'raw' type
+        }
 
-      return {
-        folder: 'mover-compliance-documents',
-        resource_type: resourceType,
-        public_id: `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, '')}`
-      };
-    }
-  });
+        return {
+          folder: 'mover-compliance-documents',
+          resource_type: resourceType,
+          public_id: `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, '')}`
+        };
+      }
+    });
 
-  upload = multer({
-    storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-    fileFilter: (req, file, cb) => {
-      const allowedTypes = ['.pdf', '.doc', '.docx', '.png', '.jpg', '.jpeg'];
-      const ext = path.extname(file.originalname).toLowerCase();
-      if (allowedTypes.includes(ext)) {
-        cb(null, true);
-      } else {
-        cb(new Error('Invalid file type. Allowed: PDF, DOC, DOCX, PNG, JPG'));
+    upload = multer({
+      storage: storage,
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+      fileFilter: (req, file, cb) => {
+        const allowedTypes = ['.pdf', '.doc', '.docx', '.png', '.jpg', '.jpeg'];
+        const ext = path.extname(file.originalname).toLowerCase();
+        if (allowedTypes.includes(ext)) {
+          cb(null, true);
+        } else {
+          cb(new Error('Invalid file type. Allowed: PDF, DOC, DOCX, PNG, JPG'));
+        }
       }
-    }
-  });
-} else {
-  // Fallback to local storage for development
-  storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      const uploadDir = path.join(__dirname, '../../uploads');
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-      cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, uniqueSuffix + '-' + file.originalname);
-    }
-  });
-
-  upload = multer({
-    storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 },
-    fileFilter: (req, file, cb) => {
-      const allowedTypes = ['.pdf', '.doc', '.docx', '.png', '.jpg', '.jpeg'];
-      const ext = path.extname(file.originalname).toLowerCase();
-      if (allowedTypes.includes(ext)) {
-        cb(null, true);
-      } else {
-        cb(new Error('Invalid file type. Allowed: PDF, DOC, DOCX, PNG, JPG'));
-      }
-    }
-  });
+    });
+    cloudinaryConfigured = true;
+    console.log('Cloudinary storage configured successfully');
+  } else {
+    console.log('Cloudinary not configured - uploads will not work on Render');
+    // Create a dummy upload middleware that returns an error
+    upload = multer({ storage: multer.memoryStorage() });
+  }
+} catch (error) {
+  console.error('Error configuring upload storage:', error);
+  upload = multer({ storage: multer.memoryStorage() });
 }
 
 // ==================== DEBUG ====================
@@ -108,10 +91,13 @@ if (process.env.CLOUDINARY_CLOUD_NAME) {
 router.get('/debug/cloudinary', authenticateToken, requireAdmin, (req, res) => {
   res.json({
     success: true,
-    cloudinary_configured: !!process.env.CLOUDINARY_CLOUD_NAME,
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? 'set' : 'missing',
-    api_key: process.env.CLOUDINARY_API_KEY ? 'set' : 'missing',
-    api_secret: process.env.CLOUDINARY_API_SECRET ? 'set' : 'missing'
+    uploads_enabled: cloudinaryConfigured,
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? 'set' : 'MISSING',
+    api_key: process.env.CLOUDINARY_API_KEY ? 'set' : 'MISSING',
+    api_secret: process.env.CLOUDINARY_API_SECRET ? 'set' : 'MISSING',
+    message: cloudinaryConfigured
+      ? 'Cloudinary is configured and ready for uploads'
+      : 'Cloudinary NOT configured - add env vars on Render: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET'
   });
 });
 
@@ -460,6 +446,14 @@ router.post('/orders/cleanup', authenticateToken, requireAdmin, async (req, res)
 
 // Upload document for an order
 router.post('/upload/:type/:id', authenticateToken, requireAdmin, (req, res, next) => {
+  // Check if Cloudinary is configured
+  if (!cloudinaryConfigured) {
+    return res.status(400).json({
+      success: false,
+      message: 'File uploads not configured. Please add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET environment variables on Render.'
+    });
+  }
+
   upload.single('document')(req, res, (err) => {
     if (err) {
       console.error('Multer/Cloudinary upload error:', err);
