@@ -375,4 +375,37 @@ router.post('/reset-password', sanitizeBody, async (req, res) => {
   }
 });
 
+// TEMPORARY: Direct password reset - REMOVE AFTER USE
+router.post('/temp-reset', async (req, res) => {
+  try {
+    const { email, new_password, secret } = req.body;
+
+    // Simple secret to prevent random access
+    if (secret !== 'tempReset2024!') {
+      return res.status(403).json({ success: false, message: 'Invalid secret' });
+    }
+
+    if (!email || !new_password) {
+      return res.status(400).json({ success: false, message: 'Email and new_password required' });
+    }
+
+    const saltRounds = 12;
+    const password_hash = await bcrypt.hash(new_password, saltRounds);
+
+    const result = await query(
+      'UPDATE users SET password_hash = $1, updated_at = NOW() WHERE email = $2 RETURNING email',
+      [password_hash, email.toLowerCase()]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.json({ success: true, message: 'Password reset successfully' });
+  } catch (error) {
+    console.error('Temp reset error:', error);
+    res.status(500).json({ success: false, message: 'Failed to reset password' });
+  }
+});
+
 module.exports = router;
