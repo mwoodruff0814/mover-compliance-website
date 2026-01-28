@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interstate Compliance Solutions | FMCSA Compliance for Movers</title>
+    <meta name="description" content="FMCSA compliance made simple. Arbitration programs, tariff publishing, and BOC-3 process agent services for interstate household goods movers.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            50: '#f0f3f9',
+                            100: '#d9e0ed',
+                            200: '#b3c1db',
+                            300: '#8da2c9',
+                            400: '#6783b7',
+                            500: '#4164a5',
+                            600: '#345084',
+                            700: '#273c63',
+                            800: '#1a2842',
+                            900: '#0a1628',
+                            950: '#050b14'
+                        },
+                        gold: {
+                            50: '#fdf9ef',
+                            100: '#f9f0d6',
+                            200: '#f2deac',
+                            300: '#eac978',
+                            400: '#e2b44e',
+                            500: '#c9a227',
+                            600: '#b8891d',
+                            700: '#966a19',
+                            800: '#7a551b',
+                            900: '#65461a',
+                            950: '#39240b'
+                        },
+                        cream: {
+                            50: '#fefdfb',
+                            100: '#fdf9f3',
+                            200: '#faf3e6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['DM Sans', 'sans-serif'],
+                        display: ['Fraunces', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="font-sans" style="background-color: #fefdfb; color: #0a1628;">
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 shadow-lg" style="background-color: #0a1628; color: #ffffff;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16 lg:h-20">
+                <a href="/" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-gold-500 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-navy-900" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                        </svg>
+                    </div>
+                    <span class="font-display font-bold text-xl">Interstate Compliance</span>
+                </a>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden lg:flex items-center space-x-8">
+                    <a href="/" class="text-gold-400 font-medium">Home</a>
+                    <div class="relative group">
+                        <button class="flex items-center space-x-1 hover:text-gold-400 transition-colors">
+                            <span>Services</span>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div class="absolute top-full left-0 mt-2 w-56 bg-white rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform group-hover:translate-y-0 translate-y-2">
+                            <div class="py-2">
+                                <a href="/arbitration-program" class="block px-4 py-3 text-navy-900 hover:bg-cream-100 transition-colors">Arbitration Program</a>
+                                <a href="/tariff" class="block px-4 py-3 text-navy-900 hover:bg-cream-100 transition-colors">Tariff Publishing</a>
+                                <a href="/boc-3" class="block px-4 py-3 text-navy-900 hover:bg-cream-100 transition-colors">BOC-3 Process Agent</a>
+                                <a href="/pricing" class="block px-4 py-3 text-navy-900 hover:bg-cream-100 transition-colors">View All Services</a>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="/pricing" class="hover:text-gold-400 transition-colors">Pricing</a>
+                    <a href="/faqs" class="hover:text-gold-400 transition-colors">FAQ</a>
+                    <a href="/about" class="hover:text-gold-400 transition-colors">About</a>
+                    <a href="/contact" class="hover:text-gold-400 transition-colors">Contact</a>
+                </div>
+
+                <div class="hidden lg:flex items-center space-x-4">
+                    <a href="tel:1-800-555-0199" class="text-sm hover:text-gold-400 transition-colors">
+                        <span class="flex items-center space-x-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                            <span>1-800-555-0199</span>
+                        </span>
+                    </a>
+                    <a href="/login" class="border border-white/30 hover:bg-white/10 px-4 py-2 rounded-lg transition-colors">
+                        Client Login
+                    </a>
+                    <a href="/pricing" class="bg-gold-500 hover:bg-gold-600 text-navy-900 font-semibold px-5 py-2.5 rounded-lg transition-colors">
+                        Get Started
+                    </a>
+                </div>
+
+                <!-- Mobile menu button -->
+                <button id="mobile-menu-btn" class="lg:hidden text-white p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation -->
+        <div id="mobile-menu" class="lg:hidden hidden bg-navy-800">
+            <div class="px-4 py-4 space-y-3">
+                <a href="/" class="block text-gold-400 font-medium py-2">Home</a>
+                <a href="/arbitration-program" class="block hover:text-gold-400 py-2">Arbitration Program</a>
+                <a href="/tariff" class="block hover:text-gold-400 py-2">Tariff Publishing</a>
+                <a href="/boc-3" class="block hover:text-gold-400 py-2">BOC-3 Process Agent</a>
+                <a href="/login" class="block hover:text-gold-400 py-2">Client Login</a>
+                <a href="/pricing" class="block hover:text-gold-400 py-2">Pricing</a>
+                <a href="/faqs" class="block hover:text-gold-400 py-2">FAQ</a>
+                <a href="/about" class="block hover:text-gold-400 py-2">About</a>
+                <a href="/contact" class="block hover:text-gold-400 py-2">Contact</a>
+                <div class="pt-4 border-t border-navy-700">
+                    <a href="/pricing" class="block bg-gold-500 hover:bg-gold-600 text-navy-900 font-semibold px-5 py-3 rounded-lg text-center transition-colors">
+                        Get Started
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 text-white overflow-hidden">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%23c9a227&quot; fill-opacity=&quot;0.4&quot;%3E%3Cpath d=&quot;M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+        </div>
+
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <div class="inline-flex items-center bg-gold-500/20 border border-gold-500/30 rounded-full px-4 py-2 mb-6">
+                        <span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                        <span class="text-gold-300 text-sm font-medium">FMCSA Compliant Services</span>
+                    </div>
+
+                    <h1 class="font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6">
+                        FMCSA Compliance <span class="text-gold-400">Made Simple</span>
+                    </h1>
+
+                    <p class="text-xl text-navy-200 mb-8 leading-relaxed">
+                        Arbitration programs, tariff publishing, and BOC-3 process agent services for interstate household goods movers. Stay compliant. Avoid fines. Focus on moving.
+                    </p>
+
+                    <div class="flex flex-col sm:flex-row gap-4 mb-12">
+                        <a href="/pricing" class="bg-gold-500 hover:bg-gold-400 text-navy-900 font-bold px-8 py-4 rounded-lg text-center transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                            View Pricing & Bundles
+                        </a>
+                        <a href="#services" class="border-2 border-white/30 hover:border-white hover:bg-white/10 text-white font-semibold px-8 py-4 rounded-lg text-center transition-all">
+                            Learn More
+                        </a>
+                    </div>
+
+                    <!-- Trust Indicators -->
+                    <div class="grid grid-cols-3 gap-6 pt-8 border-t border-white/10">
+                        <div>
+                            <div class="font-display text-3xl font-bold text-gold-400">2,500+</div>
+                            <div class="text-sm text-navy-300">Carriers Served</div>
+                        </div>
+                        <div>
+                            <div class="font-display text-3xl font-bold text-gold-400">15+</div>
+                            <div class="text-sm text-navy-300">Years Experience</div>
+                        </div>
+                        <div>
+                            <div class="font-display text-3xl font-bold text-gold-400">100%</div>
+                            <div class="text-sm text-navy-300">Compliance Rate</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative hidden lg:block">
+                    <!-- Decorative Card Stack -->
+                    <div class="relative">
+                        <div class="absolute -top-4 -left-4 w-full h-full bg-gold-500/20 rounded-2xl transform rotate-3"></div>
+                        <div class="absolute -top-2 -left-2 w-full h-full bg-gold-500/30 rounded-2xl transform rotate-1"></div>
+                        <div class="relative bg-white rounded-2xl shadow-2xl p-8 text-navy-900">
+                            <div class="flex items-center justify-between mb-6">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold">Compliance Status</div>
+                                        <div class="text-green-600 text-sm font-medium">Fully Compliant</div>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-xs text-navy-500">MC Number</div>
+                                    <div class="font-mono font-semibold">MC-123456</div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between p-3 bg-cream-100 rounded-lg">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-gold-500 rounded flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+                                            </svg>
+                                        </div>
+                                        <span class="font-medium">Arbitration Program</span>
+                                    </div>
+                                    <span class="text-green-600 font-semibold text-sm">Active</span>
+                                </div>
+
+                                <div class="flex items-center justify-between p-3 bg-cream-100 rounded-lg">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-gold-500 rounded flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                            </svg>
+                                        </div>
+                                        <span class="font-medium">Published Tariff</span>
+                                    </div>
+                                    <span class="text-green-600 font-semibold text-sm">On File</span>
+                                </div>
+
+                                <div class="flex items-center justify-between p-3 bg-cream-100 rounded-lg">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 bg-gold-500 rounded flex items-center justify-center">
+                                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            </svg>
+                                        </div>
+                                        <span class="font-medium">BOC-3 Filed</span>
+                                    </div>
+                                    <span class="text-green-600 font-semibold text-sm">All 50 States</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 pt-6 border-t border-navy-100">
+                                <div class="flex items-center justify-between text-sm">
+                                    <span class="text-navy-500">Next Renewal</span>
+                                    <span class="font-semibold">December 2025</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wave Divider -->
+        <div class="absolute bottom-0 left-0 right-0">
+            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="#fefdfb"/>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Services Overview Section -->
+    <section id="services" class="py-20 lg:py-28">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span class="inline-block text-gold-600 font-semibold text-sm uppercase tracking-wider mb-4">Our Services</span>
+                <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy-900 mb-6">
+                    Everything You Need for FMCSA Compliance
+                </h2>
+                <p class="text-xl text-navy-600 max-w-3xl mx-auto">
+                    Federal law requires every interstate household goods mover to meet specific compliance requirements. We handle them all so you can focus on your business.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Arbitration Program Card -->
+                <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-navy-100">
+                    <div class="h-2 bg-gradient-to-r from-gold-400 to-gold-600"></div>
+                    <div class="p-8">
+                        <div class="w-16 h-16 bg-gold-100 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+                            </svg>
+                        </div>
+                        <h3 class="font-display text-2xl font-bold text-navy-900 mb-4">Arbitration Program</h3>
+                        <p class="text-navy-600 mb-6">
+                            Required by 49 USC &sect; 14708. Every interstate mover must offer customers access to arbitration for loss, damage, and billing disputes.
+                        </p>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span class="text-navy-700">Annual enrollment coverage</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span class="text-navy-700">Neutral third-party arbitration</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span class="text-navy-700">Required consumer disclosures</span>
+                            </li>
+                        </ul>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-sm text-navy-500">Starting at</span>
+                                <div class="font-display text-2xl font-bold text-navy-900">$99<span class="text-lg font-normal text-navy-500">/year</span></div>
+                            </div>
+                            <a href="/arbitration-program" class="inline-flex items-center text-gold-600 font-semibold hover:text-gold-700 transition-colors">
+                                Learn More
+                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tariff Publishing Card -->
+                <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-navy-100">
+                    <div class="h-2 bg-gradient-to-r from-gold-400 to-gold-600"></div>
+                    <div class="p-8">
+                        <div class="w-16 h-16 bg-gold-100 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </div>
+                        <h3 class="font-display text-2xl font-bold text-navy-900 mb-4">Tariff Publishing</h3>
+                        <p class="text-navy-600 mb-6">
+                            Required by 49 USC &sect; 13702 & 49 CFR 1310. Your tariff documents all rates, charges, rules, and service terms.
+                        </p>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span class="text-navy-700">Complete 30+ page tariff document</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span class="text-navy-700">All required sections per STB</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span class="text-navy-700">PDF + editable Word format</span>
+                            </li>
+                        </ul>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-sm text-navy-500">Starting at</span>
+                                <div class="font-display text-2xl font-bold text-navy-900">$299<span class="text-lg font-normal text-navy-500"> one-time</span></div>
+                            </div>
+                            <a href="/tariff" class="inline-flex items-center text-gold-600 font-semibold hover:text-gold-700 transition-colors">
+                                Learn More
+                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BOC-3 Card -->
+                <div class="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-navy-100">
+                    <div class="h-2 bg-gradient-to-r from-gold-400 to-gold-600"></div>
+                    <div class="p-8">
+                        <div class="w-16 h-16 bg-gold-100 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                            <svg class="w-8 h-8 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                        <h3 class="font-display text-2xl font-bold text-navy-900 mb-4">BOC-3 Process Agent</h3>
+                        <p class="text-navy-600 mb-6">
+                            Required by 49 CFR Part 366. Designate legal process agents in all 50 states before FMCSA grants your operating authority.
+                        </p>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span class="text-navy-700">Coverage in all 50 states + DC</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span class="text-navy-700">Same-day FMCSA filing</span>
+                            </li>
+                            <li class="flex items-start">
+                                <svg class="w-5 h-5 text-green-500 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span class="text-navy-700">Document forwarding included</span>
+                            </li>
+                        </ul>
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="text-sm text-navy-500">Starting at</span>
+                                <div class="font-display text-2xl font-bold text-navy-900">$99<span class="text-lg font-normal text-navy-500">/year</span></div>
+                            </div>
+                            <a href="/boc-3" class="inline-flex items-center text-gold-600 font-semibold hover:text-gold-700 transition-colors">
+                                Learn More
+                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compliance Forms CTA -->
+            <div class="mt-12 bg-gradient-to-r from-navy-800 to-navy-900 rounded-2xl p-8 lg:p-12">
+                <div class="flex flex-col lg:flex-row items-center justify-between gap-6">
+                    <div class="text-center lg:text-left">
+                        <h3 class="font-display text-2xl font-bold text-white mb-2">Need Compliance Forms Too?</h3>
+                        <p class="text-navy-200">Complete package includes Bill of Lading, Order for Service, Estimate Forms, and more.</p>
+                    </div>
+                    <a href="/pricing" class="flex-shrink-0 bg-gold-500 hover:bg-gold-400 text-navy-900 font-bold px-8 py-4 rounded-lg transition-all shadow-lg hover:shadow-xl">
+                        View Forms Package - $149
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bundle Highlight Section -->
+    <section class="py-20 bg-gradient-to-b from-cream-100 to-cream-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <span class="inline-block text-gold-600 font-semibold text-sm uppercase tracking-wider mb-4">Best Value</span>
+                <h2 class="font-display text-3xl sm:text-4xl font-bold text-navy-900 mb-4">
+                    Save with Our Bundles
+                </h2>
+                <p class="text-xl text-navy-600">Get everything you need at a discounted price</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <!-- New Authority Bundle -->
+                <div class="relative bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-gold-400">
+                    <div class="absolute top-0 right-0 bg-gold-500 text-navy-900 font-bold px-4 py-1 text-sm rounded-bl-lg">
+                        MOST POPULAR
+                    </div>
+                    <div class="p-8">
+                        <h3 class="font-display text-xl font-bold text-navy-900 mb-2">New Authority Startup Bundle</h3>
+                        <p class="text-navy-600 text-sm mb-4">Everything a new interstate mover needs</p>
+                        <div class="flex items-baseline mb-6">
+                            <span class="font-display text-4xl font-bold text-navy-900">$449</span>
+                            <span class="text-navy-500 line-through ml-3">$646</span>
+                            <span class="ml-2 bg-green-100 text-green-700 text-sm font-semibold px-2 py-1 rounded">Save $197</span>
+                        </div>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center text-navy-700">
+                                <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                BOC-3 Process Agent (1 year)
+                            </li>
+                            <li class="flex items-center text-navy-700">
+                                <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Custom Tariff Publishing
+                            </li>
+                            <li class="flex items-center text-navy-700">
+                                <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Arbitration Program (1 year)
+                            </li>
+                            <li class="flex items-center text-navy-700">
+                                <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Compliance Forms Package
+                            </li>
+                        </ul>
+                        <a href="/pricing#startup-bundle" class="block w-full bg-gold-500 hover:bg-gold-400 text-navy-900 font-bold py-4 rounded-lg text-center transition-colors">
+                            Get Started
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Annual Renewal Bundle -->
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden border border-navy-100">
+                    <div class="p-8">
+                        <h3 class="font-display text-xl font-bold text-navy-900 mb-2">Annual Renewal Bundle</h3>
+                        <p class="text-navy-600 text-sm mb-4">For existing customers renewing services</p>
+                        <div class="flex items-baseline mb-6">
+                            <span class="font-display text-4xl font-bold text-navy-900">$179</span>
+                            <span class="text-navy-500">/year</span>
+                            <span class="text-navy-500 line-through ml-3">$198</span>
+                            <span class="ml-2 bg-green-100 text-green-700 text-sm font-semibold px-2 py-1 rounded">Save $19</span>
+                        </div>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-center text-navy-700">
+                                <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                BOC-3 Process Agent Renewal
+                            </li>
+                            <li class="flex items-center text-navy-700">
+                                <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Arbitration Program Renewal
+                            </li>
+                            <li class="flex items-center text-navy-700">
+                                <svg class="w-5 h-5 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Priority support
+                            </li>
+                        </ul>
+                        <a href="/pricing#renewal-bundle" class="block w-full bg-navy-900 hover:bg-navy-800 text-white font-bold py-4 rounded-lg text-center transition-colors">
+                            Renew Now
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-8">
+                <a href="/pricing" class="inline-flex items-center text-gold-600 font-semibold hover:text-gold-700 transition-colors">
+                    View All Pricing Options
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="py-20 lg:py-28 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <span class="inline-block text-gold-600 font-semibold text-sm uppercase tracking-wider mb-4">Why Choose Us</span>
+                    <h2 class="font-display text-3xl sm:text-4xl font-bold text-navy-900 mb-6">
+                        Industry Expertise You Can Trust
+                    </h2>
+                    <p class="text-lg text-navy-600 mb-8">
+                        We understand the moving industry because we've been part of it. Our team has decades of combined experience helping household goods carriers navigate federal compliance requirements.
+                    </p>
+
+                    <div class="space-y-6">
+                        <div class="flex items-start">
+                            <div class="w-12 h-12 bg-gold-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                                <svg class="w-6 h-6 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-navy-900 mb-1">Fast Turnaround</h3>
+                                <p class="text-navy-600">BOC-3 filed same day. Tariffs delivered in 3-5 business days. Don't let compliance slow you down.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="w-12 h-12 bg-gold-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                                <svg class="w-6 h-6 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-navy-900 mb-1">Affordable Pricing</h3>
+                                <p class="text-navy-600">Competitive rates designed for small-to-medium carriers. Bundle and save even more.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="w-12 h-12 bg-gold-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                                <svg class="w-6 h-6 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-navy-900 mb-1">Ongoing Support</h3>
+                                <p class="text-navy-600">We're here when you need us. Questions about compliance? We've got answers.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-start">
+                            <div class="w-12 h-12 bg-gold-100 rounded-lg flex items-center justify-center mr-4 flex-shrink-0">
+                                <svg class="w-6 h-6 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-navy-900 mb-1">One-Stop Compliance</h3>
+                                <p class="text-navy-600">Get all your FMCSA requirements handled in one place. No juggling multiple vendors.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <div class="bg-cream-100 rounded-2xl p-8 lg:p-12">
+                        <div class="text-center mb-8">
+                            <div class="inline-flex items-center justify-center w-20 h-20 bg-gold-500 rounded-full mb-4">
+                                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <h3 class="font-display text-2xl font-bold text-navy-900 mb-2">Compliance Checklist</h3>
+                            <p class="text-navy-600">For New Interstate HHG Movers</p>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="flex items-center p-4 bg-white rounded-lg shadow-sm">
+                                <input type="checkbox" class="w-5 h-5 text-gold-500 rounded border-navy-300 mr-4" disabled>
+                                <span class="text-navy-700">Obtain USDOT Number</span>
+                            </div>
+                            <div class="flex items-center p-4 bg-white rounded-lg shadow-sm">
+                                <input type="checkbox" class="w-5 h-5 text-gold-500 rounded border-navy-300 mr-4" disabled>
+                                <span class="text-navy-700">Apply for MC Authority</span>
+                            </div>
+                            <div class="flex items-center p-4 bg-white rounded-lg shadow-sm border-2 border-gold-400">
+                                <input type="checkbox" class="w-5 h-5 text-gold-500 rounded border-navy-300 mr-4" disabled>
+                                <span class="text-navy-700 font-semibold">File BOC-3 (We can help!)</span>
+                            </div>
+                            <div class="flex items-center p-4 bg-white rounded-lg shadow-sm">
+                                <input type="checkbox" class="w-5 h-5 text-gold-500 rounded border-navy-300 mr-4" disabled>
+                                <span class="text-navy-700">Obtain Insurance (BMC-91)</span>
+                            </div>
+                            <div class="flex items-center p-4 bg-white rounded-lg shadow-sm border-2 border-gold-400">
+                                <input type="checkbox" class="w-5 h-5 text-gold-500 rounded border-navy-300 mr-4" disabled>
+                                <span class="text-navy-700 font-semibold">Publish Tariff (We can help!)</span>
+                            </div>
+                            <div class="flex items-center p-4 bg-white rounded-lg shadow-sm border-2 border-gold-400">
+                                <input type="checkbox" class="w-5 h-5 text-gold-500 rounded border-navy-300 mr-4" disabled>
+                                <span class="text-navy-700 font-semibold">Enroll in Arbitration (We can help!)</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 text-center">
+                            <a href="/pricing#startup-bundle" class="inline-flex items-center bg-navy-900 hover:bg-navy-800 text-white font-semibold px-6 py-3 rounded-lg transition-colors">
+                                Get Our Startup Bundle
+                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Preview Section -->
+    <section class="py-20 bg-navy-900 text-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <span class="inline-block text-gold-400 font-semibold text-sm uppercase tracking-wider mb-4">FAQ</span>
+                <h2 class="font-display text-3xl sm:text-4xl font-bold mb-4">
+                    Common Questions
+                </h2>
+                <p class="text-xl text-navy-200">Get answers to frequently asked questions about FMCSA compliance</p>
+            </div>
+
+            <div class="space-y-4">
+                <!-- FAQ Item 1 -->
+                <div class="bg-navy-800 rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-5 text-left flex items-center justify-between hover:bg-navy-700 transition-colors">
+                        <span class="font-semibold text-lg">Is arbitration really required for interstate movers?</span>
+                        <svg class="faq-icon w-5 h-5 text-gold-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-5">
+                        <p class="text-navy-200">Yes, under 49 USC &sect; 14708, every interstate household goods motor carrier must offer shippers the option to use arbitration to settle disputes involving loss/damage claims and service charges. This is a federal requirement, not optional.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 2 -->
+                <div class="bg-navy-800 rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-5 text-left flex items-center justify-between hover:bg-navy-700 transition-colors">
+                        <span class="font-semibold text-lg">Do I need to file my tariff with the government?</span>
+                        <svg class="faq-icon w-5 h-5 text-gold-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-5">
+                        <p class="text-navy-200">No, tariffs are not filed with FMCSA, STB, or DOT. However, you are legally required to maintain a published tariff in your office and make it available for inspection upon request. You must also reference your tariff on your Bill of Lading.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 3 -->
+                <div class="bg-navy-800 rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-5 text-left flex items-center justify-between hover:bg-navy-700 transition-colors">
+                        <span class="font-semibold text-lg">What happens if I operate without these requirements?</span>
+                        <svg class="faq-icon w-5 h-5 text-gold-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-5">
+                        <p class="text-navy-200">Penalties can be severe. Operating without a proper tariff can result in civil penalties up to $11,200 per violation. Charging rates not in your tariff can result in criminal penalties including fines and up to 2 years imprisonment. FMCSA can also order refunds to consumers and suspend your authority.</p>
+                    </div>
+                </div>
+
+                <!-- FAQ Item 4 -->
+                <div class="bg-navy-800 rounded-xl overflow-hidden">
+                    <button class="faq-toggle w-full px-6 py-5 text-left flex items-center justify-between hover:bg-navy-700 transition-colors">
+                        <span class="font-semibold text-lg">What is a BOC-3 and why do I need one?</span>
+                        <svg class="faq-icon w-5 h-5 text-gold-400 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <div class="faq-content hidden px-6 pb-5">
+                        <p class="text-navy-200">BOC-3 (Blanket of Coverage) is a form filed with FMCSA that designates process agents in every state where you operate. Per 49 CFR Part 366, this is required before FMCSA will grant your operating authority. A process agent is your legal representative who receives court papers and government notices on your behalf.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-10">
+                <a href="/faqs" class="inline-flex items-center text-gold-400 font-semibold hover:text-gold-300 transition-colors">
+                    View All FAQs
+                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-gradient-to-br from-gold-400 to-gold-600 rounded-3xl p-8 lg:p-16 text-center relative overflow-hidden">
+                <!-- Background Pattern -->
+                <div class="absolute inset-0 opacity-10">
+                    <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;40&quot; height=&quot;40&quot; viewBox=&quot;0 0 40 40&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;%230a1628&quot; fill-opacity=&quot;1&quot; fill-rule=&quot;evenodd&quot;%3E%3Cpath d=&quot;M0 40L40 0H20L0 20M40 40V20L20 40&quot;/%3E%3C/g%3E%3C/svg%3E');"></div>
+                </div>
+
+                <div class="relative">
+                    <h2 class="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-navy-900 mb-6">
+                        Ready to Get Compliant?
+                    </h2>
+                    <p class="text-xl text-navy-800 mb-8 max-w-2xl mx-auto">
+                        Join over 2,500 interstate movers who trust us with their FMCSA compliance needs. Get started today.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="/pricing" class="bg-navy-900 hover:bg-navy-800 text-white font-bold px-8 py-4 rounded-lg transition-all shadow-lg hover:shadow-xl">
+                            View Pricing
+                        </a>
+                        <a href="/contact" class="bg-white hover:bg-cream-50 text-navy-900 font-bold px-8 py-4 rounded-lg transition-all shadow-lg hover:shadow-xl">
+                            Contact Us
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-navy-950 text-white pt-16 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                <!-- Company Info -->
+                <div>
+                    <a href="/" class="flex items-center space-x-2 mb-6">
+                        <div class="w-10 h-10 bg-gold-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-navy-900" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                            </svg>
+                        </div>
+                        <span class="font-display font-bold text-xl">Interstate Compliance</span>
+                    </a>
+                    <p class="text-navy-300 mb-6">
+                        FMCSA compliance solutions for interstate household goods movers. Stay compliant, avoid fines, focus on your business.
+                    </p>
+                    <div class="space-y-2">
+                        <a href="tel:1-800-555-0199" class="flex items-center text-navy-300 hover:text-gold-400 transition-colors">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
+                            </svg>
+                            1-800-555-0199
+                        </a>
+                        <a href="mailto:info@interstatecompliancesolutions.com" class="flex items-center text-navy-300 hover:text-gold-400 transition-colors">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            info@interstatecompliancesolutions.com
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Services -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-6">Our Services</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/arbitration-program" class="text-navy-300 hover:text-gold-400 transition-colors">Arbitration Program</a></li>
+                        <li><a href="/tariff" class="text-navy-300 hover:text-gold-400 transition-colors">Tariff Publishing</a></li>
+                        <li><a href="/boc-3" class="text-navy-300 hover:text-gold-400 transition-colors">BOC-3 Process Agent</a></li>
+                        <li><a href="/pricing" class="text-navy-300 hover:text-gold-400 transition-colors">Compliance Forms</a></li>
+                        <li><a href="/pricing" class="text-navy-300 hover:text-gold-400 transition-colors">Pricing & Bundles</a></li>
+                    </ul>
+                </div>
+
+                <!-- Resources -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-6">Resources</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/faqs" class="text-navy-300 hover:text-gold-400 transition-colors">FAQ</a></li>
+                        <li><a href="/about" class="text-navy-300 hover:text-gold-400 transition-colors">About Us</a></li>
+                        <li><a href="/contact" class="text-navy-300 hover:text-gold-400 transition-colors">Contact</a></li>
+                        <li><a href="/verify" class="text-navy-300 hover:text-gold-400 transition-colors">Submit a Claim</a></li>
+                    </ul>
+                </div>
+
+                <!-- Regulatory Links -->
+                <div>
+                    <h4 class="font-semibold text-lg mb-6">Regulatory Resources</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://www.fmcsa.dot.gov/protect-your-move" target="_blank" rel="noopener" class="text-navy-300 hover:text-gold-400 transition-colors">FMCSA Protect Your Move</a></li>
+                        <li><a href="https://www.ecfr.gov/current/title-49/subtitle-B/chapter-X/subchapter-D/part-1310" target="_blank" rel="noopener" class="text-navy-300 hover:text-gold-400 transition-colors">49 CFR 1310 - Tariff Requirements</a></li>
+                        <li><a href="https://www.ecfr.gov/current/title-49/subtitle-B/chapter-III/subchapter-B/part-375" target="_blank" rel="noopener" class="text-navy-300 hover:text-gold-400 transition-colors">49 CFR 375 - Consumer Protection</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-navy-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <p class="text-navy-400 text-sm">
+                        &copy; 2025 Interstate Compliance Solutions. All rights reserved.
+                    </p>
+                    <div class="flex items-center space-x-6">
+                        <a href="#" class="text-navy-400 hover:text-gold-400 text-sm transition-colors">Privacy Policy</a>
+                        <a href="#" class="text-navy-400 hover:text-gold-400 text-sm transition-colors">Terms of Service</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

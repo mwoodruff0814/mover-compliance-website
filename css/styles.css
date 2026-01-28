@@ -1,0 +1,486 @@
+/* Custom Styles for Interstate Compliance Solutions */
+
+/* Color fallbacks - ensures colors work even if Tailwind config fails */
+:root {
+    --navy-50: #f0f3f9;
+    --navy-100: #d9e0ed;
+    --navy-200: #b3c1db;
+    --navy-300: #8da2c9;
+    --navy-400: #6783b7;
+    --navy-500: #4164a5;
+    --navy-600: #345084;
+    --navy-700: #273c63;
+    --navy-800: #1a2842;
+    --navy-900: #0a1628;
+    --gold-400: #e2b44e;
+    --gold-500: #c9a227;
+    --gold-600: #b8891d;
+    --cream-50: #fefdfb;
+}
+
+/* Force white text on dark backgrounds */
+.bg-navy-900, [class*="from-navy-900"] {
+    color: #ffffff !important;
+}
+
+.bg-navy-900 h1, .bg-navy-900 h2, .bg-navy-900 h3,
+.bg-navy-900 span, .bg-navy-900 a,
+[style*="background"][style*="#0a1628"] h1,
+[style*="background"][style*="#0a1628"] p {
+    color: inherit;
+}
+
+/* Navigation text */
+nav.bg-navy-900, nav[style*="#0a1628"] {
+    background-color: #0a1628 !important;
+}
+
+nav.bg-navy-900 a, nav.bg-navy-900 span {
+    color: #ffffff !important;
+}
+
+nav.bg-navy-900 a:hover {
+    color: #e2b44e !important;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Focus styles for accessibility */
+*:focus {
+    outline: 2px solid #c9a227;
+    outline-offset: 2px;
+}
+
+*:focus:not(:focus-visible) {
+    outline: none;
+}
+
+*:focus-visible {
+    outline: 2px solid #c9a227;
+    outline-offset: 2px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f0f3f9;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #8da2c9;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #6783b7;
+}
+
+/* Form styles */
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="number"],
+input[type="date"],
+select,
+textarea {
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus,
+select:focus,
+textarea:focus {
+    border-color: #c9a227;
+    box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.15);
+    outline: none;
+}
+
+/* Checkbox and Radio custom styles */
+input[type="checkbox"],
+input[type="radio"] {
+    accent-color: #c9a227;
+}
+
+/* Button hover animations */
+.btn-primary {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Card hover effects */
+.service-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+}
+
+/* FAQ accordion animation */
+.faq-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out;
+}
+
+.faq-content.active {
+    max-height: 500px;
+}
+
+.faq-icon {
+    transition: transform 0.3s ease;
+}
+
+.faq-icon.rotate {
+    transform: rotate(180deg);
+}
+
+/* Navigation dropdown animation */
+.nav-dropdown {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+}
+
+.nav-item:hover .nav-dropdown {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+/* Loading spinner */
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f0f3f9;
+    border-top-color: #c9a227;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Toast notifications */
+.toast {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 16px 24px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    transform: translateY(100px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    z-index: 1000;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast.success {
+    background-color: #059669;
+}
+
+.toast.error {
+    background-color: #dc2626;
+}
+
+.toast.warning {
+    background-color: #d97706;
+}
+
+/* Form validation states */
+.input-error {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
+}
+
+.input-success {
+    border-color: #059669 !important;
+    box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15) !important;
+}
+
+.error-message {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+/* Price highlight animation */
+@keyframes priceHighlight {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+.price-highlight {
+    animation: priceHighlight 2s ease-in-out infinite;
+}
+
+/* Gradient text */
+.gradient-text {
+    background: linear-gradient(135deg, #c9a227 0%, #e2b44e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Badge pulse animation */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.badge-pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+/* Table styles */
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+
+th {
+    text-align: left;
+    font-weight: 600;
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+    .responsive-table {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Print styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    body {
+        font-size: 12pt;
+        color: black;
+        background: white;
+    }
+
+    a {
+        color: black;
+        text-decoration: underline;
+    }
+}
+
+/* Accessibility - Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .btn-primary {
+        border: 2px solid currentColor;
+    }
+}
+
+/* Hero section parallax effect */
+.hero-parallax {
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+/* Sticky header shadow on scroll */
+.nav-scrolled {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Step indicator styles */
+.step-connector {
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right, #c9a227, #e2b44e);
+}
+
+/* File upload styles */
+.file-upload {
+    position: relative;
+    cursor: pointer;
+}
+
+.file-upload input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.file-upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    border: 2px dashed #b3c1db;
+    border-radius: 0.5rem;
+    background-color: #fefdfb;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.file-upload:hover .file-upload-label {
+    border-color: #c9a227;
+    background-color: #fdf9ef;
+}
+
+/* Price comparison table */
+.comparison-table th,
+.comparison-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #d9e0ed;
+}
+
+.comparison-table tr:hover {
+    background-color: #fdf9ef;
+}
+
+/* Mobile menu animation */
+.mobile-menu-enter {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.mobile-menu-enter.active {
+    max-height: 500px;
+}
+
+/* Custom select styling */
+.custom-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236783b7' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+/* Required field indicator */
+.required::after {
+    content: " *";
+    color: #dc2626;
+}
+
+/* Form section headers */
+.form-section-header {
+    position: relative;
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid #d9e0ed;
+}
+
+.form-section-header::after {
+    content: "";
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 60px;
+    height: 2px;
+    background-color: #c9a227;
+}
+
+/* Tooltip styles */
+.tooltip {
+    position: relative;
+}
+
+.tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.5rem 1rem;
+    background-color: #0a1628;
+    color: white;
+    font-size: 0.875rem;
+    border-radius: 0.375rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    z-index: 10;
+}
+
+.tooltip:hover::after {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Progress bar */
+.progress-bar {
+    height: 0.5rem;
+    background-color: #d9e0ed;
+    border-radius: 9999px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(to right, #c9a227, #e2b44e);
+    border-radius: 9999px;
+    transition: width 0.3s ease;
+}
+
+/* Accordion content transition */
+.accordion-content {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+}
+
+.accordion-content.open {
+    grid-template-rows: 1fr;
+}
+
+.accordion-content > div {
+    overflow: hidden;
+}

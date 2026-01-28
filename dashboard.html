@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Interstate Compliance Solutions</title>
+    <meta name="description" content="Manage your FMCSA compliance services - arbitration, tariff, and BOC-3 filings.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: { 50: '#f0f3f9', 100: '#d9e0ed', 200: '#b3c1db', 300: '#8da2c9', 400: '#6783b7', 500: '#4164a5', 600: '#345084', 700: '#273c63', 800: '#1a2842', 900: '#0a1628', 950: '#050b14' },
+                        gold: { 50: '#fdf9ef', 100: '#f9f0d6', 200: '#f2deac', 300: '#eac978', 400: '#e2b44e', 500: '#c9a227', 600: '#b8891d', 700: '#966a19', 800: '#7a551b', 900: '#65461a', 950: '#39240b' },
+                        cream: { 50: '#fefdfb', 100: '#fdf9f3', 200: '#faf3e6' }
+                    },
+                    fontFamily: { sans: ['DM Sans', 'sans-serif'], display: ['Fraunces', 'serif'] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .sidebar-link {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: #8da2c9;
+            border-radius: 0.5rem;
+            transition: all 0.15s ease;
+        }
+        .sidebar-link:hover {
+            background-color: #1a2842;
+            color: white;
+        }
+        .sidebar-link.active {
+            background-color: #1a2842;
+            color: #c9a227;
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.125rem 0.625rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .status-active {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .status-pending {
+            background-color: #fef9c3;
+            color: #854d0e;
+        }
+        .status-expired {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .status-none {
+            background-color: #f3f4f6;
+            color: #4b5563;
+        }
+    </style>
+</head>
+<body class="font-sans bg-cream-50">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-navy-900 transform -translate-x-full lg:translate-x-0 lg:static transition-transform duration-200">
+            <div class="flex flex-col h-full">
+                <!-- Logo -->
+                <div class="flex items-center justify-between p-4 border-b border-navy-800">
+                    <a href="/" class="flex items-center space-x-2">
+                        <div class="w-10 h-10 bg-gold-500 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-navy-900" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                            </svg>
+                        </div>
+                        <span class="font-display font-bold text-white">Dashboard</span>
+                    </a>
+                    <button id="close-sidebar" class="lg:hidden text-navy-400 hover:text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Navigation -->
+                <nav class="flex-1 p-4 space-y-2 overflow-y-auto">
+                    <a href="#overview" class="sidebar-link active" data-section="overview">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        Overview
+                    </a>
+                    <a href="#services" class="sidebar-link" data-section="services">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        My Services
+                    </a>
+                    <a href="#documents" class="sidebar-link" data-section="documents">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Documents
+                    </a>
+                    <a href="#orders" class="sidebar-link" data-section="orders">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        Order History
+                    </a>
+                    <a href="#settings" class="sidebar-link" data-section="settings">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        Account Settings
+                    </a>
+
+                    <div class="pt-4 mt-4 border-t border-navy-800">
+                        <a href="/pricing" class="sidebar-link">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Add Services
+                        </a>
+                        <a href="/contact" class="sidebar-link">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            Get Help
+                        </a>
+                    </div>
+                </nav>
+
+                <!-- User Info -->
+                <div class="p-4 border-t border-navy-800">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 bg-gold-500 rounded-full flex items-center justify-center text-navy-900 font-bold" id="user-initials">--</div>
+                        <div class="ml-3 flex-1 min-w-0">
+                            <p class="text-sm font-medium text-white truncate" id="user-company">Loading...</p>
+                            <p class="text-xs text-navy-400 truncate" id="user-mc">--</p>
+                        </div>
+                        <button onclick="Auth.logout()" class="text-navy-400 hover:text-red-400 transition-colors" title="Logout">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col min-h-screen overflow-hidden">
+            <!-- Top Bar -->
+            <header class="bg-white border-b border-navy-100 px-4 lg:px-8 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <button id="open-sidebar" class="lg:hidden mr-4 text-navy-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                            </svg>
+                        </button>
+                        <h1 class="font-display text-2xl font-bold text-navy-900" id="page-title">Dashboard</h1>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <!-- Real-time indicator -->
+                        <div id="sse-status" class="flex items-center text-sm">
+                            <span class="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
+                            <span class="text-navy-500 hidden sm:inline">Live Updates</span>
+                        </div>
+                        <a href="/pricing" class="bg-gold-500 hover:bg-gold-600 text-navy-900 font-semibold px-4 py-2 rounded-lg transition-colors hidden sm:block">
+                            Add Service
+                        </a>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <main class="flex-1 overflow-y-auto p-4 lg:p-8">
+                <!-- Loading State -->
+                <div id="loading-state" class="flex items-center justify-center h-64">
+                    <div class="text-center">
+                        <svg class="animate-spin h-12 w-12 text-gold-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                        </svg>
+                        <p class="text-navy-500">Loading your dashboard...</p>
+                    </div>
+                </div>
+
+                <!-- Dashboard Content (hidden until loaded) -->
+                <div id="dashboard-content" class="hidden space-y-8">
+                    <!-- Overview Section -->
+                    <section id="section-overview">
+                        <!-- Stats Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="bg-white rounded-xl shadow-sm border border-navy-100 p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-navy-500 mb-1">Active Services</p>
+                                        <p class="text-3xl font-bold text-navy-900" id="stat-active">-</p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-navy-400 mt-2">of 3 available services</p>
+                            </div>
+
+                            <div class="bg-white rounded-xl shadow-sm border border-navy-100 p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-navy-500 mb-1">Upcoming Renewals</p>
+                                        <p class="text-3xl font-bold text-navy-900" id="stat-renewals">-</p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-navy-400 mt-2">in the next 60 days</p>
+                            </div>
+
+                            <div class="bg-white rounded-xl shadow-sm border border-navy-100 p-6">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-navy-500 mb-1">Compliance Status</p>
+                                        <p class="text-xl font-bold" id="stat-compliance">-</p>
+                                    </div>
+                                    <div class="w-12 h-12 bg-navy-100 rounded-full flex items-center justify-center" id="compliance-icon">
+                                        <svg class="w-6 h-6 text-navy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <p class="text-xs text-navy-400 mt-2" id="compliance-note">Based on active services</p>
+                            </div>
+                        </div>
+
+                        <!-- Renewal Alerts -->
+                        <div id="renewal-alerts" class="hidden mb-8">
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
+                                <div class="flex items-start">
+                                    <svg class="w-5 h-5 text-yellow-600 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                    <div class="flex-1">
+                                        <h3 class="font-semibold text-yellow-800">Upcoming Renewals</h3>
+                                        <div id="renewal-list" class="mt-2 space-y-1"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Services Section -->
+                    <section id="section-services">
+                        <h2 class="text-lg font-semibold text-navy-900 mb-4">My Services</h2>
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Arbitration Card -->
+                            <div class="bg-white rounded-xl shadow-sm border border-navy-100 overflow-hidden">
+                                <div class="h-2 bg-gold-500"></div>
+                                <div class="p-6">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-gold-100 rounded-lg flex items-center justify-center mr-3">
+                                                <svg class="w-5 h-5 text-gold-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h3 class="font-semibold text-navy-900">Arbitration Program</h3>
+                                                <p class="text-sm text-navy-500">$99/year</p>
+                                            </div>
+                                        </div>
+                                        <span class="status-badge" id="arb-status-badge">-</span>
+                                    </div>
+                                    <div id="arb-details" class="space-y-2 text-sm text-navy-600 mb-4">
+                                        <p>Loading...</p>
+                                    </div>
+                                    <div id="arb-actions" class="flex gap-2">
+                                        <!-- Actions populated by JS -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Tariff Card -->
+                            <div class="bg-white rounded-xl shadow-sm border border-navy-100 overflow-hidden">
+                                <div class="h-2 bg-navy-600"></div>
+                                <div class="p-6">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-navy-100 rounded-lg flex items-center justify-center mr-3">
+                                                <svg class="w-5 h-5 text-navy-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h3 class="font-semibold text-navy-900">Tariff Publishing</h3>
+                                                <p class="text-sm text-navy-500">$299 one-time</p>
+                                            </div>
+                                        </div>
+                                        <span class="status-badge" id="tariff-status-badge">-</span>
+                                    </div>
+                                    <div id="tariff-details" class="space-y-2 text-sm text-navy-600 mb-4">
+                                        <p>Loading...</p>
+                                    </div>
+                                    <div id="tariff-actions" class="flex gap-2">
+                                        <!-- Actions populated by JS -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- BOC-3 Card -->
+                            <div class="bg-white rounded-xl shadow-sm border border-navy-100 overflow-hidden">
+                                <div class="h-2 bg-green-600"></div>
+                                <div class="p-6">
+                                    <div class="flex items-start justify-between mb-4">
+                                        <div class="flex items-center">
+                                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                                                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <h3 class="font-semibold text-navy-900">BOC-3 Process Agent</h3>
+                                                <p class="text-sm text-navy-500">$99/year</p>
+                                            </div>
+                                        </div>
+                                        <span class="status-badge" id="boc3-status-badge">-</span>
+                                    </div>
+                                    <div id="boc3-details" class="space-y-2 text-sm text-navy-600 mb-4">
+                                        <p>Loading...</p>
+                                    </div>
+                                    <div id="boc3-actions" class="flex gap-2">
+                                        <!-- Actions populated by JS -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Documents Section -->
+                    <section id="section-documents">
+                        <h2 class="text-lg font-semibold text-navy-900 mb-4">My Documents</h2>
+                        <div class="bg-white rounded-xl shadow-sm border border-navy-100 overflow-hidden">
+                            <div id="documents-list" class="divide-y divide-navy-100">
+                                <div class="p-6 text-center text-navy-500">Loading documents...</div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Orders Section -->
+                    <section id="section-orders">
+                        <h2 class="text-lg font-semibold text-navy-900 mb-4">Order History</h2>
+                        <div class="bg-white rounded-xl shadow-sm border border-navy-100 overflow-hidden">
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-navy-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-navy-500 uppercase tracking-wider">Service</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-navy-500 uppercase tracking-wider">Date</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-navy-500 uppercase tracking-wider">Status</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-navy-500 uppercase tracking-wider">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="orders-list" class="divide-y divide-navy-100">
+                                        <tr><td colspan="4" class="px-6 py-4 text-center text-navy-500">Loading orders...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Settings Section -->
+                    <section id="section-settings">
+                        <h2 class="text-lg font-semibold text-navy-900 mb-4">Account Settings</h2>
+                        <div class="bg-white rounded-xl shadow-sm border border-navy-100 p-6">
+                            <form id="settings-form" class="space-y-6">
+                                <div class="grid md:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">Company Name</label>
+                                        <input type="text" id="settings-company" class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">Contact Name</label>
+                                        <input type="text" id="settings-contact" class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">Email</label>
+                                        <input type="email" id="settings-email" class="w-full px-4 py-3 border border-navy-200 rounded-lg bg-navy-50" readonly>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">Phone</label>
+                                        <input type="tel" id="settings-phone" class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">Address</label>
+                                        <input type="text" id="settings-address" class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">City</label>
+                                        <input type="text" id="settings-city" class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-navy-900 mb-2">State</label>
+                                            <input type="text" id="settings-state" class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-navy-900 mb-2">ZIP</label>
+                                            <input type="text" id="settings-zip" class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-end pt-4 border-t border-navy-100">
+                                    <button type="submit" class="bg-gold-500 hover:bg-gold-600 text-navy-900 font-semibold px-6 py-2 rounded-lg transition-colors">
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Change Password -->
+                            <div class="mt-8 pt-8 border-t border-navy-100">
+                                <h3 class="font-semibold text-navy-900 mb-4">Change Password</h3>
+                                <form id="password-form" class="space-y-4 max-w-md">
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">Current Password</label>
+                                        <input type="password" id="current-password" class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">New Password</label>
+                                        <input type="password" id="new-password" class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">Confirm New Password</label>
+                                        <input type="password" id="confirm-password" class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                    </div>
+                                    <button type="submit" class="bg-navy-900 hover:bg-navy-800 text-white font-semibold px-6 py-2 rounded-lg transition-colors">
+                                        Update Password
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden"></div>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+</body>
+</html>

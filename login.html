@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Login | Interstate Compliance Solutions</title>
+    <meta name="description" content="Access your Interstate Compliance Solutions client dashboard. Manage your arbitration enrollment, tariff documents, and BOC-3 filings.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            50: '#f0f3f9',
+                            100: '#d9e0ed',
+                            200: '#b3c1db',
+                            300: '#8da2c9',
+                            400: '#6783b7',
+                            500: '#4164a5',
+                            600: '#345084',
+                            700: '#273c63',
+                            800: '#1a2842',
+                            900: '#0a1628',
+                            950: '#050b14'
+                        },
+                        gold: {
+                            50: '#fdf9ef',
+                            100: '#f9f0d6',
+                            200: '#f2deac',
+                            300: '#eac978',
+                            400: '#e2b44e',
+                            500: '#c9a227',
+                            600: '#b8891d',
+                            700: '#966a19',
+                            800: '#7a551b',
+                            900: '#65461a',
+                            950: '#39240b'
+                        },
+                        cream: {
+                            50: '#fefdfb',
+                            100: '#fdf9f3',
+                            200: '#faf3e6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['DM Sans', 'sans-serif'],
+                        display: ['Fraunces', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="font-sans bg-navy-900 min-h-screen flex flex-col">
+    <!-- Navigation -->
+    <nav class="bg-navy-900 text-white border-b border-navy-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <a href="/" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-gold-500 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-navy-900" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                        </svg>
+                    </div>
+                    <span class="font-display font-bold text-xl">Interstate Compliance</span>
+                </a>
+                <a href="/" class="text-navy-300 hover:text-white transition-colors">
+                    Back to Home
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Form -->
+    <main class="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full">
+            <!-- Header -->
+            <div class="text-center mb-8">
+                <h1 class="font-display text-3xl font-bold text-white mb-2">Welcome Back</h1>
+                <p class="text-navy-300">Sign in to your client dashboard</p>
+            </div>
+
+            <!-- Login Card -->
+            <div class="bg-white rounded-2xl shadow-xl p-8">
+                <form id="login-form" class="space-y-6">
+                    <!-- Email -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-navy-900 mb-2">Email Address</label>
+                        <input type="email" id="email" name="email" required
+                            class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500 transition-colors"
+                            placeholder="you@company.com">
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-navy-900 mb-2">Password</label>
+                        <div class="relative">
+                            <input type="password" id="password" name="password" required
+                                class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500 transition-colors"
+                                placeholder="Enter your password">
+                            <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-navy-400 hover:text-navy-600">
+                                <svg id="eye-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Remember Me & Forgot Password -->
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="remember" class="w-4 h-4 text-gold-500 border-navy-300 rounded focus:ring-gold-500">
+                            <span class="ml-2 text-sm text-navy-600">Remember me</span>
+                        </label>
+                        <a href="/forgot-password" class="text-sm text-gold-600 hover:text-gold-700 font-medium">Forgot password?</a>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div id="login-error" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm"></div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="login-btn" class="w-full bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold py-3 px-4 rounded-lg transition-all transform hover:-translate-y-0.5 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+                        <span id="login-text">Sign In</span>
+                        <span id="login-loading" class="hidden">
+                            <svg class="animate-spin inline-block w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                            </svg>
+                            Signing in...
+                        </span>
+                    </button>
+                </form>
+
+                <!-- Divider -->
+                <div class="relative my-8">
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="w-full border-t border-navy-200"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                        <span class="px-4 bg-white text-navy-500">New to Interstate Compliance?</span>
+                    </div>
+                </div>
+
+                <!-- Register Link -->
+                <a href="/register" class="block w-full text-center border-2 border-navy-900 hover:bg-navy-900 hover:text-white text-navy-900 font-semibold py-3 px-4 rounded-lg transition-all">
+                    Create an Account
+                </a>
+            </div>
+
+            <!-- Help Text -->
+            <p class="mt-8 text-center text-navy-400 text-sm">
+                Need help? Call us at <a href="tel:1-800-555-0199" class="text-gold-400 hover:text-gold-300">1-800-555-0199</a>
+            </p>
+        </div>
+    </main>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eye-icon');
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>';
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>';
+            }
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember').checked;
+            const errorDiv = document.getElementById('login-error');
+            const loginBtn = document.getElementById('login-btn');
+            const loginText = document.getElementById('login-text');
+            const loginLoading = document.getElementById('login-loading');
+
+            // Reset error
+            errorDiv.classList.add('hidden');
+
+            // Show loading
+            loginBtn.disabled = true;
+            loginText.classList.add('hidden');
+            loginLoading.classList.remove('hidden');
+
+            try {
+                const result = await Auth.login(email, password, remember);
+
+                if (result.success) {
+                    window.location.href = '/dashboard';
+                } else {
+                    errorDiv.textContent = result.message || 'Invalid email or password';
+                    errorDiv.classList.remove('hidden');
+                }
+            } catch (error) {
+                errorDiv.textContent = 'An error occurred. Please try again.';
+                errorDiv.classList.remove('hidden');
+            } finally {
+                loginBtn.disabled = false;
+                loginText.classList.remove('hidden');
+                loginLoading.classList.add('hidden');
+            }
+        });
+
+        // Check if already logged in
+        if (Auth.isLoggedIn()) {
+            window.location.href = '/dashboard';
+        }
+    </script>
+</body>
+</html>
