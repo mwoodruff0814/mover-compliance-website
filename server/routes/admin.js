@@ -44,11 +44,15 @@ try {
     // Use Cloudinary storage for production
     storage = new CloudinaryStorage({
       cloudinary: cloudinary,
-      params: {
-        folder: 'mover-compliance-documents',
-        resource_type: 'auto',
-        allowed_formats: ['pdf', 'doc', 'docx', 'png', 'jpg', 'jpeg'],
-        public_id: (req, file) => `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, '')}`
+      params: (req, file) => {
+        const ext = path.extname(file.originalname).toLowerCase();
+        // PDFs and docs need 'raw' resource type, images use 'image'
+        const isDocument = ['.pdf', '.doc', '.docx'].includes(ext);
+        return {
+          folder: 'mover-compliance-documents',
+          resource_type: isDocument ? 'raw' : 'image',
+          public_id: `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, '')}`
+        };
       }
     });
 
