@@ -48,10 +48,15 @@ try {
         const ext = path.extname(file.originalname).toLowerCase();
         // PDFs and docs need 'raw' resource type, images use 'image'
         const isDocument = ['.pdf', '.doc', '.docx'].includes(ext);
+        // Keep extension for raw files so downloads have correct extension
+        const baseName = file.originalname.replace(/\.[^/.]+$/, '');
+        const publicId = isDocument
+          ? `${Date.now()}-${baseName}${ext}`  // Keep extension for docs
+          : `${Date.now()}-${baseName}`;        // No extension for images
         return {
           folder: 'mover-compliance-documents',
           resource_type: isDocument ? 'raw' : 'image',
-          public_id: `${Date.now()}-${file.originalname.replace(/\.[^/.]+$/, '')}`
+          public_id: publicId
         };
       }
     });
