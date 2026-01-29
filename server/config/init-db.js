@@ -178,6 +178,94 @@ const initDatabase = async () => {
       END $$;
     `);
 
+    // Add rates column to tariff_orders if missing
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tariff_orders' AND column_name='rates') THEN
+          ALTER TABLE tariff_orders ADD COLUMN rates JSONB;
+        END IF;
+      END $$;
+    `);
+
+    // Add expiry_date and enrolled_date to tariff_orders
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tariff_orders' AND column_name='expiry_date') THEN
+          ALTER TABLE tariff_orders ADD COLUMN expiry_date DATE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tariff_orders' AND column_name='enrolled_date') THEN
+          ALTER TABLE tariff_orders ADD COLUMN enrolled_date DATE;
+        END IF;
+      END $$;
+    `);
+
+    // Add expiry_date and enrolled_date to boc3_orders
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='boc3_orders' AND column_name='expiry_date') THEN
+          ALTER TABLE boc3_orders ADD COLUMN expiry_date DATE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='boc3_orders' AND column_name='enrolled_date') THEN
+          ALTER TABLE boc3_orders ADD COLUMN enrolled_date DATE;
+        END IF;
+      END $$;
+    `);
+
+    // Add autopay fields to users table
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='square_customer_id') THEN
+          ALTER TABLE users ADD COLUMN square_customer_id VARCHAR(100);
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='autopay_enabled') THEN
+          ALTER TABLE users ADD COLUMN autopay_enabled BOOLEAN DEFAULT false;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='autopay_card_id') THEN
+          ALTER TABLE users ADD COLUMN autopay_card_id VARCHAR(100);
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='autopay_card_last4') THEN
+          ALTER TABLE users ADD COLUMN autopay_card_last4 VARCHAR(4);
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='autopay_card_brand') THEN
+          ALTER TABLE users ADD COLUMN autopay_card_brand VARCHAR(20);
+        END IF;
+      END $$;
+    `);
+
+    // Create notifications table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        type VARCHAR(50) NOT NULL,
+        service_type VARCHAR(20) NOT NULL,
+        service_id INTEGER NOT NULL,
+        message TEXT,
+        read BOOLEAN DEFAULT false,
+        email_sent BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+    // Create pricing_method_requests table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS pricing_method_requests (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        tariff_id INTEGER REFERENCES tariff_orders(id) ON DELETE CASCADE,
+        current_method VARCHAR(50),
+        requested_method VARCHAR(50),
+        status VARCHAR(20) DEFAULT 'pending',
+        admin_notes TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        reviewed_at TIMESTAMP
+      )
+    `);
+
     console.log('Migrations complete');
 
     // Create indexes for better performance
@@ -188,6 +276,12 @@ const initDatabase = async () => {
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_tariff_user_id ON tariff_orders(user_id)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_boc3_user_id ON boc3_orders(user_id)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_verifications_mc ON consumer_verifications(mover_mc_number)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(user_id, read)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_tariff_expiry ON tariff_orders(expiry_date)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_boc3_expiry ON boc3_orders(expiry_date)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_arbitration_expiry ON arbitration_enrollments(expiry_date)`);
+    await pool.query(`CREATE INDEX IF NOT EXISTS idx_pricing_requests_status ON pricing_method_requests(status)`);
     console.log('Created indexes');
 
     console.log('Database initialization complete!');

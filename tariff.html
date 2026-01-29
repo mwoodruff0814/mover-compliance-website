@@ -65,7 +65,7 @@
                 </p>
                 <div class="flex items-center space-x-4">
                     <span class="text-4xl font-bold" style="color: #e2b44e;">$299</span>
-                    <span style="color: #8da2c9;">one-time</span>
+                    <span style="color: #8da2c9;">/year</span>
                 </div>
             </div>
         </div>
@@ -203,6 +203,227 @@
                             <div>
                                 <label class="block text-sm font-medium text-navy-900 mb-2">Special Notes or Requests</label>
                                 <textarea id="special_notes" rows="3" class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500" placeholder="Any specific requirements or custom services..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rate Customization Section -->
+                    <div class="border-t border-navy-100 pt-6">
+                        <h3 class="font-semibold text-navy-900 mb-2">Your Rates</h3>
+                        <p class="text-sm text-navy-600 mb-2">Enter your rates below. These will be included in your tariff document.</p>
+                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-4">
+                            <p class="text-sm text-amber-800"><strong>Important:</strong> Rates cannot be changed after purchase. Please double-check all rates before submitting. If you need to update rates in the future, you will need to purchase a new tariff.</p>
+                        </div>
+
+                        <!-- Transportation Rates (Weight-Based) -->
+                        <div class="bg-navy-50 rounded-lg p-4 mb-4">
+                            <h4 class="font-medium text-navy-900 mb-3">Transportation Rates (Line Haul - by Weight)</h4>
+                            <p class="text-xs text-navy-600 mb-3">Interstate moves must be charged by weight. Enter rate per pound or per 100 lbs (CWT).</p>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Base Rate (per lb)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_per_lb" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">0-250 miles (per lb)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_per_lb_250" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">251-500 miles (per lb)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_per_lb_500" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">501+ miles (per lb)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_per_lb_1000" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Loading Labor Rates (Origin) -->
+                        <div class="bg-navy-50 rounded-lg p-4 mb-4">
+                            <h4 class="font-medium text-navy-900 mb-3">Loading Labor at Origin (per man per hour)</h4>
+                            <p class="text-xs text-navy-600 mb-3">Labor charges at origin for loading goods onto the vehicle.</p>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Per Man Per Hour</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_loading_per_man" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Min Hours</label>
+                                    <input type="number" id="min_hours_loading" step="0.5" min="0" class="w-full px-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="2">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Min Men</label>
+                                    <input type="number" id="min_men_loading" step="1" min="1" class="w-full px-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="2">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Unloading Labor Rates (Destination) -->
+                        <div class="bg-navy-50 rounded-lg p-4 mb-4">
+                            <h4 class="font-medium text-navy-900 mb-3">Unloading Labor at Destination (per man per hour)</h4>
+                            <p class="text-xs text-navy-600 mb-3">Labor charges at destination for unloading goods from the vehicle.</p>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Per Man Per Hour</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_unloading_per_man" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Min Hours</label>
+                                    <input type="number" id="min_hours_unloading" step="0.5" min="0" class="w-full px-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="2">
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Min Men</label>
+                                    <input type="number" id="min_men_unloading" step="1" min="1" class="w-full px-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="2">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Minimum Charges -->
+                        <div class="bg-navy-50 rounded-lg p-4 mb-4">
+                            <h4 class="font-medium text-navy-900 mb-3">Minimum Charges</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Local Move Min</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="min_local" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Long Distance Min</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="min_longdistance" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Minimum Hours</label>
+                                    <input type="number" id="min_hours" step="0.5" min="0" class="w-full px-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="2">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Accessorial Rates -->
+                        <div class="bg-navy-50 rounded-lg p-4 mb-4">
+                            <h4 class="font-medium text-navy-900 mb-3">Accessorial Charges</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Stair Carry (per flight)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_stairs" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Long Carry (per 100ft)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_longcarry" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Shuttle Service</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_shuttle" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Packing (per hour)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_packing" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Storage (per month)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_storage" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Waiting Time (per hr)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_waiting" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Fuel Surcharge (%)</label>
+                                    <div class="relative">
+                                        <input type="number" id="rate_fuel_surcharge" step="0.5" min="0" max="100" class="w-full px-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0">
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-navy-400">%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Specialty Items -->
+                        <div class="bg-navy-50 rounded-lg p-4">
+                            <h4 class="font-medium text-navy-900 mb-3">Specialty Items</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Piano (upright)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_piano_upright" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Piano (grand)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_piano_grand" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Pool Table</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_pool_table" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Safe (per 100 lbs)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_safe" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Gym Equipment</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_gym" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs text-navy-600 mb-1">Appliance Service</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                        <input type="number" id="rate_appliance" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -393,6 +614,48 @@
                     throw new Error(paymentResponse.message || 'Payment failed. Please try again.');
                 }
 
+                // Collect all rates
+                const rates = {
+                    transportation: {
+                        per_lb_base: parseFloat(document.getElementById('rate_per_lb').value) || 0,
+                        per_lb_250: parseFloat(document.getElementById('rate_per_lb_250').value) || 0,
+                        per_lb_500: parseFloat(document.getElementById('rate_per_lb_500').value) || 0,
+                        per_lb_1000: parseFloat(document.getElementById('rate_per_lb_1000').value) || 0
+                    },
+                    loading: {
+                        per_man_hour: parseFloat(document.getElementById('rate_loading_per_man').value) || 0,
+                        min_hours: parseFloat(document.getElementById('min_hours_loading').value) || 2,
+                        min_men: parseInt(document.getElementById('min_men_loading').value) || 2
+                    },
+                    unloading: {
+                        per_man_hour: parseFloat(document.getElementById('rate_unloading_per_man').value) || 0,
+                        min_hours: parseFloat(document.getElementById('min_hours_unloading').value) || 2,
+                        min_men: parseInt(document.getElementById('min_men_unloading').value) || 2
+                    },
+                    minimums: {
+                        local: parseFloat(document.getElementById('min_local').value) || 0,
+                        long_distance: parseFloat(document.getElementById('min_longdistance').value) || 0,
+                        hours: parseFloat(document.getElementById('min_hours').value) || 2
+                    },
+                    accessorial: {
+                        stairs: parseFloat(document.getElementById('rate_stairs').value) || 0,
+                        long_carry: parseFloat(document.getElementById('rate_longcarry').value) || 0,
+                        shuttle: parseFloat(document.getElementById('rate_shuttle').value) || 0,
+                        packing: parseFloat(document.getElementById('rate_packing').value) || 0,
+                        storage: parseFloat(document.getElementById('rate_storage').value) || 0,
+                        waiting: parseFloat(document.getElementById('rate_waiting').value) || 0,
+                        fuel_surcharge: parseFloat(document.getElementById('rate_fuel_surcharge').value) || 0
+                    },
+                    specialty: {
+                        piano_upright: parseFloat(document.getElementById('rate_piano_upright').value) || 0,
+                        piano_grand: parseFloat(document.getElementById('rate_piano_grand').value) || 0,
+                        pool_table: parseFloat(document.getElementById('rate_pool_table').value) || 0,
+                        safe: parseFloat(document.getElementById('rate_safe').value) || 0,
+                        gym: parseFloat(document.getElementById('rate_gym').value) || 0,
+                        appliance: parseFloat(document.getElementById('rate_appliance').value) || 0
+                    }
+                };
+
                 // Create the order with the real payment ID
                 const result = await Auth.request('/orders/tariff', {
                     method: 'POST',
@@ -402,7 +665,8 @@
                         accessorials: accessorials,
                         special_notes: document.getElementById('special_notes').value,
                         payment_id: paymentResponse.data.payment_id,
-                        payment_amount: paymentResponse.data.amount / 100
+                        payment_amount: paymentResponse.data.amount / 100,
+                        rates: rates
                     })
                 });
 

@@ -94,6 +94,9 @@
         <!-- Tabs -->
         <div class="flex space-x-2 mb-6">
             <button class="tab-btn active px-4 py-2 rounded-lg font-medium" data-tab="orders">Orders</button>
+            <button class="tab-btn bg-navy-800 hover:bg-navy-700 px-4 py-2 rounded-lg font-medium" data-tab="requests">
+                Requests <span id="requests-badge" class="hidden ml-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">0</span>
+            </button>
             <button class="tab-btn bg-navy-800 hover:bg-navy-700 px-4 py-2 rounded-lg font-medium" data-tab="users">Users</button>
             <button class="tab-btn bg-navy-800 hover:bg-navy-700 px-4 py-2 rounded-lg font-medium" data-tab="cleanup">Cleanup</button>
         </div>
@@ -134,6 +137,42 @@
                             </tr>
                         </thead>
                         <tbody id="orders-table" class="divide-y divide-navy-700">
+                            <tr><td colspan="7" class="px-4 py-8 text-center text-navy-400">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Requests Tab -->
+        <div id="tab-requests" class="tab-content hidden">
+            <div class="bg-navy-800 rounded-xl overflow-hidden">
+                <div class="p-4 border-b border-navy-700 flex items-center justify-between">
+                    <h2 class="font-semibold">Pricing Method Change Requests</h2>
+                    <div class="flex space-x-2">
+                        <select id="filter-request-status" class="text-sm rounded-lg px-3 py-1.5">
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                            <option value="all">All</option>
+                        </select>
+                        <button onclick="Admin.loadRequests()" class="bg-gold-500 hover:bg-gold-600 text-navy-900 px-4 py-1.5 rounded-lg text-sm font-medium">Refresh</button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-navy-900">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">Company</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">MC#</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">Current Method</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">Requested Method</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">Date</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">Status</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-navy-400 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="requests-table" class="divide-y divide-navy-700">
                             <tr><td colspan="7" class="px-4 py-8 text-center text-navy-400">Loading...</td></tr>
                         </tbody>
                     </table>
@@ -209,6 +248,63 @@
         </div>
     </div>
 
+    <!-- User Detail Modal -->
+    <div id="user-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-black bg-opacity-50" onclick="Admin.closeUserModal()"></div>
+            <div class="relative bg-navy-800 rounded-2xl shadow-xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-start mb-4">
+                    <h3 class="font-display text-xl font-bold">User Details</h3>
+                    <button onclick="Admin.closeUserModal()" class="text-navy-400 hover:text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- User Info -->
+                <div id="user-modal-content" class="space-y-6">
+                    <div class="text-center py-8 text-navy-400">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pricing Request Modal -->
+    <div id="request-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex items-center justify-center min-h-screen px-4">
+            <div class="fixed inset-0 bg-black bg-opacity-50" onclick="Admin.closeRequestModal()"></div>
+            <div class="relative bg-navy-800 rounded-2xl shadow-xl max-w-md w-full p-6">
+                <h3 class="font-display text-xl font-bold mb-4">Process Request</h3>
+                <div id="request-details" class="mb-4 text-sm text-navy-300">
+                    <p><strong>Company:</strong> <span id="request-company"></span></p>
+                    <p><strong>Current Method:</strong> <span id="request-current"></span></p>
+                    <p><strong>Requested Method:</strong> <span id="request-new" class="text-gold-400"></span></p>
+                </div>
+                <form id="request-form">
+                    <input type="hidden" id="request-id">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-navy-300 mb-1">Decision</label>
+                            <select id="request-decision" class="w-full rounded-lg px-3 py-2">
+                                <option value="approved">Approve</option>
+                                <option value="rejected">Reject</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-navy-300 mb-1">Admin Notes (optional)</label>
+                            <textarea id="request-notes" rows="3" class="w-full rounded-lg px-3 py-2" placeholder="Reason for decision..."></textarea>
+                        </div>
+                    </div>
+                    <div class="flex space-x-3 mt-6">
+                        <button type="submit" class="flex-1 bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold py-2 rounded-lg">Submit</button>
+                        <button type="button" onclick="Admin.closeRequestModal()" class="flex-1 bg-navy-700 hover:bg-navy-600 text-white py-2 rounded-lg">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Order Detail Modal -->
     <div id="order-modal" class="hidden fixed inset-0 z-50 overflow-y-auto">
         <div class="flex items-center justify-center min-h-screen px-4">
@@ -266,6 +362,7 @@
                     this.renderStats(result.data);
                     this.loadOrders();
                     this.loadUsers();
+                    this.loadRequests();
                     this.initTabs();
                     this.initForms();
                 } catch (error) {
@@ -298,6 +395,9 @@
                         document.getElementById('tab-' + btn.dataset.tab).classList.remove('hidden');
                     });
                 });
+
+                // Request status filter change
+                document.getElementById('filter-request-status').addEventListener('change', () => this.loadRequests());
             },
 
             initForms() {
@@ -347,6 +447,29 @@
                     if (result.success) {
                         this.closeOrderModal();
                         this.loadOrders();
+                    } else {
+                        alert(result.message);
+                    }
+                });
+
+                document.getElementById('request-form').addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const id = document.getElementById('request-id').value;
+                    const decision = document.getElementById('request-decision').value;
+                    const notes = document.getElementById('request-notes').value;
+
+                    const result = await Auth.request(`/admin/pricing-requests/${id}`, {
+                        method: 'PATCH',
+                        body: JSON.stringify({
+                            status: decision,
+                            admin_notes: notes || null
+                        })
+                    });
+
+                    if (result.success) {
+                        this.closeRequestModal();
+                        this.loadRequests();
+                        alert(`Request ${decision} successfully`);
                     } else {
                         alert(result.message);
                     }
@@ -442,9 +565,217 @@
             },
 
             async viewUser(id) {
-                const result = await Auth.request('/admin/users/' + id);
+                document.getElementById('user-modal').classList.remove('hidden');
+                document.getElementById('user-modal-content').innerHTML = '<div class="text-center py-8 text-navy-400">Loading...</div>';
+
+                // Fetch user details and autopay info in parallel
+                const [userResult, autopayResult] = await Promise.all([
+                    Auth.request('/admin/users/' + id),
+                    Auth.request('/admin/users/' + id + '/autopay')
+                ]);
+
+                if (!userResult.success) {
+                    document.getElementById('user-modal-content').innerHTML = '<div class="text-center py-8 text-red-400">Failed to load user</div>';
+                    return;
+                }
+
+                const user = userResult.data.user;
+                const orders = {
+                    tariff: userResult.data.tariff_orders,
+                    boc3: userResult.data.boc3_orders,
+                    arbitration: userResult.data.arbitration_enrollments
+                };
+                const autopay = autopayResult.success ? autopayResult.data : null;
+
+                document.getElementById('user-modal-content').innerHTML = `
+                    <!-- User Info Section -->
+                    <div class="bg-navy-900 rounded-xl p-4">
+                        <h4 class="font-semibold text-gold-400 mb-3">Account Information</h4>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span class="text-navy-400">Email:</span>
+                                <span class="ml-2">${user.email}</span>
+                            </div>
+                            <div>
+                                <span class="text-navy-400">Company:</span>
+                                <span class="ml-2">${user.company_name || '-'}</span>
+                            </div>
+                            <div>
+                                <span class="text-navy-400">MC#:</span>
+                                <span class="ml-2">${user.mc_number || '-'}</span>
+                            </div>
+                            <div>
+                                <span class="text-navy-400">USDOT:</span>
+                                <span class="ml-2">${user.usdot_number || '-'}</span>
+                            </div>
+                            <div>
+                                <span class="text-navy-400">Phone:</span>
+                                <span class="ml-2">${user.phone || '-'}</span>
+                            </div>
+                            <div>
+                                <span class="text-navy-400">Joined:</span>
+                                <span class="ml-2">${new Date(user.created_at).toLocaleDateString()}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Autopay Section -->
+                    <div class="bg-navy-900 rounded-xl p-4">
+                        <h4 class="font-semibold text-gold-400 mb-3">Autopay Settings</h4>
+                        ${autopay ? `
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <span class="text-navy-400">Status:</span>
+                                        <span class="ml-2 px-2 py-1 rounded text-xs font-medium ${autopay.autopay.enabled ? 'bg-green-900 text-green-300' : 'bg-gray-700 text-gray-300'}">
+                                            ${autopay.autopay.enabled ? 'Enabled' : 'Disabled'}
+                                        </span>
+                                    </div>
+                                    <button onclick="Admin.toggleUserAutopay(${user.id}, ${!autopay.autopay.enabled})"
+                                            class="text-sm px-3 py-1 rounded ${autopay.autopay.enabled ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white">
+                                        ${autopay.autopay.enabled ? 'Disable Autopay' : 'Enable Autopay'}
+                                    </button>
+                                </div>
+                                ${autopay.autopay.has_card ? `
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <span class="text-navy-400">Card on File:</span>
+                                            <span class="ml-2">${autopay.autopay.card_brand} ****${autopay.autopay.card_last4}</span>
+                                        </div>
+                                        <button onclick="Admin.removeUserCard(${user.id})"
+                                                class="text-sm px-3 py-1 rounded bg-red-600 hover:bg-red-700 text-white">
+                                            Remove Card
+                                        </button>
+                                    </div>
+                                ` : `
+                                    <div class="text-navy-400 text-sm">No card on file</div>
+                                `}
+
+                                ${autopay.upcoming_renewals && autopay.upcoming_renewals.length > 0 ? `
+                                    <div class="mt-4">
+                                        <h5 class="text-sm font-medium text-navy-300 mb-2">Upcoming Renewals (next 30 days)</h5>
+                                        <div class="space-y-2">
+                                            ${autopay.upcoming_renewals.map(r => `
+                                                <div class="flex items-center justify-between bg-navy-800 rounded px-3 py-2 text-sm">
+                                                    <div>
+                                                        <span class="px-2 py-0.5 rounded text-xs font-medium bg-navy-700">${r.type.toUpperCase()}</span>
+                                                        <span class="ml-2 text-navy-400">Expires: ${new Date(r.expiry_date).toLocaleDateString()}</span>
+                                                        <span class="ml-2">$${parseFloat(r.amount_paid || 0).toFixed(2)}</span>
+                                                    </div>
+                                                    <button onclick="Admin.cancelRenewal(${user.id}, '${r.type}', ${r.id})"
+                                                            class="text-xs px-2 py-1 rounded bg-orange-600 hover:bg-orange-700 text-white">
+                                                        Cancel Renewal
+                                                    </button>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : '<div class="text-navy-400 text-sm">Unable to load autopay info</div>'}
+                    </div>
+
+                    <!-- Orders Section -->
+                    <div class="bg-navy-900 rounded-xl p-4">
+                        <h4 class="font-semibold text-gold-400 mb-3">Orders Summary</h4>
+                        <div class="grid grid-cols-3 gap-4 text-center">
+                            <div class="bg-navy-800 rounded-lg p-3">
+                                <div class="text-2xl font-bold text-blue-400">${orders.tariff.length}</div>
+                                <div class="text-xs text-navy-400">Tariff Orders</div>
+                            </div>
+                            <div class="bg-navy-800 rounded-lg p-3">
+                                <div class="text-2xl font-bold text-green-400">${orders.boc3.length}</div>
+                                <div class="text-xs text-navy-400">BOC-3 Orders</div>
+                            </div>
+                            <div class="bg-navy-800 rounded-lg p-3">
+                                <div class="text-2xl font-bold text-gold-400">${orders.arbitration.length}</div>
+                                <div class="text-xs text-navy-400">Arbitration</div>
+                            </div>
+                        </div>
+
+                        ${orders.tariff.length + orders.boc3.length + orders.arbitration.length > 0 ? `
+                            <div class="mt-4 max-h-48 overflow-y-auto">
+                                <table class="w-full text-sm">
+                                    <thead class="text-xs text-navy-400 uppercase">
+                                        <tr>
+                                            <th class="text-left py-2">Type</th>
+                                            <th class="text-left py-2">Status</th>
+                                            <th class="text-left py-2">Date</th>
+                                            <th class="text-left py-2">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-navy-700">
+                                        ${[...orders.tariff.map(o => ({...o, type: 'tariff'})),
+                                           ...orders.boc3.map(o => ({...o, type: 'boc3'})),
+                                           ...orders.arbitration.map(o => ({...o, type: 'arbitration'}))]
+                                          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                                          .slice(0, 10)
+                                          .map(o => `
+                                            <tr>
+                                                <td class="py-2">
+                                                    <span class="px-2 py-0.5 rounded text-xs font-medium ${o.type === 'tariff' ? 'bg-blue-900 text-blue-300' : o.type === 'boc3' ? 'bg-green-900 text-green-300' : 'bg-gold-900 text-gold-300'}">
+                                                        ${o.type.toUpperCase()}
+                                                    </span>
+                                                </td>
+                                                <td class="py-2">${o.status}</td>
+                                                <td class="py-2 text-navy-400">${new Date(o.created_at).toLocaleDateString()}</td>
+                                                <td class="py-2">$${parseFloat(o.amount_paid || 0).toFixed(2)}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            },
+
+            closeUserModal() {
+                document.getElementById('user-modal').classList.add('hidden');
+            },
+
+            async toggleUserAutopay(userId, enabled) {
+                if (!confirm(`${enabled ? 'Enable' : 'Disable'} autopay for this user?`)) return;
+
+                const result = await Auth.request(`/admin/users/${userId}/autopay`, {
+                    method: 'PATCH',
+                    body: JSON.stringify({ enabled })
+                });
+
                 if (result.success) {
-                    alert('User: ' + result.data.user.email + '\nCompany: ' + result.data.user.company_name + '\nMC#: ' + result.data.user.mc_number + '\nOrders: ' + (result.data.tariff_orders.length + result.data.boc3_orders.length + result.data.arbitration_enrollments.length));
+                    this.viewUser(userId); // Refresh modal
+                } else {
+                    alert(result.message);
+                }
+            },
+
+            async removeUserCard(userId) {
+                if (!confirm('Remove this user\'s saved card? This will also disable autopay.')) return;
+
+                const result = await Auth.request(`/admin/users/${userId}/autopay/card`, {
+                    method: 'DELETE'
+                });
+
+                if (result.success) {
+                    this.viewUser(userId); // Refresh modal
+                } else {
+                    alert(result.message);
+                }
+            },
+
+            async cancelRenewal(userId, serviceType, serviceId) {
+                if (!confirm('Cancel auto-renewal for this service? The service will still expire on its expiry date.')) return;
+
+                const result = await Auth.request(`/admin/users/${userId}/cancel-renewal`, {
+                    method: 'POST',
+                    body: JSON.stringify({ service_type: serviceType, service_id: serviceId })
+                });
+
+                if (result.success) {
+                    alert('Renewal cancelled');
+                    this.viewUser(userId); // Refresh modal
+                } else {
+                    alert(result.message);
                 }
             },
 
@@ -499,6 +830,72 @@
                 } else {
                     resultDiv.innerHTML = `<span class="text-red-400">${result.message}</span>`;
                 }
+            },
+
+            async loadRequests() {
+                const status = document.getElementById('filter-request-status').value;
+                const result = await Auth.request('/admin/pricing-requests?status=' + status);
+                const tbody = document.getElementById('requests-table');
+
+                if (!result.success || !result.data.requests.length) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-navy-400">No requests found</td></tr>';
+                    document.getElementById('requests-badge').classList.add('hidden');
+                    return;
+                }
+
+                // Update badge count for pending
+                const pendingCount = result.data.requests.filter(r => r.status === 'pending').length;
+                const badge = document.getElementById('requests-badge');
+                if (pendingCount > 0) {
+                    badge.textContent = pendingCount;
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+
+                tbody.innerHTML = result.data.requests.map(req => `
+                    <tr class="hover:bg-navy-700">
+                        <td class="px-4 py-3 text-sm">${req.company_name || '-'}</td>
+                        <td class="px-4 py-3 text-sm">${req.mc_number || '-'}</td>
+                        <td class="px-4 py-3 text-sm">
+                            <span class="px-2 py-1 rounded text-xs font-medium bg-navy-700">${req.current_method}</span>
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            <span class="px-2 py-1 rounded text-xs font-medium bg-gold-900 text-gold-300">${req.requested_method}</span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-navy-400">${new Date(req.created_at).toLocaleDateString()}</td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 rounded text-xs font-medium ${
+                                req.status === 'approved' ? 'bg-green-900 text-green-300' :
+                                req.status === 'rejected' ? 'bg-red-900 text-red-300' :
+                                'bg-yellow-900 text-yellow-300'
+                            }">
+                                ${req.status}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm">
+                            ${req.status === 'pending' ? `
+                                <button onclick="Admin.processRequest(${req.id}, '${req.company_name}', '${req.current_method}', '${req.requested_method}')" class="text-gold-400 hover:text-gold-300">Process</button>
+                            ` : `
+                                <span class="text-navy-500">-</span>
+                            `}
+                        </td>
+                    </tr>
+                `).join('');
+            },
+
+            processRequest(id, company, currentMethod, requestedMethod) {
+                document.getElementById('request-id').value = id;
+                document.getElementById('request-company').textContent = company;
+                document.getElementById('request-current').textContent = currentMethod;
+                document.getElementById('request-new').textContent = requestedMethod;
+                document.getElementById('request-decision').value = 'approved';
+                document.getElementById('request-notes').value = '';
+                document.getElementById('request-modal').classList.remove('hidden');
+            },
+
+            closeRequestModal() {
+                document.getElementById('request-modal').classList.add('hidden');
             }
         };
 

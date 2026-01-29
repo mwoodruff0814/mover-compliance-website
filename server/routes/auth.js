@@ -97,6 +97,7 @@ router.post('/register', sanitizeBody, validateRequest(schemas.register), async 
 
 // Login
 router.post('/login', sanitizeBody, validateRequest(schemas.login), async (req, res) => {
+  console.log('Login route hit, body:', JSON.stringify(req.body));
   try {
     const { email, password } = req.body;
 
@@ -145,10 +146,10 @@ router.post('/login', sanitizeBody, validateRequest(schemas.login), async (req, 
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Login error:', error.message, error.stack);
     res.status(500).json({
       success: false,
-      message: 'Login failed'
+      message: 'Login failed: ' + error.message
     });
   }
 });

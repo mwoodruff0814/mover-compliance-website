@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bundle Checkout | Interstate Compliance Solutions</title>
+    <meta name="description" content="Complete your FMCSA compliance bundle purchase. Get all the services you need at a discounted rate.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:wght@600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: { 50: '#f0f3f9', 100: '#d9e0ed', 200: '#b3c1db', 300: '#8da2c9', 400: '#6783b7', 500: '#4164a5', 600: '#345084', 700: '#273c63', 800: '#1a2842', 900: '#0a1628', 950: '#050b14' },
+                        gold: { 50: '#fdf9ef', 100: '#f9f0d6', 200: '#f2deac', 300: '#eac978', 400: '#e2b44e', 500: '#c9a227', 600: '#b8891d', 700: '#966a19', 800: '#7a551b', 900: '#65461a', 950: '#39240b' },
+                        cream: { 50: '#fefdfb', 100: '#fdf9f3', 200: '#faf3e6' }
+                    },
+                    fontFamily: { sans: ['DM Sans', 'sans-serif'], display: ['Fraunces', 'serif'] }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        input, select, textarea { color: #0a1628 !important; background-color: #fff !important; }
+        input::placeholder, textarea::placeholder { color: #6b7280 !important; }
+        .step-indicator { transition: all 0.3s ease; }
+        .step-indicator.active { background-color: #c9a227; color: #0a1628; }
+        .step-indicator.completed { background-color: #10b981; color: white; }
+        .step-content { display: none; }
+        .step-content.active { display: block; }
+    </style>
+</head>
+<body class="font-sans" style="background-color: #fefdfb; color: #0a1628;">
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 shadow-lg" style="background-color: #0a1628; color: #ffffff;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16 lg:h-20">
+                <a href="/" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-gold-500 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-navy-900" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4z"/>
+                        </svg>
+                    </div>
+                    <span class="font-display font-bold text-xl">Interstate Compliance</span>
+                </a>
+                <div class="hidden lg:flex items-center space-x-6">
+                    <a href="/" class="hover:text-gold-400 transition-colors">Home</a>
+                    <a href="/pricing" class="hover:text-gold-400 transition-colors">Pricing</a>
+                    <a href="/contact" class="hover:text-gold-400 transition-colors">Contact</a>
+                    <a href="/login" class="border border-white/30 hover:bg-white/10 px-4 py-2 rounded-lg transition-colors">Client Login</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="py-8 lg:py-12" style="background: linear-gradient(135deg, #0a1628 0%, #1a2842 50%, #0a1628 100%);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h1 class="font-display text-3xl lg:text-4xl font-bold mb-4" style="color: #ffffff;">Complete Your Bundle Purchase</h1>
+                <p class="text-lg" style="color: #b3c1db;" id="bundle-subtitle">Get everything you need for FMCSA compliance</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Progress Indicator -->
+    <div class="bg-white border-b border-navy-100 py-4">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div id="step-1-indicator" class="step-indicator active w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                    <span class="ml-2 text-sm font-medium hidden sm:inline">Bundle</span>
+                </div>
+                <div class="flex-1 h-1 bg-navy-100 mx-2"><div id="progress-1-2" class="h-full bg-gold-500 transition-all" style="width: 0%"></div></div>
+                <div class="flex items-center">
+                    <div id="step-2-indicator" class="step-indicator w-8 h-8 rounded-full bg-navy-100 flex items-center justify-center text-sm font-bold text-navy-400">2</div>
+                    <span class="ml-2 text-sm font-medium hidden sm:inline text-navy-400" id="step-2-label">Company</span>
+                </div>
+                <div class="flex-1 h-1 bg-navy-100 mx-2"><div id="progress-2-3" class="h-full bg-gold-500 transition-all" style="width: 0%"></div></div>
+                <div class="flex items-center" id="step-3-container">
+                    <div id="step-3-indicator" class="step-indicator w-8 h-8 rounded-full bg-navy-100 flex items-center justify-center text-sm font-bold text-navy-400">3</div>
+                    <span class="ml-2 text-sm font-medium hidden sm:inline text-navy-400" id="step-3-label">Tariff</span>
+                </div>
+                <div class="flex-1 h-1 bg-navy-100 mx-2" id="progress-3-4-container"><div id="progress-3-4" class="h-full bg-gold-500 transition-all" style="width: 0%"></div></div>
+                <div class="flex items-center">
+                    <div id="step-4-indicator" class="step-indicator w-8 h-8 rounded-full bg-navy-100 flex items-center justify-center text-sm font-bold text-navy-400">4</div>
+                    <span class="ml-2 text-sm font-medium hidden sm:inline text-navy-400" id="step-4-label">Payment</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="py-8 lg:py-12">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-3 gap-8">
+                <!-- Form Column -->
+                <div class="lg:col-span-2">
+                    <form id="bundle-form" class="bg-white rounded-2xl shadow-lg p-6 lg:p-8">
+                        <!-- Step 1: Bundle Selection & Company Info -->
+                        <div id="step-1" class="step-content active">
+                            <h2 class="font-display text-xl font-bold mb-6">Your Information</h2>
+
+                            <!-- Company Info -->
+                            <div class="space-y-4">
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">Company Name *</label>
+                                        <input type="text" id="company_name" required class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">MC Number *</label>
+                                        <input type="text" id="mc_number" required class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500" placeholder="MC-123456">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">USDOT Number *</label>
+                                        <input type="text" id="usdot_number" required class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">Email *</label>
+                                        <input type="email" id="email" required class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">Phone *</label>
+                                        <input type="tel" id="phone" required class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">Business Address *</label>
+                                        <input type="text" id="address" required class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500" placeholder="Street address">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">City *</label>
+                                        <input type="text" id="city" required class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-navy-900 mb-2">State *</label>
+                                            <input type="text" id="state" required maxlength="2" class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500" placeholder="TX">
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-navy-900 mb-2">ZIP *</label>
+                                            <input type="text" id="zip" required class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- BOC-3 Filing Type -->
+                                <div class="border-t border-navy-100 pt-6 mt-6">
+                                    <h3 class="font-semibold text-navy-900 mb-4">BOC-3 Filing Type</h3>
+                                    <div class="space-y-3">
+                                        <label class="flex items-start p-4 bg-navy-50 rounded-lg cursor-pointer border-2 border-transparent hover:border-gold-300 transition-colors">
+                                            <input type="radio" name="boc3_type" value="new" checked class="mt-1 w-4 h-4 text-gold-500 border-navy-300 focus:ring-gold-500">
+                                            <div class="ml-3">
+                                                <span class="font-medium text-navy-900">New Filing</span>
+                                                <p class="text-sm text-navy-600">First-time BOC-3 filing for new authority</p>
+                                            </div>
+                                        </label>
+                                        <label class="flex items-start p-4 bg-navy-50 rounded-lg cursor-pointer border-2 border-transparent hover:border-gold-300 transition-colors">
+                                            <input type="radio" name="boc3_type" value="transfer" class="mt-1 w-4 h-4 text-gold-500 border-navy-300 focus:ring-gold-500">
+                                            <div class="ml-3">
+                                                <span class="font-medium text-navy-900">Transfer</span>
+                                                <p class="text-sm text-navy-600">Transfer from another process agent</p>
+                                            </div>
+                                        </label>
+                                        <label class="flex items-start p-4 bg-navy-50 rounded-lg cursor-pointer border-2 border-transparent hover:border-gold-300 transition-colors">
+                                            <input type="radio" name="boc3_type" value="reinstatement" class="mt-1 w-4 h-4 text-gold-500 border-navy-300 focus:ring-gold-500">
+                                            <div class="ml-3">
+                                                <span class="font-medium text-navy-900">Reinstatement</span>
+                                                <p class="text-sm text-navy-600">Reinstate previously revoked authority</p>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end mt-8">
+                                <button type="button" onclick="nextStep()" class="bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold px-8 py-3 rounded-lg transition-colors">
+                                    Continue
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Tariff Setup (Startup Bundle Only) -->
+                        <div id="step-2" class="step-content">
+                            <h2 class="font-display text-xl font-bold mb-2">Tariff Setup</h2>
+                            <p class="text-navy-600 text-sm mb-6">Enter your rates for your custom tariff document. These cannot be changed after purchase.</p>
+
+                            <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-6">
+                                <p class="text-sm text-amber-800"><strong>Important:</strong> Rates cannot be changed after purchase. Please double-check all rates before submitting.</p>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div class="grid md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">Pricing Method *</label>
+                                        <select id="pricing_method" required class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                            <option value="">Select pricing method...</option>
+                                            <option value="weight">Weight-Based (per lb)</option>
+                                            <option value="cubic">Cubic Feet Based</option>
+                                            <option value="hourly">Hourly Rate</option>
+                                            <option value="flat">Flat Rate</option>
+                                            <option value="mixed">Mixed Methods</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-navy-900 mb-2">Service Territory *</label>
+                                        <select id="service_territory" required class="w-full px-4 py-3 border border-navy-200 rounded-lg focus:ring-2 focus:ring-gold-500 focus:border-gold-500">
+                                            <option value="">Select territory...</option>
+                                            <option value="nationwide">Nationwide (All 50 States)</option>
+                                            <option value="regional_ne">Regional - Northeast</option>
+                                            <option value="regional_se">Regional - Southeast</option>
+                                            <option value="regional_mw">Regional - Midwest</option>
+                                            <option value="regional_sw">Regional - Southwest</option>
+                                            <option value="regional_w">Regional - West</option>
+                                            <option value="custom">Custom Territory</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Transportation Rates -->
+                                <div class="bg-navy-50 rounded-lg p-4">
+                                    <h4 class="font-medium text-navy-900 mb-3">Transportation Rates (Line Haul - by Weight)</h4>
+                                    <p class="text-xs text-navy-600 mb-3">Interstate moves must be charged by weight. Enter rate per pound.</p>
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Base Rate (per lb)</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_per_lb" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">0-250 miles (per lb)</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_per_lb_250" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">251-500 miles (per lb)</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_per_lb_500" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">501+ miles (per lb)</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_per_lb_1000" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Loading Labor Rates -->
+                                <div class="bg-navy-50 rounded-lg p-4">
+                                    <h4 class="font-medium text-navy-900 mb-3">Loading Labor at Origin</h4>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Per Man Per Hour</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_loading_per_man" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Min Hours</label>
+                                            <input type="number" id="min_hours_loading" step="0.5" min="0" class="w-full px-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="2">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Min Men</label>
+                                            <input type="number" id="min_men_loading" step="1" min="1" class="w-full px-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="2">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Unloading Labor Rates -->
+                                <div class="bg-navy-50 rounded-lg p-4">
+                                    <h4 class="font-medium text-navy-900 mb-3">Unloading Labor at Destination</h4>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Per Man Per Hour</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_unloading_per_man" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Min Hours</label>
+                                            <input type="number" id="min_hours_unloading" step="0.5" min="0" class="w-full px-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="2">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Min Men</label>
+                                            <input type="number" id="min_men_unloading" step="1" min="1" class="w-full px-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="2">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Minimum Charges -->
+                                <div class="bg-navy-50 rounded-lg p-4">
+                                    <h4 class="font-medium text-navy-900 mb-3">Minimum Charges</h4>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Local Move Min</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="min_local" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Long Distance Min</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="min_longdistance" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Minimum Hours</label>
+                                            <input type="number" id="min_hours" step="0.5" min="0" class="w-full px-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="2">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Accessorial Rates -->
+                                <div class="bg-navy-50 rounded-lg p-4">
+                                    <h4 class="font-medium text-navy-900 mb-3">Accessorial Charges</h4>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Stair Carry (per flight)</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_stairs" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Long Carry (per 100ft)</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_longcarry" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Shuttle Service</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_shuttle" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Packing (per hour)</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_packing" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Storage (per month)</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_storage" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Waiting Time (per hr)</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_waiting" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Fuel Surcharge (%)</label>
+                                            <div class="relative">
+                                                <input type="number" id="rate_fuel_surcharge" step="0.5" min="0" max="100" class="w-full px-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0">
+                                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-navy-400">%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Specialty Items -->
+                                <div class="bg-navy-50 rounded-lg p-4">
+                                    <h4 class="font-medium text-navy-900 mb-3">Specialty Items</h4>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Piano (upright)</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_piano_upright" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Piano (grand)</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_piano_grand" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Pool Table</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_pool_table" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Safe (per 100 lbs)</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_safe" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Gym Equipment</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_gym" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-navy-600 mb-1">Appliance Service</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-navy-400">$</span>
+                                                <input type="number" id="rate_appliance" step="0.01" min="0" class="w-full pl-7 pr-3 py-2 text-sm border border-navy-200 rounded-lg" placeholder="0.00">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between mt-8">
+                                <button type="button" onclick="prevStep()" class="border-2 border-navy-200 hover:bg-navy-50 text-navy-700 font-semibold px-6 py-3 rounded-lg transition-colors">
+                                    Back
+                                </button>
+                                <button type="button" onclick="nextStep()" class="bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold px-8 py-3 rounded-lg transition-colors">
+                                    Continue to Payment
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Payment (or Step 2 for Essentials) -->
+                        <div id="step-3" class="step-content">
+                            <h2 class="font-display text-xl font-bold mb-6">Payment</h2>
+
+                            <!-- Card Payment Section -->
+                            <div class="mb-6">
+                                <label class="block text-sm font-medium text-navy-900 mb-2">Card Details *</label>
+                                <div id="card-container" class="mb-4 p-4 border border-navy-200 rounded-lg min-h-[50px]">
+                                    <p class="text-navy-400 text-sm">Loading payment form...</p>
+                                </div>
+                                <div id="payment-status" class="hidden text-sm mb-4"></div>
+                            </div>
+
+                            <!-- Autopay Option -->
+                            <div class="bg-navy-50 rounded-lg p-4 mb-6">
+                                <label class="flex items-start cursor-pointer">
+                                    <input type="checkbox" id="enable_autopay" class="mt-1 w-5 h-5 text-gold-500 border-navy-300 rounded focus:ring-gold-500">
+                                    <div class="ml-3">
+                                        <span class="font-medium text-navy-900">Enable Autopay</span>
+                                        <p class="text-sm text-navy-600 mt-1">Save your card for automatic renewal. Your services will automatically renew before they expire, so you never lose compliance coverage. You can cancel anytime from your dashboard.</p>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div id="form-error" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4"></div>
+
+                            <div class="flex justify-between mt-8">
+                                <button type="button" onclick="prevStep()" class="border-2 border-navy-200 hover:bg-navy-50 text-navy-700 font-semibold px-6 py-3 rounded-lg transition-colors">
+                                    Back
+                                </button>
+                                <button type="submit" id="submit-btn" disabled class="bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold px-8 py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <span id="submit-text">Complete Purchase</span>
+                                    <span id="submit-loading" class="hidden">Processing...</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: Confirmation -->
+                        <div id="step-4" class="step-content">
+                            <div class="text-center py-8">
+                                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </div>
+                                <h2 class="font-display text-2xl font-bold mb-2">Order Complete!</h2>
+                                <p class="text-navy-600 mb-6">Your bundle has been successfully purchased.</p>
+                                <p class="text-sm text-navy-500 mb-8">Order ID: <span id="order-id-display" class="font-mono font-medium">---</span></p>
+
+                                <div class="bg-navy-50 rounded-lg p-6 text-left mb-8">
+                                    <h3 class="font-semibold text-navy-900 mb-4">What's Next?</h3>
+                                    <ul class="space-y-3 text-sm text-navy-600">
+                                        <li class="flex items-start">
+                                            <svg class="w-5 h-5 text-gold-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            <span>Check your email for confirmation and receipt</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <svg class="w-5 h-5 text-gold-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            <span>Your BOC-3 will be filed with FMCSA within 1-2 business days</span>
+                                        </li>
+                                        <li class="flex items-start" id="tariff-next-step">
+                                            <svg class="w-5 h-5 text-gold-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            <span>Your tariff document will be ready within 3-5 business days</span>
+                                        </li>
+                                        <li class="flex items-start">
+                                            <svg class="w-5 h-5 text-gold-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            <span>Access all your documents from your dashboard</span>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                <a href="/dashboard" class="inline-block bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold px-8 py-3 rounded-lg transition-colors">
+                                    Go to Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Order Summary Sidebar -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-2xl shadow-lg p-6 sticky top-32">
+                        <h3 class="font-display text-lg font-bold mb-4">Order Summary</h3>
+
+                        <div id="bundle-summary" class="mb-6">
+                            <!-- Populated by JS -->
+                        </div>
+
+                        <div class="border-t border-navy-100 pt-4">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-navy-600">Subtotal</span>
+                                <span class="text-navy-400 line-through" id="subtotal-display">$497</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-4">
+                                <span class="text-green-600 font-medium">Bundle Discount</span>
+                                <span class="text-green-600 font-medium" id="discount-display">-$48</span>
+                            </div>
+                            <div class="flex justify-between items-center text-lg font-bold">
+                                <span>Total</span>
+                                <span class="text-gold-600" id="total-display">$449</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 pt-4 border-t border-navy-100">
+                            <div class="flex items-center text-sm text-navy-600">
+                                <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                </svg>
+                                Secure checkout powered by Square
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-navy-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-navy-400">&copy; 2024 Interstate Compliance Solutions. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <!-- Square Web Payments SDK -->
+    <script src="https://web.squarecdn.com/v1/square.js"></script>
+    <script>
+        // Bundle configuration
+        const BUNDLES = {
+            startup: {
+                name: 'New Authority Startup Bundle',
+                price: 449,
+                originalPrice: 497,
+                discount: 48,
+                includesTariff: true,
+                services: [
+                    { name: 'Arbitration Program', price: 99 },
+                    { name: 'Tariff Publishing', price: 299 },
+                    { name: 'BOC-3 Process Agent', price: 99 }
+                ]
+            },
+            essentials: {
+                name: 'Essentials Bundle',
+                price: 149,
+                originalPrice: 198,
+                discount: 49,
+                includesTariff: false,
+                services: [
+                    { name: 'Arbitration Program', price: 99 },
+                    { name: 'BOC-3 Process Agent', price: 99 }
+                ]
+            }
+        };
+
+        let currentStep = 1;
+        let totalSteps = 4; // Will be 3 for essentials
+        let selectedBundle = null;
+        let card = null;
+        let payments = null;
+
+        // Get bundle type from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const bundleType = urlParams.get('type') || 'startup';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            selectedBundle = BUNDLES[bundleType] || BUNDLES.startup;
+
+            // Adjust steps for essentials (no tariff step)
+            if (!selectedBundle.includesTariff) {
+                totalSteps = 3;
+                document.getElementById('step-3-container').style.display = 'none';
+                document.getElementById('progress-3-4-container').style.display = 'none';
+                // Re-number the payment step
+                document.getElementById('step-4-indicator').textContent = '3';
+                document.getElementById('step-4-label').textContent = 'Payment';
+                // Hide tariff next step in confirmation
+                document.getElementById('tariff-next-step').style.display = 'none';
+            }
+
+            updateBundleSummary();
+            updateProgressIndicator();
+            initSquarePayment();
+
+            // Pre-fill if logged in
+            if (typeof Auth !== 'undefined' && Auth.isLoggedIn()) {
+                const user = Auth.getUser();
+                if (user) {
+                    document.getElementById('company_name').value = user.company_name || '';
+                    document.getElementById('mc_number').value = user.mc_number || '';
+                    document.getElementById('usdot_number').value = user.usdot_number || '';
+                    document.getElementById('email').value = user.email || '';
+                    document.getElementById('phone').value = user.phone || '';
+                }
+            }
+
+            // Format MC number
+            document.getElementById('mc_number').addEventListener('input', function() {
+                if (typeof InterstateCompliance !== 'undefined') {
+                    InterstateCompliance.formatMCNumber(this);
+                }
+            });
+
+            // Format phone
+            document.getElementById('phone').addEventListener('input', function() {
+                if (typeof InterstateCompliance !== 'undefined') {
+                    InterstateCompliance.formatPhoneNumber(this);
+                }
+            });
+        });
+
+        function updateBundleSummary() {
+            const summary = document.getElementById('bundle-summary');
+            const subtitle = document.getElementById('bundle-subtitle');
+
+            subtitle.textContent = selectedBundle.name;
+
+            let html = `<div class="space-y-3">`;
+            selectedBundle.services.forEach(service => {
+                html += `
+                    <div class="flex items-center text-sm">
+                        <svg class="w-5 h-5 text-gold-500 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        <span class="flex-1">${service.name}</span>
+                        <span class="text-navy-400">$${service.price}</span>
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            summary.innerHTML = html;
+
+            document.getElementById('subtotal-display').textContent = `$${selectedBundle.originalPrice}`;
+            document.getElementById('discount-display').textContent = `-$${selectedBundle.discount}`;
+            document.getElementById('total-display').textContent = `$${selectedBundle.price}`;
+        }
+
+        function updateProgressIndicator() {
+            // Update step indicators
+            for (let i = 1; i <= 4; i++) {
+                const indicator = document.getElementById(`step-${i}-indicator`);
+                const label = document.getElementById(`step-${i}-label`);
+
+                if (!indicator) continue;
+
+                indicator.classList.remove('active', 'completed');
+                if (label) label.classList.remove('text-navy-900');
+                if (label) label.classList.add('text-navy-400');
+
+                if (i < currentStep) {
+                    indicator.classList.add('completed');
+                    indicator.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+                    if (label) {
+                        label.classList.remove('text-navy-400');
+                        label.classList.add('text-navy-900');
+                    }
+                } else if (i === currentStep) {
+                    indicator.classList.add('active');
+                    if (label) {
+                        label.classList.remove('text-navy-400');
+                        label.classList.add('text-navy-900');
+                    }
+                } else {
+                    indicator.classList.remove('bg-navy-100');
+                    indicator.classList.add('bg-navy-100');
+                }
+            }
+
+            // Update progress bars
+            const progress12 = document.getElementById('progress-1-2');
+            const progress23 = document.getElementById('progress-2-3');
+            const progress34 = document.getElementById('progress-3-4');
+
+            if (progress12) progress12.style.width = currentStep > 1 ? '100%' : '0%';
+            if (progress23) progress23.style.width = currentStep > 2 ? '100%' : '0%';
+            if (progress34) progress34.style.width = currentStep > 3 ? '100%' : '0%';
+        }
+
+        function validateStep(step) {
+            if (step === 1) {
+                const fields = ['company_name', 'mc_number', 'usdot_number', 'email', 'phone', 'address', 'city', 'state', 'zip'];
+                for (const field of fields) {
+                    const el = document.getElementById(field);
+                    if (!el.value.trim()) {
+                        el.focus();
+                        showError(`Please fill in all required fields`);
+                        return false;
+                    }
+                }
+                // Validate email
+                const email = document.getElementById('email').value;
+                if (!email.includes('@')) {
+                    showError('Please enter a valid email address');
+                    return false;
+                }
+            }
+
+            if (step === 2 && selectedBundle.includesTariff) {
+                const pricingMethod = document.getElementById('pricing_method').value;
+                const territory = document.getElementById('service_territory').value;
+                if (!pricingMethod || !territory) {
+                    showError('Please select pricing method and service territory');
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('form-error');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            setTimeout(() => errorDiv.classList.add('hidden'), 5000);
+        }
+
+        function nextStep() {
+            if (!validateStep(currentStep)) return;
+
+            // Skip tariff step for essentials bundle
+            if (currentStep === 1 && !selectedBundle.includesTariff) {
+                currentStep = 3; // Skip to payment
+            } else {
+                currentStep++;
+            }
+
+            updateStepDisplay();
+        }
+
+        function prevStep() {
+            // Skip tariff step for essentials bundle
+            if (currentStep === 3 && !selectedBundle.includesTariff) {
+                currentStep = 1;
+            } else {
+                currentStep--;
+            }
+
+            updateStepDisplay();
+        }
+
+        function updateStepDisplay() {
+            // Hide all steps
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+
+            // Show current step
+            let stepElement;
+            if (!selectedBundle.includesTariff && currentStep >= 2) {
+                // For essentials, step 3 is payment (rendered as step-3), step 4 is confirmation (step-4)
+                stepElement = document.getElementById(`step-${currentStep}`);
+            } else {
+                stepElement = document.getElementById(`step-${currentStep}`);
+            }
+
+            if (stepElement) {
+                stepElement.classList.add('active');
+            }
+
+            updateProgressIndicator();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Square Payment initialization
+        async function initSquarePayment() {
+            const cardContainer = document.getElementById('card-container');
+            const submitBtn = document.getElementById('submit-btn');
+
+            try {
+                const configResponse = await fetch('/api/payments/config');
+                const configData = await configResponse.json();
+
+                if (!configData.success || !configData.data.configured) {
+                    throw new Error('Payment system not configured');
+                }
+
+                if (!window.Square) {
+                    throw new Error('Square SDK not loaded');
+                }
+
+                payments = window.Square.payments(configData.data.applicationId, configData.data.locationId);
+                card = await payments.card();
+                await card.attach('#card-container');
+
+                submitBtn.disabled = false;
+            } catch (error) {
+                console.error('Square initialization error:', error);
+                cardContainer.innerHTML = `
+                    <div class="text-center py-4">
+                        <p class="text-red-600 font-medium mb-2">Payment system unavailable</p>
+                        <p class="text-navy-500 text-sm">Please contact us to complete your order.</p>
+                    </div>
+                `;
+                submitBtn.disabled = true;
+            }
+        }
+
+        // Form submission
+        document.getElementById('bundle-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (!card) {
+                showError('Payment form not loaded. Please refresh the page.');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-btn');
+            const submitText = document.getElementById('submit-text');
+            const submitLoading = document.getElementById('submit-loading');
+
+            submitBtn.disabled = true;
+            submitText.classList.add('hidden');
+            submitLoading.classList.remove('hidden');
+
+            try {
+                const email = document.getElementById('email').value;
+                const company_name = document.getElementById('company_name').value;
+                const mc_number = document.getElementById('mc_number').value;
+                const usdot_number = document.getElementById('usdot_number').value;
+                const phone = document.getElementById('phone').value;
+                const address = document.getElementById('address').value;
+                const city = document.getElementById('city').value;
+                const state = document.getElementById('state').value;
+                const zip = document.getElementById('zip').value;
+                const boc3Type = document.querySelector('input[name="boc3_type"]:checked').value;
+                const enableAutopay = document.getElementById('enable_autopay').checked;
+
+                // Tokenize the card
+                const tokenResult = await card.tokenize();
+                if (tokenResult.status !== 'OK') {
+                    throw new Error(tokenResult.errors?.[0]?.message || 'Card validation failed');
+                }
+
+                // Register user if not logged in
+                if (typeof Auth !== 'undefined' && !Auth.isLoggedIn()) {
+                    const password = Math.random().toString(36).slice(-8) + 'A1!';
+                    await Auth.register({
+                        email,
+                        password,
+                        company_name,
+                        mc_number,
+                        usdot_number,
+                        phone
+                    });
+                }
+
+                // Build tariff data if startup bundle
+                let tariffData = null;
+                if (selectedBundle.includesTariff) {
+                    tariffData = {
+                        pricing_method: document.getElementById('pricing_method').value,
+                        service_territory: document.getElementById('service_territory').value,
+                        rates: {
+                            transportation: {
+                                per_lb_base: parseFloat(document.getElementById('rate_per_lb').value) || 0,
+                                per_lb_250: parseFloat(document.getElementById('rate_per_lb_250').value) || 0,
+                                per_lb_500: parseFloat(document.getElementById('rate_per_lb_500').value) || 0,
+                                per_lb_1000: parseFloat(document.getElementById('rate_per_lb_1000').value) || 0
+                            },
+                            loading: {
+                                per_man_hour: parseFloat(document.getElementById('rate_loading_per_man').value) || 0,
+                                min_hours: parseFloat(document.getElementById('min_hours_loading').value) || 2,
+                                min_men: parseInt(document.getElementById('min_men_loading').value) || 2
+                            },
+                            unloading: {
+                                per_man_hour: parseFloat(document.getElementById('rate_unloading_per_man').value) || 0,
+                                min_hours: parseFloat(document.getElementById('min_hours_unloading').value) || 2,
+                                min_men: parseInt(document.getElementById('min_men_unloading').value) || 2
+                            },
+                            minimums: {
+                                local: parseFloat(document.getElementById('min_local').value) || 0,
+                                long_distance: parseFloat(document.getElementById('min_longdistance').value) || 0,
+                                hours: parseFloat(document.getElementById('min_hours').value) || 2
+                            },
+                            accessorial: {
+                                stairs: parseFloat(document.getElementById('rate_stairs').value) || 0,
+                                long_carry: parseFloat(document.getElementById('rate_longcarry').value) || 0,
+                                shuttle: parseFloat(document.getElementById('rate_shuttle').value) || 0,
+                                packing: parseFloat(document.getElementById('rate_packing').value) || 0,
+                                storage: parseFloat(document.getElementById('rate_storage').value) || 0,
+                                waiting: parseFloat(document.getElementById('rate_waiting').value) || 0,
+                                fuel_surcharge: parseFloat(document.getElementById('rate_fuel_surcharge').value) || 0
+                            },
+                            specialty: {
+                                piano_upright: parseFloat(document.getElementById('rate_piano_upright').value) || 0,
+                                piano_grand: parseFloat(document.getElementById('rate_piano_grand').value) || 0,
+                                pool_table: parseFloat(document.getElementById('rate_pool_table').value) || 0,
+                                safe: parseFloat(document.getElementById('rate_safe').value) || 0,
+                                gym: parseFloat(document.getElementById('rate_gym').value) || 0,
+                                appliance: parseFloat(document.getElementById('rate_appliance').value) || 0
+                            }
+                        }
+                    };
+                }
+
+                // Create the bundle order
+                const result = await Auth.request('/orders/bundles', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        bundle_type: bundleType,
+                        source_id: tokenResult.token,
+                        enable_autopay: enableAutopay,
+                        boc3_filing_type: boc3Type,
+                        tariff_data: tariffData,
+                        company_info: {
+                            company_name,
+                            mc_number,
+                            usdot_number,
+                            email,
+                            phone,
+                            address,
+                            city,
+                            state,
+                            zip
+                        }
+                    })
+                });
+
+                if (result.success) {
+                    // Show confirmation
+                    document.getElementById('order-id-display').textContent = result.data.order_id || result.data.id;
+                    currentStep = 4;
+                    updateStepDisplay();
+
+                    if (typeof InterstateCompliance !== 'undefined') {
+                        InterstateCompliance.showToast('Bundle purchased successfully!', 'success');
+                    }
+                } else {
+                    throw new Error(result.message || 'Order failed');
+                }
+            } catch (error) {
+                showError(error.message);
+                submitBtn.disabled = false;
+            } finally {
+                submitText.classList.remove('hidden');
+                submitLoading.classList.add('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

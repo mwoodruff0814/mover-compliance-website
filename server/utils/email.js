@@ -670,6 +670,331 @@ const templates = {
       </body>
       </html>
     `
+  }),
+
+  // Expiration warning - 30 days
+  expirationWarning30: (user, serviceName, expiryDate) => ({
+    subject: `Your ${serviceName} expires in 30 days - Interstate Compliance Solutions`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #0a1628; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #0a1628; color: white; padding: 30px; text-align: center; }
+          .header h1 { margin: 0; color: #c9a227; }
+          .content { padding: 30px; background: #f9f9f9; }
+          .warning-box { background: #fff3cd; border: 1px solid #ffc107; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          .button { display: inline-block; background: #c9a227; color: #0a1628; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 10px 0; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Interstate Compliance Solutions</h1>
+          </div>
+          <div class="content">
+            <h2>Renewal Reminder</h2>
+            <p>Dear ${user.contact_name || user.company_name},</p>
+
+            <div class="warning-box">
+              <strong>Your ${serviceName} expires on ${new Date(expiryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</strong>
+              <p style="margin-bottom: 0;">That's only 30 days away. Renew now to ensure continuous compliance.</p>
+            </div>
+
+            <p>To maintain your FMCSA compliance status, please renew your ${serviceName} before the expiration date.</p>
+
+            <p style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL}/dashboard" class="button">Renew Now</a>
+            </p>
+
+            <p>If you have any questions or need assistance, please contact us.</p>
+          </div>
+          <div class="footer">
+            <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  }),
+
+  // Expiration warning - 5 days (urgent)
+  expirationWarning5: (user, serviceName, expiryDate) => ({
+    subject: `URGENT: Your ${serviceName} expires in 5 days - Interstate Compliance Solutions`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #0a1628; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #c41e3a; color: white; padding: 30px; text-align: center; }
+          .header h1 { margin: 0; color: white; }
+          .content { padding: 30px; background: #f9f9f9; }
+          .urgent-box { background: #f8d7da; border: 2px solid #c41e3a; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          .button { display: inline-block; background: #c41e3a; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 10px 0; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>URGENT RENEWAL NOTICE</h1>
+          </div>
+          <div class="content">
+            <h2>Action Required Immediately</h2>
+            <p>Dear ${user.contact_name || user.company_name},</p>
+
+            <div class="urgent-box">
+              <strong style="color: #c41e3a; font-size: 18px;">Your ${serviceName} expires in 5 DAYS</strong>
+              <p><strong>Expiration Date:</strong> ${new Date(expiryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <p style="margin-bottom: 0;">Failure to renew may result in loss of FMCSA compliance status.</p>
+            </div>
+
+            <p><strong>Don't risk operating out of compliance.</strong> Renew your ${serviceName} today to avoid any interruption in service.</p>
+
+            <p style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL}/dashboard" class="button">RENEW NOW</a>
+            </p>
+
+            <p>Need help? Contact us immediately at ${process.env.COMPANY_PHONE || '1-800-555-0199'}.</p>
+          </div>
+          <div class="footer">
+            <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  }),
+
+  // Autopay reminder - 10 days before
+  autopayReminder10: (user, serviceName, chargeDate, amount, cardLast4, cardBrand) => ({
+    subject: `Upcoming Autopay: ${serviceName} renewal in 10 days - Interstate Compliance Solutions`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #0a1628; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #0a1628; color: white; padding: 30px; text-align: center; }
+          .header h1 { margin: 0; color: #c9a227; }
+          .content { padding: 30px; background: #f9f9f9; }
+          .info-box { background: #e8f4f8; border: 1px solid #17a2b8; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          .payment-details { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #ddd; }
+          .button { display: inline-block; background: #6c757d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 14px; margin: 5px; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Interstate Compliance Solutions</h1>
+            <p>Autopay Notification</p>
+          </div>
+          <div class="content">
+            <h2>Upcoming Automatic Renewal</h2>
+            <p>Dear ${user.contact_name || user.company_name},</p>
+
+            <div class="info-box">
+              <p style="margin: 0;"><strong>Your ${serviceName} will be automatically renewed in 10 days.</strong></p>
+            </div>
+
+            <div class="payment-details">
+              <h3 style="margin-top: 0;">Payment Details</h3>
+              <p><strong>Service:</strong> ${serviceName}</p>
+              <p><strong>Charge Date:</strong> ${new Date(chargeDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+              <p><strong>Amount:</strong> $${(amount / 100).toFixed(2)}</p>
+              <p><strong>Payment Method:</strong> ${cardBrand || 'Card'} ending in ${cardLast4 || '****'}</p>
+            </div>
+
+            <p>No action is required - your service will continue uninterrupted. If you need to update your payment method or cancel autopay, you can do so from your dashboard.</p>
+
+            <p style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL}/dashboard" class="button">Manage Autopay Settings</a>
+            </p>
+          </div>
+          <div class="footer">
+            <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  }),
+
+  // Autopay success
+  autopaySuccess: (user, serviceName, amount, newExpiryDate, cardLast4) => ({
+    subject: `Renewal Successful: ${serviceName} - Interstate Compliance Solutions`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #0a1628; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #28a745; color: white; padding: 30px; text-align: center; }
+          .header h1 { margin: 0; }
+          .content { padding: 30px; background: #f9f9f9; }
+          .success-box { background: #d4edda; border: 1px solid #28a745; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          .receipt { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border: 1px solid #ddd; }
+          .button { display: inline-block; background: #c9a227; color: #0a1628; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 10px 0; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Renewal Successful!</h1>
+          </div>
+          <div class="content">
+            <p>Dear ${user.contact_name || user.company_name},</p>
+
+            <div class="success-box">
+              <strong>Your ${serviceName} has been successfully renewed!</strong>
+              <p style="margin-bottom: 0;">Your compliance status remains active with no interruption in service.</p>
+            </div>
+
+            <div class="receipt">
+              <h3 style="margin-top: 0;">Receipt</h3>
+              <p><strong>Service:</strong> ${serviceName}</p>
+              <p><strong>Amount Charged:</strong> $${(amount / 100).toFixed(2)}</p>
+              <p><strong>Payment Method:</strong> Card ending in ${cardLast4 || '****'}</p>
+              <p><strong>New Expiration Date:</strong> ${new Date(newExpiryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            </div>
+
+            <p>Your updated documents are available in your dashboard.</p>
+
+            <p style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL}/dashboard" class="button">View Dashboard</a>
+            </p>
+
+            <p>Thank you for your continued trust in Interstate Compliance Solutions.</p>
+          </div>
+          <div class="footer">
+            <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  }),
+
+  // Autopay failed
+  autopayFailed: (user, serviceName, reason, expiryDate) => ({
+    subject: `ACTION REQUIRED: ${serviceName} renewal payment failed - Interstate Compliance Solutions`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #0a1628; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #c41e3a; color: white; padding: 30px; text-align: center; }
+          .header h1 { margin: 0; }
+          .content { padding: 30px; background: #f9f9f9; }
+          .error-box { background: #f8d7da; border: 2px solid #c41e3a; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          .button { display: inline-block; background: #c41e3a; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 10px 0; }
+          .button-secondary { display: inline-block; background: #6c757d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; margin: 5px; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Payment Failed</h1>
+          </div>
+          <div class="content">
+            <h2>Action Required</h2>
+            <p>Dear ${user.contact_name || user.company_name},</p>
+
+            <div class="error-box">
+              <strong>We were unable to process your automatic renewal payment for ${serviceName}.</strong>
+              <p><strong>Reason:</strong> ${reason || 'Payment declined'}</p>
+              <p style="margin-bottom: 0;"><strong>Service Expires:</strong> ${new Date(expiryDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            </div>
+
+            <h3>What to do:</h3>
+            <ol>
+              <li><strong>Update your payment method</strong> - Your card may have expired or been replaced</li>
+              <li><strong>Ensure sufficient funds</strong> - Check that your card has available credit</li>
+              <li><strong>Renew manually</strong> - You can complete the renewal with a different payment method</li>
+            </ol>
+
+            <p style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL}/dashboard" class="button">Update Payment Method</a>
+            </p>
+
+            <p><strong>Don't let your compliance lapse!</strong> Update your payment information as soon as possible to avoid service interruption.</p>
+
+            <p>Need help? Call us at ${process.env.COMPANY_PHONE || '1-800-555-0199'}.</p>
+          </div>
+          <div class="footer">
+            <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  }),
+
+  // Tariff updated (after rate edit)
+  tariffUpdated: (user, order) => ({
+    subject: `Your Tariff has been updated - Interstate Compliance Solutions`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #0a1628; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #0a1628; color: white; padding: 30px; text-align: center; }
+          .header h1 { margin: 0; color: #c9a227; }
+          .content { padding: 30px; background: #f9f9f9; }
+          .info-box { background: #d4edda; border: 1px solid #28a745; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          .button { display: inline-block; background: #c9a227; color: #0a1628; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin: 10px 0; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Interstate Compliance Solutions</h1>
+          </div>
+          <div class="content">
+            <h2>Tariff Document Updated</h2>
+            <p>Dear ${user.contact_name || user.company_name},</p>
+
+            <div class="info-box">
+              <strong>Your Tariff document has been updated with your new rates.</strong>
+              <p style="margin-bottom: 0;">A new PDF has been generated and is ready for download.</p>
+            </div>
+
+            <p><strong>Reminder:</strong> Your updated tariff must be available for public inspection at your principal place of business as required by federal law.</p>
+
+            <p style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL}/dashboard" class="button">Download Updated Tariff</a>
+            </p>
+
+            <p>If you have any questions, please contact us.</p>
+          </div>
+          <div class="footer">
+            <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
   })
 };
 
@@ -787,6 +1112,66 @@ const sendDocumentReadyWithAttachment = async (user, orderType, order, filePath 
   }
 };
 
+// Expiration warning - 30 days
+const sendExpirationWarning30 = async (user, serviceName, expiryDate) => {
+  try {
+    await sendEmail(user.email, templates.expirationWarning30(user, serviceName, expiryDate));
+    console.log('30-day expiration warning sent to:', user.email, 'for', serviceName);
+  } catch (error) {
+    console.error('Failed to send 30-day expiration warning:', error);
+  }
+};
+
+// Expiration warning - 5 days
+const sendExpirationWarning5 = async (user, serviceName, expiryDate) => {
+  try {
+    await sendEmail(user.email, templates.expirationWarning5(user, serviceName, expiryDate));
+    console.log('5-day expiration warning sent to:', user.email, 'for', serviceName);
+  } catch (error) {
+    console.error('Failed to send 5-day expiration warning:', error);
+  }
+};
+
+// Autopay reminder - 10 days
+const sendAutopayReminder10 = async (user, serviceName, chargeDate, amount, cardLast4, cardBrand) => {
+  try {
+    await sendEmail(user.email, templates.autopayReminder10(user, serviceName, chargeDate, amount, cardLast4, cardBrand));
+    console.log('Autopay reminder sent to:', user.email, 'for', serviceName);
+  } catch (error) {
+    console.error('Failed to send autopay reminder:', error);
+  }
+};
+
+// Autopay success
+const sendAutopaySuccess = async (user, serviceName, amount, newExpiryDate, cardLast4) => {
+  try {
+    await sendEmail(user.email, templates.autopaySuccess(user, serviceName, amount, newExpiryDate, cardLast4));
+    console.log('Autopay success email sent to:', user.email, 'for', serviceName);
+  } catch (error) {
+    console.error('Failed to send autopay success email:', error);
+  }
+};
+
+// Autopay failed
+const sendAutopayFailed = async (user, serviceName, reason, expiryDate) => {
+  try {
+    await sendEmail(user.email, templates.autopayFailed(user, serviceName, reason, expiryDate));
+    console.log('Autopay failed email sent to:', user.email, 'for', serviceName);
+  } catch (error) {
+    console.error('Failed to send autopay failed email:', error);
+  }
+};
+
+// Tariff updated
+const sendTariffUpdated = async (user, order) => {
+  try {
+    await sendEmail(user.email, templates.tariffUpdated(user, order));
+    console.log('Tariff updated email sent to:', user.email);
+  } catch (error) {
+    console.error('Failed to send tariff updated email:', error);
+  }
+};
+
 module.exports = {
   sendEmail,
   sendEnrollmentConfirmation,
@@ -799,5 +1184,11 @@ module.exports = {
   sendAdminPurchaseNotification,
   sendWelcomeEmail,
   sendBOC3FilingComplete,
-  sendDocumentReadyWithAttachment
+  sendDocumentReadyWithAttachment,
+  sendExpirationWarning30,
+  sendExpirationWarning5,
+  sendAutopayReminder10,
+  sendAutopaySuccess,
+  sendAutopayFailed,
+  sendTariffUpdated
 };

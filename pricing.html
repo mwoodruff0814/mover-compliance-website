@@ -115,12 +115,12 @@
                             </div>
                             <div>
                                 <h3 class="font-semibold text-lg">Tariff Publishing</h3>
-                                <p class="text-sm text-navy-500">One-time fee</p>
+                                <p class="text-sm text-navy-500">Annual fee</p>
                             </div>
                         </div>
                         <div class="mb-6">
                             <span class="text-4xl font-bold">$299</span>
-                            <span class="text-navy-500">one-time</span>
+                            <span class="text-navy-500">/year</span>
                         </div>
                         <ul class="space-y-3 mb-8 text-sm">
                             <li class="flex items-center">
@@ -194,7 +194,7 @@
                 <p class="text-navy-300 max-w-2xl mx-auto">Get everything you need for FMCSA compliance at a discounted rate</p>
             </div>
 
-            <div class="grid lg:grid-cols-3 gap-8">
+            <div class="grid lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
                 <!-- Startup Bundle -->
                 <div class="bg-white rounded-2xl overflow-hidden relative">
                     <div class="absolute top-4 right-4">
@@ -226,7 +226,7 @@
                                 Compliance Forms Package
                             </li>
                         </ul>
-                        <a href="/register?bundle=startup" class="block w-full text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold py-4 rounded-lg transition-colors">
+                        <a href="/bundle-checkout?type=startup" class="block w-full text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold py-4 rounded-lg transition-colors">
                             Get Started
                         </a>
                     </div>
@@ -238,10 +238,10 @@
                         <h3 class="font-display text-xl font-bold mb-2">Essentials Bundle</h3>
                         <p class="text-navy-600 text-sm mb-6">Core compliance services</p>
                         <div class="mb-6">
-                            <span class="text-sm text-navy-400 line-through">$297</span>
-                            <span class="text-4xl font-bold text-navy-900 ml-2">$249</span>
+                            <span class="text-sm text-navy-400 line-through">$198</span>
+                            <span class="text-4xl font-bold text-navy-900 ml-2">$149</span>
                         </div>
-                        <span class="inline-block bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full mb-6">Save $48</span>
+                        <span class="inline-block bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full mb-6">Save $49</span>
                         <ul class="space-y-3 mb-8">
                             <li class="flex items-center text-sm">
                                 <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -256,39 +256,14 @@
                                 Compliance Forms Package
                             </li>
                         </ul>
-                        <a href="/register?bundle=essentials" class="block w-full text-center bg-navy-900 hover:bg-navy-800 text-white font-bold py-4 rounded-lg transition-colors">
+                        <a href="/bundle-checkout?type=essentials" class="block w-full text-center bg-navy-900 hover:bg-navy-800 text-white font-bold py-4 rounded-lg transition-colors">
                             Get Essentials
                         </a>
                     </div>
                 </div>
-
-                <!-- Renewal Bundle -->
-                <div class="bg-white rounded-2xl overflow-hidden">
-                    <div class="p-8">
-                        <h3 class="font-display text-xl font-bold mb-2">Annual Renewal</h3>
-                        <p class="text-navy-600 text-sm mb-6">Keep your compliance current</p>
-                        <div class="mb-6">
-                            <span class="text-sm text-navy-400 line-through">$198</span>
-                            <span class="text-4xl font-bold text-navy-900 ml-2">$179</span>
-                            <span class="text-navy-500">/year</span>
-                        </div>
-                        <span class="inline-block bg-green-100 text-green-700 text-sm font-medium px-3 py-1 rounded-full mb-6">Save $19</span>
-                        <ul class="space-y-3 mb-8">
-                            <li class="flex items-center text-sm">
-                                <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                Arbitration Program ($99)
-                            </li>
-                            <li class="flex items-center text-sm">
-                                <svg class="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                BOC-3 Process Agent ($99)
-                            </li>
-                        </ul>
-                        <a href="/login" class="block w-full text-center border-2 border-navy-900 hover:bg-navy-900 hover:text-white text-navy-900 font-bold py-4 rounded-lg transition-colors">
-                            Renew Services
-                        </a>
-                    </div>
-                </div>
             </div>
+
+            <p class="text-center text-navy-300 text-sm mt-8">Already a customer? Renew your services from your <a href="/dashboard" class="text-gold-400 hover:text-gold-300 underline">dashboard</a> at discounted rates.</p>
         </div>
     </section>
 
@@ -343,7 +318,7 @@
             <h2 class="font-display text-2xl font-bold mb-4">Ready to Get Compliant?</h2>
             <p class="text-navy-600 mb-8">Join thousands of movers who trust Interstate Compliance Solutions</p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="/register?bundle=startup" class="bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold px-8 py-4 rounded-lg transition-colors">
+                <a href="/bundle-checkout?type=startup" class="bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold px-8 py-4 rounded-lg transition-colors">
                     Start with Startup Bundle
                 </a>
                 <a href="/contact" class="border-2 border-navy-900 hover:bg-navy-900 hover:text-white text-navy-900 font-semibold px-8 py-4 rounded-lg transition-colors">

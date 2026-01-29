@@ -4,6 +4,7 @@ const { authenticateToken } = require('../middleware/auth');
 const { sanitizeBody, formatMCNumber, formatUSDOT } = require('../middleware/validation');
 const { sendOrderConfirmation, sendTariffDocumentReady, sendAdminPurchaseNotification } = require('../utils/email');
 const { generateTariffPDF } = require('../utils/pdf');
+const { generateServiceOrderId } = require('../utils/orderUtils');
 
 const router = express.Router();
 
@@ -12,7 +13,7 @@ const PRICES = {
   TARIFF: 29900,           // $299.00
   BOC3: 9900,              // $99.00
   BUNDLE_STARTUP: 44900,   // $449.00
-  BUNDLE_ESSENTIALS: 24900, // $249.00
+  BUNDLE_ESSENTIALS: 14900, // $149.00
   BUNDLE_RENEWAL: 17900    // $179.00
 };
 
@@ -50,7 +51,8 @@ router.post('/tariff', authenticateToken, sanitizeBody, async (req, res) => {
       accessorials,
       special_notes,
       payment_id,
-      payment_amount
+      payment_amount,
+      rates
     } = req.body;
 
 
@@ -89,24 +91,41 @@ router.post('/tariff', authenticateToken, sanitizeBody, async (req, res) => {
       });
     }
 
+    // Store rates as JSON string in special_notes if no rates column exists
+    const ratesJson = rates ? JSON.stringify(rates) : null;
+
+    // Set enrollment and expiry dates (1 year validity)
+    const enrolledDate = new Date();
+    const expiryDate = new Date();
+    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+
+    // Generate unique order ID
+    const orderId = generateServiceOrderId('tariff');
+
     const result = await query(
       `INSERT INTO tariff_orders
-       (user_id, status, pricing_method, service_territory, accessorials, special_notes, payment_id, amount_paid)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       (user_id, order_id, status, pricing_method, service_territory, accessorials, special_notes, payment_id, amount_paid, rates, enrolled_date, expiry_date)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        RETURNING *`,
       [
         req.user.id,
+        orderId,
         'pending',
         pricing_method,
         service_territory,
         JSON.stringify(accessorials || []),
         special_notes || null,
         payment_id,
-        payment_amount || PRICES.TARIFF / 100
+        payment_amount || PRICES.TARIFF / 100,
+        ratesJson,
+        enrolledDate,
+        expiryDate
       ]
     );
 
     let order = result.rows[0];
+    // Attach rates to order object for PDF generation
+    order.rates = rates;
 
     // Generate Tariff PDF immediately
     try {
@@ -157,6 +176,216 @@ router.post('/tariff', authenticateToken, sanitizeBody, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to create tariff order'
+    });
+  }
+});
+
+// Update tariff rates (regenerates PDF)
+router.put('/tariff/:id/rates', authenticateToken, sanitizeBody, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rates } = req.body;
+
+    if (!rates) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rates data is required'
+      });
+    }
+
+    // Verify ownership
+    const existingResult = await query(
+      'SELECT * FROM tariff_orders WHERE id = $1 AND user_id = $2',
+      [id, req.user.id]
+    );
+
+    if (existingResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tariff order not found'
+      });
+    }
+
+    const existingOrder = existingResult.rows[0];
+
+    // Check if expired
+    if (existingOrder.expiry_date && new Date(existingOrder.expiry_date) < new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot edit an expired tariff. Please renew first.'
+      });
+    }
+
+    // Update rates
+    const ratesJson = JSON.stringify(rates);
+    await query(
+      `UPDATE tariff_orders SET rates = $1, updated_at = NOW() WHERE id = $2`,
+      [ratesJson, id]
+    );
+
+    // Regenerate PDF
+    try {
+      const updatedOrder = { ...existingOrder, rates };
+      const documentUrl = await generateTariffPDF(req.user, updatedOrder);
+
+      await query(
+        'UPDATE tariff_orders SET document_url = $1 WHERE id = $2',
+        [documentUrl, id]
+      );
+
+      // Send notification email
+      const { sendTariffUpdated } = require('../utils/email');
+      await sendTariffUpdated(req.user, updatedOrder);
+
+      res.json({
+        success: true,
+        message: 'Tariff rates updated and document regenerated',
+        data: { document_url: documentUrl }
+      });
+    } catch (pdfError) {
+      console.error('PDF regeneration error:', pdfError);
+      res.json({
+        success: true,
+        message: 'Tariff rates updated but document regeneration failed. Please try again.',
+        data: { document_url: existingOrder.document_url }
+      });
+    }
+  } catch (error) {
+    console.error('Update tariff rates error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update tariff rates'
+    });
+  }
+});
+
+// Request pricing method change (requires admin approval)
+router.post('/tariff/:id/request-method-change', authenticateToken, sanitizeBody, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { requested_method } = req.body;
+
+    if (!requested_method) {
+      return res.status(400).json({
+        success: false,
+        message: 'Requested pricing method is required'
+      });
+    }
+
+    const validMethods = ['weight', 'cubic', 'flat', 'mixed'];
+    if (!validMethods.includes(requested_method)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid pricing method'
+      });
+    }
+
+    // Verify ownership
+    const existingResult = await query(
+      'SELECT * FROM tariff_orders WHERE id = $1 AND user_id = $2',
+      [id, req.user.id]
+    );
+
+    if (existingResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tariff order not found'
+      });
+    }
+
+    const existingOrder = existingResult.rows[0];
+
+    // Check if already same method
+    if (existingOrder.pricing_method === requested_method) {
+      return res.status(400).json({
+        success: false,
+        message: 'This is already your current pricing method'
+      });
+    }
+
+    // Check for existing pending request
+    const pendingResult = await query(
+      `SELECT id FROM pricing_method_requests
+       WHERE tariff_id = $1 AND status = 'pending'`,
+      [id]
+    );
+
+    if (pendingResult.rows.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'You already have a pending pricing method change request'
+      });
+    }
+
+    // Create request
+    await query(
+      `INSERT INTO pricing_method_requests
+       (user_id, tariff_id, current_method, requested_method)
+       VALUES ($1, $2, $3, $4)`,
+      [req.user.id, id, existingOrder.pricing_method, requested_method]
+    );
+
+    res.json({
+      success: true,
+      message: 'Pricing method change request submitted. An admin will review your request.'
+    });
+  } catch (error) {
+    console.error('Request method change error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to submit request'
+    });
+  }
+});
+
+// Get tariff details (for editing)
+router.get('/tariff/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await query(
+      'SELECT * FROM tariff_orders WHERE id = $1 AND user_id = $2',
+      [id, req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tariff order not found'
+      });
+    }
+
+    const order = result.rows[0];
+
+    // Parse rates if stored as string
+    if (typeof order.rates === 'string') {
+      try {
+        order.rates = JSON.parse(order.rates);
+      } catch (e) {
+        order.rates = {};
+      }
+    }
+
+    // Check for pending pricing method request
+    const pendingRequest = await query(
+      `SELECT * FROM pricing_method_requests
+       WHERE tariff_id = $1 AND status = 'pending'
+       ORDER BY created_at DESC LIMIT 1`,
+      [id]
+    );
+
+    res.json({
+      success: true,
+      data: {
+        order,
+        pending_method_change: pendingRequest.rows[0] || null
+      }
+    });
+  } catch (error) {
+    console.error('Get tariff details error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get tariff details'
     });
   }
 });
@@ -246,17 +475,28 @@ router.post('/boc3', authenticateToken, sanitizeBody, async (req, res) => {
       });
     }
 
+    // Set enrollment and expiry dates (1 year validity)
+    const enrolledDate = new Date();
+    const expiryDate = new Date();
+    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+
+    // Generate unique order ID
+    const orderId = generateServiceOrderId('boc3');
+
     const result = await query(
       `INSERT INTO boc3_orders
-       (user_id, status, filing_type, payment_id, amount_paid)
-       VALUES ($1, $2, $3, $4, $5)
+       (user_id, order_id, status, filing_type, payment_id, amount_paid, enrolled_date, expiry_date)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
       [
         req.user.id,
+        orderId,
         'pending',
         filing_type,
         payment_id,
-        payment_amount || PRICES.BOC3 / 100
+        payment_amount || PRICES.BOC3 / 100,
+        enrolledDate,
+        expiryDate
       ]
     );
 
@@ -311,38 +551,32 @@ router.get('/bundles', authenticateToken, async (req, res) => {
   }
 });
 
-// Create bundle order
+// Create bundle order (with payment processing)
 router.post('/bundles', authenticateToken, sanitizeBody, async (req, res) => {
   try {
     const {
       bundle_type,
-      payment_id,
-      payment_amount,
-      // Additional data for included services
-      tariff_data,
-      boc3_data
+      source_id,           // Square card token
+      enable_autopay,
+      boc3_filing_type,
+      tariff_data,         // For startup bundle: { pricing_method, service_territory, rates }
+      company_info         // { company_name, mc_number, usdot_number, email, phone, address, city, state, zip }
     } = req.body;
 
-    // Require payment
-    if (!payment_id) {
-      return res.status(400).json({
-        success: false,
-        message: 'Payment is required to place this order'
-      });
-    }
-
-    if (!payment_amount || payment_amount < 179) {
-      return res.status(400).json({
-        success: false,
-        message: 'Valid payment amount is required'
-      });
-    }
-
+    // Validate bundle type
     const validBundleTypes = ['startup', 'essentials', 'renewal'];
     if (!validBundleTypes.includes(bundle_type)) {
       return res.status(400).json({
         success: false,
         message: 'Invalid bundle type'
+      });
+    }
+
+    // Require Square token
+    if (!source_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment card is required'
       });
     }
 
@@ -360,62 +594,169 @@ router.post('/bundles', authenticateToken, sanitizeBody, async (req, res) => {
         break;
     }
 
+    // Process payment via Square
+    const { processPayment, createCustomerAndSaveCard } = require('./payments');
+    let paymentResult;
+    let squareCustomerId = null;
+    let savedCardId = null;
+    let cardLast4 = null;
+    let cardBrand = null;
+
+    try {
+      // If autopay enabled, create customer and save card first
+      if (enable_autopay) {
+        const customerResult = await createCustomerAndSaveCard(
+          req.user.email,
+          source_id,
+          `${company_info?.company_name || req.user.company_name}`
+        );
+
+        if (customerResult.success) {
+          squareCustomerId = customerResult.customerId;
+          savedCardId = customerResult.cardId;
+          cardLast4 = customerResult.card?.last4;
+          cardBrand = customerResult.card?.cardBrand;
+
+          // Process payment using saved card
+          paymentResult = await processPayment(
+            savedCardId,
+            price,
+            req.user.email,
+            `Bundle: ${bundle_type}`,
+            squareCustomerId
+          );
+        } else {
+          throw new Error(customerResult.message || 'Failed to save card');
+        }
+      } else {
+        // Process one-time payment
+        paymentResult = await processPayment(
+          source_id,
+          price,
+          req.user.email,
+          `Bundle: ${bundle_type}`
+        );
+      }
+
+      if (!paymentResult.success) {
+        throw new Error(paymentResult.message || 'Payment failed');
+      }
+    } catch (paymentError) {
+      console.error('Bundle payment error:', paymentError);
+      return res.status(400).json({
+        success: false,
+        message: paymentError.message || 'Payment processing failed'
+      });
+    }
+
+    const payment_id = paymentResult.payment_id;
+
+    // Update user with autopay info if enabled
+    if (enable_autopay && squareCustomerId && savedCardId) {
+      await query(
+        `UPDATE users SET
+         square_customer_id = $1,
+         autopay_enabled = true,
+         autopay_card_id = $2,
+         autopay_card_last4 = $3,
+         autopay_card_brand = $4
+         WHERE id = $5`,
+        [squareCustomerId, savedCardId, cardLast4, cardBrand, req.user.id]
+      );
+    }
+
+    // Generate unique order ID
+    const bundleOrderId = generateServiceOrderId('bundle');
+
+    // Set enrollment and expiry dates (1 year validity)
+    const enrolledDate = new Date();
+    const expiryDate = new Date();
+    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+
     // Create bundle order
     const bundleResult = await query(
       `INSERT INTO bundle_orders
-       (user_id, bundle_type, status, payment_id, amount_paid)
-       VALUES ($1, $2, $3, $4, $5)
+       (user_id, order_id, bundle_type, status, payment_id, amount_paid, enrolled_date, expiry_date)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
-      [req.user.id, bundle_type, 'pending', payment_id, payment_amount || price / 100]
+      [req.user.id, bundleOrderId, bundle_type, 'active', payment_id, price / 100, enrolledDate, expiryDate]
     );
 
     const bundleOrder = bundleResult.rows[0];
+    const bundleId = bundleOrder.id;
 
     // Create associated service orders based on bundle type
     const createdServices = [];
 
     // All bundles include Arbitration
-    const enrolledDate = new Date();
-    const expiryDate = new Date();
-    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
-
+    const arbitrationOrderId = generateServiceOrderId('arbitration');
     const arbitrationResult = await query(
       `INSERT INTO arbitration_enrollments
-       (user_id, status, enrolled_date, expiry_date, payment_id, amount_paid)
-       VALUES ($1, 'active', $2, $3, $4, 0)
+       (user_id, order_id, bundle_id, status, enrolled_date, expiry_date, payment_id, amount_paid)
+       VALUES ($1, $2, $3, 'active', $4, $5, $6, 0)
        RETURNING *`,
-      [req.user.id, enrolledDate, expiryDate, payment_id]
+      [req.user.id, arbitrationOrderId, bundleId, enrolledDate, expiryDate, payment_id]
     );
     createdServices.push({ type: 'arbitration', data: arbitrationResult.rows[0] });
 
-    // Bundles that include BOC-3
-    if (['startup', 'essentials', 'renewal'].includes(bundle_type)) {
-      const boc3Result = await query(
-        `INSERT INTO boc3_orders
-         (user_id, status, filing_type, payment_id, amount_paid)
-         VALUES ($1, 'pending', $2, $3, 0)
-         RETURNING *`,
-        [req.user.id, boc3_data?.filing_type || 'new', payment_id]
-      );
-      createdServices.push({ type: 'boc3', data: boc3Result.rows[0] });
-    }
+    // All bundles include BOC-3
+    const boc3OrderId = generateServiceOrderId('boc3');
+    const boc3Result = await query(
+      `INSERT INTO boc3_orders
+       (user_id, order_id, bundle_id, status, filing_type, payment_id, amount_paid, enrolled_date, expiry_date)
+       VALUES ($1, $2, $3, 'pending', $4, $5, 0, $6, $7)
+       RETURNING *`,
+      [req.user.id, boc3OrderId, bundleId, boc3_filing_type || 'new', payment_id, enrolledDate, expiryDate]
+    );
+    createdServices.push({ type: 'boc3', data: boc3Result.rows[0] });
 
     // Startup bundle includes Tariff
-    if (bundle_type === 'startup') {
+    if (bundle_type === 'startup' && tariff_data) {
+      const tariffOrderId = generateServiceOrderId('tariff');
+      const ratesJson = tariff_data.rates ? JSON.stringify(tariff_data.rates) : null;
+
       const tariffResult = await query(
         `INSERT INTO tariff_orders
-         (user_id, status, pricing_method, service_territory, accessorials, payment_id, amount_paid)
-         VALUES ($1, 'pending', $2, $3, $4, $5, 0)
+         (user_id, order_id, bundle_id, status, pricing_method, service_territory, rates, payment_id, amount_paid, enrolled_date, expiry_date)
+         VALUES ($1, $2, $3, 'pending', $4, $5, $6, $7, 0, $8, $9)
          RETURNING *`,
         [
           req.user.id,
-          tariff_data?.pricing_method || 'weight',
-          tariff_data?.service_territory || 'nationwide',
-          JSON.stringify(tariff_data?.accessorials || []),
-          payment_id
+          tariffOrderId,
+          bundleId,
+          tariff_data.pricing_method || 'weight',
+          tariff_data.service_territory || 'nationwide',
+          ratesJson,
+          payment_id,
+          enrolledDate,
+          expiryDate
         ]
       );
-      createdServices.push({ type: 'tariff', data: tariffResult.rows[0] });
+
+      let tariffOrder = tariffResult.rows[0];
+      tariffOrder.rates = tariff_data.rates;
+
+      // Generate Tariff PDF immediately
+      try {
+        console.log('Generating tariff PDF for bundle order:', tariffOrder.id);
+        const documentUrl = await generateTariffPDF(req.user, tariffOrder);
+
+        // Update order with document URL and mark as completed
+        await query(
+          `UPDATE tariff_orders
+           SET document_url = $1, status = 'completed', updated_at = NOW()
+           WHERE id = $2`,
+          [documentUrl, tariffOrder.id]
+        );
+
+        tariffOrder.document_url = documentUrl;
+        tariffOrder.status = 'completed';
+        console.log('Tariff PDF generated successfully:', documentUrl);
+      } catch (pdfError) {
+        console.error('Tariff PDF generation error:', pdfError);
+      }
+
+      createdServices.push({ type: 'tariff', data: tariffOrder });
     }
 
     // Send confirmation email
@@ -430,10 +771,12 @@ router.post('/bundles', authenticateToken, sanitizeBody, async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: 'Bundle order placed successfully',
+      message: 'Bundle purchased successfully',
       data: {
+        order_id: bundleOrderId,
         bundle: bundleOrder,
-        services: createdServices
+        services: createdServices,
+        autopay_enabled: enable_autopay && !!savedCardId
       }
     });
   } catch (error) {
@@ -441,6 +784,150 @@ router.post('/bundles', authenticateToken, sanitizeBody, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to create bundle order'
+    });
+  }
+});
+
+// Get bundle with associated services
+router.get('/bundles/:id', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Get bundle
+    const bundleResult = await query(
+      'SELECT * FROM bundle_orders WHERE id = $1 AND user_id = $2',
+      [id, req.user.id]
+    );
+
+    if (bundleResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Bundle not found'
+      });
+    }
+
+    const bundle = bundleResult.rows[0];
+
+    // Get associated services
+    const [arbitration, boc3, tariff] = await Promise.all([
+      query('SELECT * FROM arbitration_enrollments WHERE bundle_id = $1', [id]),
+      query('SELECT * FROM boc3_orders WHERE bundle_id = $1', [id]),
+      query('SELECT * FROM tariff_orders WHERE bundle_id = $1', [id])
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        bundle,
+        services: {
+          arbitration: arbitration.rows[0] || null,
+          boc3: boc3.rows[0] || null,
+          tariff: tariff.rows[0] || null
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Get bundle error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get bundle'
+    });
+  }
+});
+
+// Renew bundle (all services at discounted price)
+router.post('/bundles/:id/renew', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { source_id } = req.body;
+
+    // Get existing bundle
+    const bundleResult = await query(
+      'SELECT * FROM bundle_orders WHERE id = $1 AND user_id = $2',
+      [id, req.user.id]
+    );
+
+    if (bundleResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Bundle not found'
+      });
+    }
+
+    const existingBundle = bundleResult.rows[0];
+
+    // Process renewal payment (always $179 for renewals)
+    const { processPayment } = require('./payments');
+    let paymentResult;
+
+    // Check if user has autopay enabled
+    const userResult = await query(
+      'SELECT autopay_enabled, autopay_card_id, square_customer_id FROM users WHERE id = $1',
+      [req.user.id]
+    );
+    const user = userResult.rows[0];
+
+    if (user.autopay_enabled && user.autopay_card_id && !source_id) {
+      // Use saved card for autopay
+      paymentResult = await processPayment(
+        user.autopay_card_id,
+        PRICES.BUNDLE_RENEWAL,
+        req.user.email,
+        `Bundle Renewal: ${existingBundle.bundle_type}`,
+        user.square_customer_id
+      );
+    } else if (source_id) {
+      // Use provided card token
+      paymentResult = await processPayment(
+        source_id,
+        PRICES.BUNDLE_RENEWAL,
+        req.user.email,
+        `Bundle Renewal: ${existingBundle.bundle_type}`
+      );
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: 'Payment card is required for renewal'
+      });
+    }
+
+    if (!paymentResult.success) {
+      return res.status(400).json({
+        success: false,
+        message: paymentResult.message || 'Payment failed'
+      });
+    }
+
+    // Extend expiry dates on bundle and all associated services
+    const newExpiryDate = new Date();
+    newExpiryDate.setFullYear(newExpiryDate.getFullYear() + 1);
+
+    // Update bundle
+    await query(
+      'UPDATE bundle_orders SET expiry_date = $1, updated_at = NOW() WHERE id = $2',
+      [newExpiryDate, id]
+    );
+
+    // Update associated services
+    await Promise.all([
+      query('UPDATE arbitration_enrollments SET expiry_date = $1, updated_at = NOW() WHERE bundle_id = $2', [newExpiryDate, id]),
+      query('UPDATE boc3_orders SET expiry_date = $1, updated_at = NOW() WHERE bundle_id = $2', [newExpiryDate, id]),
+      query('UPDATE tariff_orders SET expiry_date = $1, updated_at = NOW() WHERE bundle_id = $2', [newExpiryDate, id])
+    ]);
+
+    res.json({
+      success: true,
+      message: 'Bundle renewed successfully',
+      data: {
+        new_expiry_date: newExpiryDate,
+        amount_paid: PRICES.BUNDLE_RENEWAL / 100
+      }
+    });
+  } catch (error) {
+    console.error('Renew bundle error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to renew bundle'
     });
   }
 });

@@ -1,7 +1,7 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
-const { SquareClient } = require('square');
+const { SquareClient, SquareEnvironment } = require('square');
 
 const router = express.Router();
 
@@ -12,11 +12,16 @@ let paymentsApi = null;
 function initSquare() {
   if (process.env.SQUARE_ACCESS_TOKEN && process.env.SQUARE_ACCESS_TOKEN !== 'sandbox-access-token') {
     try {
+      const environment = process.env.SQUARE_ENVIRONMENT === 'sandbox'
+        ? SquareEnvironment.Sandbox
+        : SquareEnvironment.Production;
+
       squareClient = new SquareClient({
         token: process.env.SQUARE_ACCESS_TOKEN,
+        environment: environment,
       });
       paymentsApi = squareClient.payments;
-      console.log('Square payments initialized successfully');
+      console.log(`Square payments initialized successfully (${process.env.SQUARE_ENVIRONMENT} mode)`);
     } catch (err) {
       console.log('Square SDK error:', err.message);
     }
@@ -34,7 +39,7 @@ const PRICES = {
   tariff: 29900,           // $299.00
   boc3: 9900,              // $99.00
   bundle_startup: 44900,   // $449.00
-  bundle_essentials: 24900, // $249.00
+  bundle_essentials: 14900, // $149.00
   bundle_renewal: 17900    // $179.00
 };
 
@@ -45,10 +50,10 @@ router.get('/prices', (req, res) => {
     data: {
       prices: {
         arbitration: { amount: 9900, display: '$99.00', period: 'year' },
-        tariff: { amount: 29900, display: '$299.00', period: 'one-time' },
+        tariff: { amount: 29900, display: '$299.00', period: 'year' },
         boc3: { amount: 9900, display: '$99.00', period: 'year' },
         bundle_startup: { amount: 44900, display: '$449.00', period: 'one-time', savings: '$48.00' },
-        bundle_essentials: { amount: 24900, display: '$249.00', period: 'one-time', savings: '$48.00' },
+        bundle_essentials: { amount: 14900, display: '$149.00', period: 'one-time', savings: '$49.00' },
         bundle_renewal: { amount: 17900, display: '$179.00', period: 'year', savings: '$19.00' }
       }
     }
@@ -73,7 +78,8 @@ router.get('/config', (req, res) => {
     data: {
       configured: true,
       applicationId: appId,
-      locationId: locationId
+      locationId: locationId,
+      environment: process.env.SQUARE_ENVIRONMENT || 'production'
     }
   });
 });
@@ -356,4 +362,143 @@ router.post('/create-link', optionalAuth, async (req, res) => {
   }
 });
 
+// Helper function to process payment (for use by other modules)
+async function processPayment(sourceId, amountCents, buyerEmail, note, customerId = null) {
+  // Simulation mode
+  if (!paymentsApi) {
+    return {
+      success: true,
+      payment_id: 'sim_' + uuidv4(),
+      amount: amountCents,
+      status: 'COMPLETED',
+      simulated: true
+    };
+  }
+
+  try {
+    const paymentRequest = {
+      sourceId: sourceId,
+      idempotencyKey: uuidv4(),
+      amountMoney: {
+        amount: BigInt(amountCents),
+        currency: 'USD'
+      },
+      locationId: process.env.SQUARE_LOCATION_ID,
+      note: note || 'Interstate Compliance Payment'
+    };
+
+    if (buyerEmail) {
+      paymentRequest.buyerEmailAddress = buyerEmail;
+    }
+
+    if (customerId) {
+      paymentRequest.customerId = customerId;
+    }
+
+    const response = await paymentsApi.create(paymentRequest);
+
+    if (response.payment && response.payment.status === 'COMPLETED') {
+      return {
+        success: true,
+        payment_id: response.payment.id,
+        amount: amountCents,
+        status: 'COMPLETED',
+        receipt_url: response.payment.receiptUrl
+      };
+    } else {
+      return {
+        success: false,
+        message: 'Payment not completed',
+        status: response.payment?.status || 'FAILED'
+      };
+    }
+  } catch (error) {
+    console.error('processPayment error:', error);
+    const errorMessage = error.errors?.[0]?.detail || 'Payment processing failed';
+    return {
+      success: false,
+      message: errorMessage
+    };
+  }
+}
+
+// Helper function to create customer and save card for autopay
+async function createCustomerAndSaveCard(email, sourceId, companyName) {
+  // Simulation mode
+  if (!squareClient) {
+    return {
+      success: true,
+      customerId: 'sim_cust_' + uuidv4(),
+      cardId: 'sim_card_' + uuidv4(),
+      card: {
+        last4: '4242',
+        cardBrand: 'VISA'
+      },
+      simulated: true
+    };
+  }
+
+  try {
+    const customersApi = squareClient.customers;
+    const cardsApi = squareClient.cards;
+
+    // Check if customer already exists
+    let customerId;
+    const searchResponse = await customersApi.search({
+      query: {
+        filter: {
+          emailAddress: {
+            exact: email
+          }
+        }
+      }
+    });
+
+    if (searchResponse.customers && searchResponse.customers.length > 0) {
+      customerId = searchResponse.customers[0].id;
+    } else {
+      // Create new customer
+      const createResponse = await customersApi.create({
+        idempotencyKey: uuidv4(),
+        emailAddress: email,
+        companyName: companyName
+      });
+      customerId = createResponse.customer.id;
+    }
+
+    // Save card to customer
+    const cardResponse = await cardsApi.create({
+      idempotencyKey: uuidv4(),
+      sourceId: sourceId,
+      card: {
+        customerId: customerId
+      }
+    });
+
+    const card = cardResponse.card;
+
+    return {
+      success: true,
+      customerId: customerId,
+      cardId: card.id,
+      card: {
+        last4: card.last4,
+        cardBrand: card.cardBrand,
+        expMonth: card.expMonth,
+        expYear: card.expYear
+      }
+    };
+  } catch (error) {
+    console.error('createCustomerAndSaveCard error:', error);
+    const errorMessage = error.errors?.[0]?.detail || 'Failed to save card';
+    return {
+      success: false,
+      message: errorMessage
+    };
+  }
+}
+
+// Export router and helper functions
 module.exports = router;
+module.exports.processPayment = processPayment;
+module.exports.createCustomerAndSaveCard = createCustomerAndSaveCard;

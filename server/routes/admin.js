@@ -790,4 +790,350 @@ router.get('/companies', authenticateToken, requireAdmin, (req, res) => {
   }
 });
 
+// ==================== USER AUTOPAY MANAGEMENT ====================
+
+// Get user autopay details
+router.get('/users/:id/autopay', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    const userResult = await query(
+      `SELECT id, email, company_name, mc_number, autopay_enabled, autopay_card_last4,
+              autopay_card_brand, square_customer_id
+       FROM users WHERE id = $1`,
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const user = userResult.rows[0];
+
+    // Get upcoming renewals (services expiring in next 30 days)
+    const [tariffs, boc3s, arbitrations] = await Promise.all([
+      query(
+        `SELECT id, order_id, 'tariff' as type, expiry_date, amount_paid
+         FROM tariff_orders
+         WHERE user_id = $1 AND status = 'completed' AND expiry_date IS NOT NULL
+         AND expiry_date BETWEEN NOW() AND NOW() + INTERVAL '30 days'`,
+        [userId]
+      ),
+      query(
+        `SELECT id, order_id, 'boc3' as type, expiry_date, amount_paid
+         FROM boc3_orders
+         WHERE user_id = $1 AND status IN ('completed', 'filed') AND expiry_date IS NOT NULL
+         AND expiry_date BETWEEN NOW() AND NOW() + INTERVAL '30 days'`,
+        [userId]
+      ),
+      query(
+        `SELECT id, order_id, 'arbitration' as type, expiry_date, amount_paid
+         FROM arbitration_enrollments
+         WHERE user_id = $1 AND status = 'active' AND expiry_date IS NOT NULL
+         AND expiry_date BETWEEN NOW() AND NOW() + INTERVAL '30 days'`,
+        [userId]
+      )
+    ]);
+
+    const upcomingRenewals = [...tariffs.rows, ...boc3s.rows, ...arbitrations.rows]
+      .sort((a, b) => new Date(a.expiry_date) - new Date(b.expiry_date));
+
+    res.json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          company_name: user.company_name,
+          mc_number: user.mc_number
+        },
+        autopay: {
+          enabled: user.autopay_enabled || false,
+          has_card: !!user.autopay_card_last4,
+          card_last4: user.autopay_card_last4,
+          card_brand: user.autopay_card_brand,
+          has_square_customer: !!user.square_customer_id
+        },
+        upcoming_renewals: upcomingRenewals
+      }
+    });
+  } catch (error) {
+    console.error('Get user autopay error:', error);
+    res.status(500).json({ success: false, message: 'Failed to get user autopay info' });
+  }
+});
+
+// Toggle user autopay (admin override)
+router.patch('/users/:id/autopay', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { enabled } = req.body;
+
+    await query(
+      'UPDATE users SET autopay_enabled = $1, updated_at = NOW() WHERE id = $2',
+      [enabled, userId]
+    );
+
+    // Create notification for user
+    await query(
+      `INSERT INTO notifications (user_id, type, service_type, service_id, message)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [
+        userId,
+        'autopay_update',
+        'account',
+        0,
+        enabled
+          ? 'Autopay has been enabled on your account by an administrator.'
+          : 'Autopay has been disabled on your account by an administrator.'
+      ]
+    );
+
+    res.json({
+      success: true,
+      message: `Autopay ${enabled ? 'enabled' : 'disabled'} for user`
+    });
+  } catch (error) {
+    console.error('Toggle user autopay error:', error);
+    res.status(500).json({ success: false, message: 'Failed to update autopay' });
+  }
+});
+
+// Remove user card (admin override)
+router.delete('/users/:id/autopay/card', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+
+    // Get user's card info
+    const userResult = await query(
+      'SELECT autopay_card_id, square_customer_id FROM users WHERE id = $1',
+      [userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const user = userResult.rows[0];
+
+    // Disable card in Square if configured
+    if (user.autopay_card_id && process.env.SQUARE_ACCESS_TOKEN) {
+      try {
+        const { Client, Environment } = require('square');
+        const squareClient = new Client({
+          accessToken: process.env.SQUARE_ACCESS_TOKEN,
+          environment: process.env.SQUARE_ENVIRONMENT === 'production'
+            ? Environment.Production
+            : Environment.Sandbox
+        });
+        await squareClient.cardsApi.disableCard(user.autopay_card_id);
+      } catch (squareError) {
+        console.error('Square card disable error:', squareError);
+        // Continue anyway
+      }
+    }
+
+    // Clear autopay info
+    await query(
+      `UPDATE users SET
+        autopay_enabled = false,
+        autopay_card_id = NULL,
+        autopay_card_last4 = NULL,
+        autopay_card_brand = NULL,
+        updated_at = NOW()
+       WHERE id = $1`,
+      [userId]
+    );
+
+    // Create notification for user
+    await query(
+      `INSERT INTO notifications (user_id, type, service_type, service_id, message)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [userId, 'autopay_update', 'account', 0, 'Your saved payment card has been removed by an administrator. Autopay has been disabled.']
+    );
+
+    res.json({
+      success: true,
+      message: 'Card removed and autopay disabled'
+    });
+  } catch (error) {
+    console.error('Remove user card error:', error);
+    res.status(500).json({ success: false, message: 'Failed to remove card' });
+  }
+});
+
+// Cancel upcoming renewal for a specific service
+router.post('/users/:id/cancel-renewal', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { service_type, service_id } = req.body;
+
+    if (!service_type || !service_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Service type and ID are required'
+      });
+    }
+
+    let tableName;
+    switch (service_type) {
+      case 'tariff': tableName = 'tariff_orders'; break;
+      case 'boc3': tableName = 'boc3_orders'; break;
+      case 'arbitration': tableName = 'arbitration_enrollments'; break;
+      default:
+        return res.status(400).json({ success: false, message: 'Invalid service type' });
+    }
+
+    // Set expiry_date to null to prevent auto-renewal (service will still expire naturally)
+    // Or we could add a 'renewal_cancelled' flag
+    await query(
+      `UPDATE ${tableName} SET notes = COALESCE(notes, '') || ' [Auto-renewal cancelled by admin]', updated_at = NOW() WHERE id = $1 AND user_id = $2`,
+      [service_id, userId]
+    );
+
+    // Create notification for user
+    await query(
+      `INSERT INTO notifications (user_id, type, service_type, service_id, message)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [userId, 'renewal_cancelled', service_type, service_id, `Auto-renewal for your ${service_type} service has been cancelled by an administrator.`]
+    );
+
+    res.json({
+      success: true,
+      message: 'Renewal cancelled'
+    });
+  } catch (error) {
+    console.error('Cancel renewal error:', error);
+    res.status(500).json({ success: false, message: 'Failed to cancel renewal' });
+  }
+});
+
+// ==================== PRICING METHOD REQUESTS ====================
+
+// Get pending pricing method change requests
+router.get('/pricing-requests', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { status = 'pending' } = req.query;
+
+    const result = await query(`
+      SELECT pmr.*, u.email, u.company_name, u.mc_number,
+             t.pricing_method as current_pricing_method
+      FROM pricing_method_requests pmr
+      JOIN users u ON pmr.user_id = u.id
+      JOIN tariff_orders t ON pmr.tariff_id = t.id
+      ${status !== 'all' ? 'WHERE pmr.status = $1' : ''}
+      ORDER BY pmr.created_at DESC
+    `, status !== 'all' ? [status] : []);
+
+    res.json({
+      success: true,
+      data: { requests: result.rows }
+    });
+  } catch (error) {
+    console.error('Get pricing requests error:', error);
+    res.status(500).json({ success: false, message: 'Failed to get pricing requests' });
+  }
+});
+
+// Approve or reject pricing method change request
+router.patch('/pricing-requests/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, admin_notes } = req.body;
+
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Status must be approved or rejected'
+      });
+    }
+
+    // Get the request
+    const requestResult = await query(
+      'SELECT * FROM pricing_method_requests WHERE id = $1',
+      [id]
+    );
+
+    if (requestResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Request not found'
+      });
+    }
+
+    const request = requestResult.rows[0];
+
+    if (request.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: 'This request has already been processed'
+      });
+    }
+
+    // Update request status
+    await query(
+      `UPDATE pricing_method_requests
+       SET status = $1, admin_notes = $2, reviewed_at = NOW()
+       WHERE id = $3`,
+      [status, admin_notes || null, id]
+    );
+
+    // If approved, update the tariff pricing method
+    if (status === 'approved') {
+      await query(
+        `UPDATE tariff_orders
+         SET pricing_method = $1, rates = NULL, updated_at = NOW()
+         WHERE id = $2`,
+        [request.requested_method, request.tariff_id]
+      );
+    }
+
+    // Create notification for user
+    const notificationMessage = status === 'approved'
+      ? `Your request to change pricing method to ${request.requested_method} has been approved. Please update your rates.`
+      : `Your request to change pricing method was not approved. ${admin_notes || ''}`;
+
+    await query(
+      `INSERT INTO notifications (user_id, type, service_type, service_id, message)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [request.user_id, 'pricing_method_result', 'tariff', request.tariff_id, notificationMessage]
+    );
+
+    res.json({
+      success: true,
+      message: `Request ${status}`,
+      data: { status }
+    });
+  } catch (error) {
+    console.error('Process pricing request error:', error);
+    res.status(500).json({ success: false, message: 'Failed to process request' });
+  }
+});
+
+// Test autopay processor (admin only)
+router.post('/test-autopay', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    console.log('[Admin] Manually triggering autopay processor...');
+    const { processAutopay } = require('../jobs/autopay-processor');
+    await processAutopay();
+    res.json({ success: true, message: 'Autopay processor completed' });
+  } catch (error) {
+    console.error('Test autopay error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Test expiration checker (admin only)
+router.post('/test-expiration-check', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    console.log('[Admin] Manually triggering expiration checker...');
+    const { checkExpirations } = require('../jobs/expiration-checker');
+    await checkExpirations();
+    res.json({ success: true, message: 'Expiration checker completed' });
+  } catch (error) {
+    console.error('Test expiration check error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;

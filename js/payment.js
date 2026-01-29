@@ -7,6 +7,7 @@ const Payment = {
     // Square app ID (set from environment or config)
     appId: null,
     locationId: null,
+    environment: 'production',
 
     // Square payment instances
     payments: null,
@@ -27,13 +28,13 @@ const Payment = {
      */
     async init(containerId, options = {}) {
         try {
+            // Get configuration first (need environment for SDK URL)
+            await this.loadConfig();
+
             // Load Square Web SDK if not already loaded
             if (!window.Square) {
                 await this.loadSquareSDK();
             }
-
-            // Get configuration
-            await this.loadConfig();
 
             // Initialize payments
             this.payments = window.Square.payments(this.appId, this.locationId);
@@ -60,7 +61,10 @@ const Payment = {
             }
 
             const script = document.createElement('script');
-            script.src = 'https://sandbox.web.squarecdn.com/v1/square.js';
+            // Use sandbox or production SDK based on environment
+            script.src = this.environment === 'sandbox'
+                ? 'https://sandbox.web.squarecdn.com/v1/square.js'
+                : 'https://web.squarecdn.com/v1/square.js';
             script.onload = resolve;
             script.onerror = reject;
             document.head.appendChild(script);
@@ -72,10 +76,16 @@ const Payment = {
      */
     async loadConfig() {
         try {
-            // In production, these would come from server config
-            // For now, using sandbox values
-            this.appId = 'sandbox-sq0idb-XXXXXXXXXXXXXXXX';
-            this.locationId = 'LXXXXXXXXXXXXXXXX';
+            // Load Square config from server
+            const configResponse = await fetch('/api/payments/config');
+            if (configResponse.ok) {
+                const configData = await configResponse.json();
+                if (configData.success && configData.data.configured) {
+                    this.appId = configData.data.applicationId;
+                    this.locationId = configData.data.locationId;
+                    this.environment = configData.data.environment || 'production';
+                }
+            }
 
             // Load current prices
             const response = await fetch('/api/payments/prices');

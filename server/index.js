@@ -22,12 +22,15 @@ const runMigrations = async () => {
       END $$;
     `);
 
-    // Add notes to arbitration_enrollments if missing
+    // Add notes and documents to arbitration_enrollments if missing
     await query(`
       DO $$
       BEGIN
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='arbitration_enrollments' AND column_name='notes') THEN
           ALTER TABLE arbitration_enrollments ADD COLUMN notes TEXT;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='arbitration_enrollments' AND column_name='documents') THEN
+          ALTER TABLE arbitration_enrollments ADD COLUMN documents JSONB;
         END IF;
       END $$;
     `);
@@ -38,6 +41,126 @@ const runMigrations = async () => {
       BEGIN
         IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tariff_orders' AND column_name='notes') THEN
           ALTER TABLE tariff_orders ADD COLUMN notes TEXT;
+        END IF;
+      END $$;
+    `);
+
+    // Add expiry_date and enrolled_date to tariff_orders and boc3_orders
+    await query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tariff_orders' AND column_name='expiry_date') THEN
+          ALTER TABLE tariff_orders ADD COLUMN expiry_date DATE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tariff_orders' AND column_name='enrolled_date') THEN
+          ALTER TABLE tariff_orders ADD COLUMN enrolled_date DATE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='boc3_orders' AND column_name='expiry_date') THEN
+          ALTER TABLE boc3_orders ADD COLUMN expiry_date DATE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='boc3_orders' AND column_name='enrolled_date') THEN
+          ALTER TABLE boc3_orders ADD COLUMN enrolled_date DATE;
+        END IF;
+      END $$;
+    `);
+
+    // Add autopay columns to users table
+    await query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='square_customer_id') THEN
+          ALTER TABLE users ADD COLUMN square_customer_id VARCHAR(100);
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='autopay_enabled') THEN
+          ALTER TABLE users ADD COLUMN autopay_enabled BOOLEAN DEFAULT false;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='autopay_card_id') THEN
+          ALTER TABLE users ADD COLUMN autopay_card_id VARCHAR(100);
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='autopay_card_last4') THEN
+          ALTER TABLE users ADD COLUMN autopay_card_last4 VARCHAR(4);
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='autopay_card_brand') THEN
+          ALTER TABLE users ADD COLUMN autopay_card_brand VARCHAR(20);
+        END IF;
+      END $$;
+    `);
+
+    // Create notifications table
+    await query(`
+      CREATE TABLE IF NOT EXISTS notifications (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        type VARCHAR(50) NOT NULL,
+        service_type VARCHAR(20) NOT NULL,
+        service_id INTEGER NOT NULL,
+        message TEXT,
+        read BOOLEAN DEFAULT false,
+        email_sent BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT NOW()
+      );
+    `);
+
+    // Create pricing_method_requests table
+    await query(`
+      CREATE TABLE IF NOT EXISTS pricing_method_requests (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        tariff_id INTEGER REFERENCES tariff_orders(id),
+        current_method VARCHAR(50),
+        requested_method VARCHAR(50),
+        reason TEXT,
+        status VARCHAR(20) DEFAULT 'pending',
+        admin_notes TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        reviewed_at TIMESTAMP
+      );
+    `);
+
+    // Add order_id column to all order tables for randomized order IDs
+    await query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tariff_orders' AND column_name='order_id') THEN
+          ALTER TABLE tariff_orders ADD COLUMN order_id VARCHAR(20) UNIQUE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='boc3_orders' AND column_name='order_id') THEN
+          ALTER TABLE boc3_orders ADD COLUMN order_id VARCHAR(20) UNIQUE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='bundle_orders' AND column_name='order_id') THEN
+          ALTER TABLE bundle_orders ADD COLUMN order_id VARCHAR(20) UNIQUE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='arbitration_enrollments' AND column_name='order_id') THEN
+          ALTER TABLE arbitration_enrollments ADD COLUMN order_id VARCHAR(20) UNIQUE;
+        END IF;
+      END $$;
+    `);
+
+    // Add bundle_id to service tables to link services to bundles
+    await query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='tariff_orders' AND column_name='bundle_id') THEN
+          ALTER TABLE tariff_orders ADD COLUMN bundle_id INTEGER REFERENCES bundle_orders(id);
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='boc3_orders' AND column_name='bundle_id') THEN
+          ALTER TABLE boc3_orders ADD COLUMN bundle_id INTEGER REFERENCES bundle_orders(id);
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='arbitration_enrollments' AND column_name='bundle_id') THEN
+          ALTER TABLE arbitration_enrollments ADD COLUMN bundle_id INTEGER REFERENCES bundle_orders(id);
+        END IF;
+      END $$;
+    `);
+
+    // Add expiry_date and enrolled_date to bundle_orders
+    await query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='bundle_orders' AND column_name='expiry_date') THEN
+          ALTER TABLE bundle_orders ADD COLUMN expiry_date DATE;
+        END IF;
+        IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='bundle_orders' AND column_name='enrolled_date') THEN
+          ALTER TABLE bundle_orders ADD COLUMN enrolled_date DATE;
         END IF;
       END $$;
     `);
@@ -61,6 +184,10 @@ const verifyRoutes = require('./routes/verify');
 const dashboardRoutes = require('./routes/dashboard');
 const contactRoutes = require('./routes/contact');
 const adminRoutes = require('./routes/admin');
+const autopayRoutes = require('./routes/autopay');
+
+// Import scheduler for background jobs
+const { initScheduler } = require('./jobs/scheduler');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -109,6 +236,7 @@ app.use('/api/verify', verifyRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/autopay', autopayRoutes);
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
@@ -116,7 +244,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Clean URL routing - serve HTML files without .html extension
-const pages = ['admin', 'login', 'register', 'forgot-password', 'dashboard', 'arbitration-program', 'tariff', 'boc-3', 'pricing', 'verify', 'contact', 'about', 'faqs'];
+const pages = ['admin', 'login', 'register', 'forgot-password', 'dashboard', 'arbitration-program', 'tariff', 'boc-3', 'pricing', 'verify', 'contact', 'about', 'faqs', 'bundle-checkout'];
 
 pages.forEach(page => {
   app.get(`/${page}`, (req, res) => {
@@ -148,6 +276,9 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`Frontend URL: ${process.env.FRONTEND_URL || 'http://localhost:' + PORT}`);
+
+  // Initialize background job scheduler
+  initScheduler();
 });
 
 module.exports = app;

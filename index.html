@@ -145,13 +145,13 @@
     <!-- Hero Section -->
     <section class="relative bg-gradient-to-br from-navy-900 via-navy-800 to-navy-900 text-white overflow-hidden">
         <!-- Background Pattern -->
-        <div class="absolute inset-0 opacity-10">
+        <div class="absolute inset-0 opacity-10 z-0 pointer-events-none">
             <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;60&quot; height=&quot;60&quot; viewBox=&quot;0 0 60 60&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%23c9a227&quot; fill-opacity=&quot;0.4&quot;%3E%3Cpath d=&quot;M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
         </div>
 
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
             <div class="grid lg:grid-cols-2 gap-12 items-center">
-                <div>
+                <div class="relative z-20">
                     <div class="inline-flex items-center bg-gold-500/20 border border-gold-500/30 rounded-full px-4 py-2 mb-6">
                         <span class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
                         <span class="text-gold-300 text-sm font-medium">FMCSA Compliant Services</span>
@@ -191,11 +191,11 @@
                     </div>
                 </div>
 
-                <div class="relative hidden lg:block">
+                <div class="relative hidden lg:block pl-8">
                     <!-- Decorative Card Stack -->
-                    <div class="relative">
-                        <div class="absolute -top-4 -left-4 w-full h-full bg-gold-500/20 rounded-2xl transform rotate-3"></div>
-                        <div class="absolute -top-2 -left-2 w-full h-full bg-gold-500/30 rounded-2xl transform rotate-1"></div>
+                    <div class="relative z-10">
+                        <div class="absolute -top-4 -right-4 w-full h-full bg-gold-500/20 rounded-2xl transform rotate-3 pointer-events-none"></div>
+                        <div class="absolute -top-2 -right-2 w-full h-full bg-gold-500/30 rounded-2xl transform rotate-1 pointer-events-none"></div>
                         <div class="relative bg-white rounded-2xl shadow-2xl p-8 text-navy-900">
                             <div class="flex items-center justify-between mb-6">
                                 <div class="flex items-center space-x-3">
@@ -267,15 +267,15 @@
         </div>
 
         <!-- Wave Divider -->
-        <div class="absolute bottom-0 left-0 right-0">
-            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <div class="absolute bottom-0 left-0 right-0 z-0 pointer-events-none">
+            <svg viewBox="0 0 1440 120" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-auto">
                 <path d="M0 120L60 105C120 90 240 60 360 45C480 30 600 30 720 37.5C840 45 960 60 1080 67.5C1200 75 1320 75 1380 75L1440 75V120H1380C1320 120 1200 120 1080 120C960 120 840 120 720 120C600 120 480 120 360 120C240 120 120 120 60 120H0Z" fill="#fefdfb"/>
             </svg>
         </div>
     </section>
 
     <!-- Services Overview Section -->
-    <section id="services" class="py-20 lg:py-28">
+    <section id="services" class="relative z-10 py-20 lg:py-28 bg-cream-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
                 <span class="inline-block text-gold-600 font-semibold text-sm uppercase tracking-wider mb-4">Our Services</span>
@@ -372,7 +372,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <span class="text-sm text-navy-500">Starting at</span>
-                                <div class="font-display text-2xl font-bold text-navy-900">$299<span class="text-lg font-normal text-navy-500"> one-time</span></div>
+                                <div class="font-display text-2xl font-bold text-navy-900">$299<span class="text-lg font-normal text-navy-500">/year</span></div>
                             </div>
                             <a href="/tariff" class="inline-flex items-center text-gold-600 font-semibold hover:text-gold-700 transition-colors">
                                 Learn More

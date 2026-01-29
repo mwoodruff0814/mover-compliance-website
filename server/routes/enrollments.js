@@ -2,8 +2,9 @@ const express = require('express');
 const { query } = require('../config/database');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
 const { validateRequest, schemas, formatMCNumber, formatUSDOT, sanitizeBody } = require('../middleware/validation');
-const { generateArbitrationPDF } = require('../utils/pdf');
+const { generateArbitrationPDF, generateArbitrationConsumerPDF, generateRightsAndResponsibilitiesPDF, generateReadyToMovePDF } = require('../utils/pdf');
 const { sendEnrollmentConfirmation } = require('../utils/email');
+const { generateServiceOrderId } = require('../utils/orderUtils');
 
 const router = express.Router();
 
@@ -61,43 +62,67 @@ router.post('/', authenticateToken, sanitizeBody, async (req, res) => {
     const { payment_id, payment_amount } = req.body;
 
     // Check for existing active enrollment
-    const existingEnrollment = await query(
+    const existingActive = await query(
       `SELECT * FROM arbitration_enrollments
        WHERE user_id = $1 AND status = 'active' AND expiry_date > NOW()`,
       [userId]
     );
 
-    if (existingEnrollment.rows.length > 0) {
+    if (existingActive.rows.length > 0) {
       return res.status(400).json({
         success: false,
         message: 'You already have an active arbitration enrollment'
       });
     }
 
+    // Check if this is first-time enrollment (for determining which docs to include)
+    const anyPrevious = await query(
+      `SELECT id FROM arbitration_enrollments WHERE user_id = $1 LIMIT 1`,
+      [userId]
+    );
+    const isFirstEnrollment = anyPrevious.rows.length === 0;
+
     // Calculate dates
     const enrolledDate = new Date();
     const expiryDate = new Date();
     expiryDate.setFullYear(expiryDate.getFullYear() + 1);
 
+    // Generate unique order ID
+    const orderId = generateServiceOrderId('arbitration');
+
     // Create enrollment
     const result = await query(
       `INSERT INTO arbitration_enrollments
-       (user_id, status, enrolled_date, expiry_date, payment_id, amount_paid)
-       VALUES ($1, $2, $3, $4, $5, $6)
+       (user_id, order_id, status, enrolled_date, expiry_date, payment_id, amount_paid)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
-      [userId, 'active', enrolledDate, expiryDate, payment_id, payment_amount || PRICES.ARBITRATION / 100]
+      [userId, orderId, 'active', enrolledDate, expiryDate, payment_id, payment_amount || PRICES.ARBITRATION / 100]
     );
 
     const enrollment = result.rows[0];
 
-    // Generate PDF
+    // Generate all documents
+    const documents = {};
     try {
-      const pdfUrl = await generateArbitrationPDF(req.user, enrollment);
+      // Always generate: Certificate and Consumer Document
+      documents.certificate = await generateArbitrationPDF(req.user, enrollment);
+      documents.consumer_document = await generateArbitrationConsumerPDF(req.user, enrollment);
+
+      // First enrollment only: Ready to Move and Rights & Responsibilities
+      if (isFirstEnrollment) {
+        documents.ready_to_move = await generateReadyToMovePDF(req.user);
+        documents.rights_responsibilities = await generateRightsAndResponsibilitiesPDF(req.user);
+      }
+
+      // Store primary document URL and all documents
       await query(
-        'UPDATE arbitration_enrollments SET document_url = $1 WHERE id = $2',
-        [pdfUrl, enrollment.id]
+        `UPDATE arbitration_enrollments
+         SET document_url = $1, documents = $2
+         WHERE id = $3`,
+        [documents.certificate, JSON.stringify(documents), enrollment.id]
       );
-      enrollment.document_url = pdfUrl;
+      enrollment.document_url = documents.certificate;
+      enrollment.documents = documents;
     } catch (pdfError) {
       console.error('PDF generation error:', pdfError);
       // Continue without PDF - can be regenerated later
@@ -114,7 +139,7 @@ router.post('/', authenticateToken, sanitizeBody, async (req, res) => {
     res.status(201).json({
       success: true,
       message: 'Successfully enrolled in Arbitration Program',
-      data: { enrollment }
+      data: { enrollment, documents, isFirstEnrollment }
     });
   } catch (error) {
     console.error('Create enrollment error:', error);
@@ -153,13 +178,16 @@ router.post('/renew', authenticateToken, async (req, res) => {
 
     expiryDate.setFullYear(expiryDate.getFullYear() + 1);
 
+    // Generate unique order ID for renewal
+    const orderId = generateServiceOrderId('arbitration');
+
     // Update existing or create new
     const result = await query(
       `INSERT INTO arbitration_enrollments
-       (user_id, status, enrolled_date, expiry_date, payment_id, amount_paid)
-       VALUES ($1, 'active', $2, $3, $4, $5)
+       (user_id, order_id, status, enrolled_date, expiry_date, payment_id, amount_paid)
+       VALUES ($1, $2, 'active', $3, $4, $5, $6)
        RETURNING *`,
-      [req.user.id, enrolledDate, expiryDate, payment_id, payment_amount || PRICES.ARBITRATION / 100]
+      [req.user.id, orderId, enrolledDate, expiryDate, payment_id, payment_amount || PRICES.ARBITRATION / 100]
     );
 
     const enrollment = result.rows[0];

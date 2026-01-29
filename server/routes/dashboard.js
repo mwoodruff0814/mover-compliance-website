@@ -64,15 +64,49 @@ router.get('/overview', authenticateToken, async (req, res) => {
       arbitrationData.status === 'active' &&
       new Date(arbitrationData.expiry_date) > now;
 
-    // Calculate upcoming renewals
+    // Calculate upcoming renewals for all services
     const renewals = [];
+
+    // Check arbitration expiry
     if (arbitrationData && arbitrationData.expiry_date) {
       const expiryDate = new Date(arbitrationData.expiry_date);
       const daysUntilExpiry = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
       if (daysUntilExpiry <= 60 && daysUntilExpiry > 0) {
         renewals.push({
           service: 'Arbitration Program',
+          service_type: 'arbitration',
+          service_id: arbitrationData.id,
           expiry_date: arbitrationData.expiry_date,
+          days_remaining: daysUntilExpiry
+        });
+      }
+    }
+
+    // Check tariff expiry
+    if (tariffData && tariffData.expiry_date) {
+      const expiryDate = new Date(tariffData.expiry_date);
+      const daysUntilExpiry = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+      if (daysUntilExpiry <= 60 && daysUntilExpiry > 0) {
+        renewals.push({
+          service: 'Tariff Publishing',
+          service_type: 'tariff',
+          service_id: tariffData.id,
+          expiry_date: tariffData.expiry_date,
+          days_remaining: daysUntilExpiry
+        });
+      }
+    }
+
+    // Check BOC-3 expiry
+    if (boc3Data && boc3Data.expiry_date) {
+      const expiryDate = new Date(boc3Data.expiry_date);
+      const daysUntilExpiry = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
+      if (daysUntilExpiry <= 60 && daysUntilExpiry > 0) {
+        renewals.push({
+          service: 'BOC-3 Process Agent',
+          service_type: 'boc3',
+          service_id: boc3Data.id,
+          expiry_date: boc3Data.expiry_date,
           days_remaining: daysUntilExpiry
         });
       }
@@ -94,6 +128,7 @@ router.get('/overview', authenticateToken, async (req, res) => {
         },
         services: {
           arbitration: {
+            id: arbitrationData?.id || null,
             active: arbitrationActive,
             status: arbitrationData?.status || 'none',
             enrolled_date: arbitrationData?.enrolled_date || null,
@@ -101,15 +136,22 @@ router.get('/overview', authenticateToken, async (req, res) => {
             document_url: arbitrationData?.document_url || null
           },
           tariff: {
+            id: tariffData?.id || null,
+            active: tariffData && tariffData.status === 'completed' && (!tariffData.expiry_date || new Date(tariffData.expiry_date) > now),
             status: tariffData?.status || 'none',
-            created_at: tariffData?.created_at || null,
-            document_url: tariffData?.document_url || null
+            enrolled_date: tariffData?.enrolled_date || tariffData?.created_at || null,
+            expiry_date: tariffData?.expiry_date || null,
+            document_url: tariffData?.document_url || null,
+            pricing_method: tariffData?.pricing_method || null
           },
           boc3: {
-            active: boc3Data && ['active', 'filed'].includes(boc3Data.status),
+            id: boc3Data?.id || null,
+            active: boc3Data && ['active', 'filed'].includes(boc3Data.status) && (!boc3Data.expiry_date || new Date(boc3Data.expiry_date) > now),
             status: boc3Data?.status || 'none',
             filing_type: boc3Data?.filing_type || null,
-            filed_date: boc3Data?.filed_date || null
+            filed_date: boc3Data?.filed_date || null,
+            enrolled_date: boc3Data?.enrolled_date || null,
+            expiry_date: boc3Data?.expiry_date || null
           }
         },
         renewals,
@@ -132,7 +174,7 @@ router.get('/documents', authenticateToken, async (req, res) => {
 
     const [arbitrationDocs, tariffDocs, boc3Docs] = await Promise.all([
       query(
-        `SELECT id, 'Arbitration Summary' as name, document_url, enrolled_date as created_at, expiry_date
+        `SELECT id, document_url, documents, enrolled_date as created_at, expiry_date
          FROM arbitration_enrollments
          WHERE user_id = $1 AND document_url IS NOT NULL
          ORDER BY created_at DESC`,
@@ -154,8 +196,51 @@ router.get('/documents', authenticateToken, async (req, res) => {
       )
     ]);
 
+    // Expand arbitration documents (certificate, consumer doc, etc.)
+    const expandedArbDocs = [];
+    for (const arb of arbitrationDocs.rows) {
+      const docs = arb.documents || {};
+      if (docs.certificate || arb.document_url) {
+        expandedArbDocs.push({
+          id: `arb-${arb.id}-cert`,
+          name: 'Arbitration Enrollment Certificate',
+          document_url: docs.certificate || arb.document_url,
+          created_at: arb.created_at,
+          expiry_date: arb.expiry_date,
+          type: 'arbitration'
+        });
+      }
+      if (docs.consumer_document) {
+        expandedArbDocs.push({
+          id: `arb-${arb.id}-consumer`,
+          name: 'Consumer Arbitration Document',
+          document_url: docs.consumer_document,
+          created_at: arb.created_at,
+          type: 'arbitration'
+        });
+      }
+      if (docs.ready_to_move) {
+        expandedArbDocs.push({
+          id: `arb-${arb.id}-rtm`,
+          name: 'Ready to Move Brochure',
+          document_url: docs.ready_to_move,
+          created_at: arb.created_at,
+          type: 'arbitration'
+        });
+      }
+      if (docs.rights_responsibilities) {
+        expandedArbDocs.push({
+          id: `arb-${arb.id}-rr`,
+          name: 'Your Rights and Responsibilities',
+          document_url: docs.rights_responsibilities,
+          created_at: arb.created_at,
+          type: 'arbitration'
+        });
+      }
+    }
+
     const documents = [
-      ...arbitrationDocs.rows.map(d => ({ ...d, type: 'arbitration' })),
+      ...expandedArbDocs,
       ...tariffDocs.rows.map(d => ({ ...d, type: 'tariff' })),
       ...boc3Docs.rows.map(d => ({ ...d, type: 'boc3' }))
     ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -318,6 +403,154 @@ const sendSSEEvent = (userId, eventType, data) => {
     }
   });
 };
+
+// ==================== NOTIFICATIONS ====================
+
+// Get user notifications
+router.get('/notifications', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { limit = 20, unread_only = false } = req.query;
+
+    let queryText = `
+      SELECT * FROM notifications
+      WHERE user_id = $1
+      ${unread_only === 'true' ? 'AND read = false' : ''}
+      ORDER BY created_at DESC
+      LIMIT $2
+    `;
+
+    const result = await query(queryText, [userId, limit]);
+
+    // Get unread count
+    const countResult = await query(
+      'SELECT COUNT(*) as count FROM notifications WHERE user_id = $1 AND read = false',
+      [userId]
+    );
+
+    res.json({
+      success: true,
+      data: {
+        notifications: result.rows,
+        unread_count: parseInt(countResult.rows[0].count)
+      }
+    });
+  } catch (error) {
+    console.error('Get notifications error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to load notifications'
+    });
+  }
+});
+
+// Mark notification as read
+router.post('/notifications/:id/read', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const result = await query(
+      `UPDATE notifications
+       SET read = true
+       WHERE id = $1 AND user_id = $2
+       RETURNING *`,
+      [id, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Notification not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: { notification: result.rows[0] }
+    });
+  } catch (error) {
+    console.error('Mark notification read error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update notification'
+    });
+  }
+});
+
+// Mark all notifications as read
+router.post('/notifications/read-all', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    await query(
+      'UPDATE notifications SET read = true WHERE user_id = $1',
+      [userId]
+    );
+
+    res.json({
+      success: true,
+      message: 'All notifications marked as read'
+    });
+  } catch (error) {
+    console.error('Mark all read error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to update notifications'
+    });
+  }
+});
+
+// ==================== SERVICE HISTORY ====================
+
+// Get expired/inactive services (history)
+router.get('/history', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const now = new Date().toISOString();
+
+    const [expiredArbitration, expiredTariff, expiredBoc3] = await Promise.all([
+      query(
+        `SELECT id, 'arbitration' as type, 'Arbitration Program' as name, status, enrolled_date, expiry_date, document_url, created_at
+         FROM arbitration_enrollments
+         WHERE user_id = $1 AND (expiry_date < $2 OR status = 'expired')
+         ORDER BY expiry_date DESC`,
+        [userId, now]
+      ),
+      query(
+        `SELECT id, 'tariff' as type, 'Tariff Publishing' as name, status, enrolled_date, expiry_date, document_url, created_at
+         FROM tariff_orders
+         WHERE user_id = $1 AND (expiry_date < $2 OR status = 'expired')
+         ORDER BY expiry_date DESC`,
+        [userId, now]
+      ),
+      query(
+        `SELECT id, 'boc3' as type, 'BOC-3 Process Agent' as name, status, enrolled_date, expiry_date, document_url, created_at
+         FROM boc3_orders
+         WHERE user_id = $1 AND (expiry_date < $2 OR status = 'expired')
+         ORDER BY expiry_date DESC`,
+        [userId, now]
+      )
+    ]);
+
+    const history = [
+      ...expiredArbitration.rows,
+      ...expiredTariff.rows,
+      ...expiredBoc3.rows
+    ].sort((a, b) => new Date(b.expiry_date || b.created_at) - new Date(a.expiry_date || a.created_at));
+
+    res.json({
+      success: true,
+      data: { history }
+    });
+  } catch (error) {
+    console.error('Get history error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to load service history'
+    });
+  }
+});
 
 // Export for use in other routes
 module.exports = router;
