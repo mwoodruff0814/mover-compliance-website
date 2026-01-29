@@ -130,7 +130,7 @@ router.get('/documents', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const [arbitrationDocs, tariffDocs] = await Promise.all([
+    const [arbitrationDocs, tariffDocs, boc3Docs] = await Promise.all([
       query(
         `SELECT id, 'Arbitration Summary' as name, document_url, enrolled_date as created_at, expiry_date
          FROM arbitration_enrollments
@@ -144,12 +144,20 @@ router.get('/documents', authenticateToken, async (req, res) => {
          WHERE user_id = $1 AND document_url IS NOT NULL AND status = 'completed'
          ORDER BY created_at DESC`,
         [userId]
+      ),
+      query(
+        `SELECT id, 'BOC-3 Filing' as name, document_url, created_at
+         FROM boc3_orders
+         WHERE user_id = $1 AND document_url IS NOT NULL AND status IN ('completed', 'active', 'filed')
+         ORDER BY created_at DESC`,
+        [userId]
       )
     ]);
 
     const documents = [
       ...arbitrationDocs.rows.map(d => ({ ...d, type: 'arbitration' })),
-      ...tariffDocs.rows.map(d => ({ ...d, type: 'tariff' }))
+      ...tariffDocs.rows.map(d => ({ ...d, type: 'tariff' })),
+      ...boc3Docs.rows.map(d => ({ ...d, type: 'boc3' }))
     ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     res.json({
