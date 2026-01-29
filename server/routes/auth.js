@@ -491,4 +491,54 @@ router.get('/debug/check-user/:email', async (req, res) => {
   }
 });
 
+// TEMPORARY: Create test orders for a user (remove after testing)
+router.post('/debug/create-test-orders', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Email required' });
+    }
+
+    // Find user
+    const userResult = await query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const userId = userResult.rows[0].id;
+
+    // Create test orders with sample document URLs
+    const testDocUrl = 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf';
+
+    // Create arbitration enrollment
+    await query(`
+      INSERT INTO arbitration_enrollments (user_id, status, enrolled_date, expiry_date, amount_paid, document_url)
+      VALUES ($1, 'active', NOW(), NOW() + INTERVAL '1 year', 149.00, $2)
+    `, [userId, testDocUrl]);
+
+    // Create tariff order
+    await query(`
+      INSERT INTO tariff_orders (user_id, status, pricing_method, service_territory, amount_paid, document_url)
+      VALUES ($1, 'completed', 'weight', 'Interstate - 48 States', 199.00, $2)
+    `, [userId, testDocUrl]);
+
+    // Create BOC-3 order
+    await query(`
+      INSERT INTO boc3_orders (user_id, status, filing_type, amount_paid, document_url)
+      VALUES ($1, 'filed', 'new', 49.00, $2)
+    `, [userId, testDocUrl]);
+
+    res.json({
+      success: true,
+      message: 'Test orders created for ' + email,
+      note: 'Check the dashboard to see the documents'
+    });
+
+  } catch (error) {
+    console.error('Create test orders error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
 module.exports = router;
