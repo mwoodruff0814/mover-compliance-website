@@ -165,8 +165,8 @@ const templates = {
   },
 
   passwordReset: (email, companyName, token) => {
-    // Use APP_URL for the actual app (Render), fall back to FRONTEND_URL
-    const appUrl = process.env.APP_URL || process.env.FRONTEND_URL || 'https://mover-compliance-website.onrender.com';
+    // Use Render URL directly until custom domain DNS propagates
+    const appUrl = 'https://mover-compliance-website.onrender.com';
     const resetUrl = `${appUrl}/forgot-password?token=${token}`;
 
     return {
