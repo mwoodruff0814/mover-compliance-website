@@ -79,6 +79,16 @@ try {
 
 // ==================== DEBUG ====================
 
+// Public check for Cloudinary config (no auth required)
+router.get('/debug/cloudinary-check', (req, res) => {
+  res.json({
+    uploads_enabled: cloudinaryConfigured,
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? 'SET' : 'MISSING',
+    api_key: process.env.CLOUDINARY_API_KEY ? 'SET' : 'MISSING',
+    api_secret: process.env.CLOUDINARY_API_SECRET ? 'SET' : 'MISSING'
+  });
+});
+
 // Check Cloudinary config (temporary debug endpoint)
 router.get('/debug/cloudinary', authenticateToken, requireAdmin, (req, res) => {
   res.json({
