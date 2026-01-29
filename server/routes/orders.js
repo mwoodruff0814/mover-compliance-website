@@ -62,6 +62,19 @@ router.post('/tariff', authenticateToken, sanitizeBody, async (req, res) => {
       });
     }
 
+    // Validate payment_id format - must come from payment API
+    // Valid formats: 'sim_' (simulation from API), Square payment IDs, 'admin_created_' (admin bypass)
+    const validPrefixes = ['sim_', 'admin_created_'];
+    const isValidPrefix = validPrefixes.some(prefix => payment_id.startsWith(prefix));
+    const isSquarePayment = /^[A-Za-z0-9]{20,}$/.test(payment_id); // Square IDs are alphanumeric
+
+    if (!isValidPrefix && !isSquarePayment) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid payment. Please complete payment through the checkout form.'
+      });
+    }
+
     if (!payment_amount || payment_amount < 299) {
       return res.status(400).json({
         success: false,
@@ -195,6 +208,19 @@ router.post('/boc3', authenticateToken, sanitizeBody, async (req, res) => {
       return res.status(400).json({
         success: false,
         message: 'Payment is required to place this order'
+      });
+    }
+
+    // Validate payment_id format - must come from payment API
+    // Valid formats: 'sim_' (simulation from API), Square payment IDs, 'admin_created_' (admin bypass)
+    const validPrefixes = ['sim_', 'admin_created_'];
+    const isValidPrefix = validPrefixes.some(prefix => payment_id.startsWith(prefix));
+    const isSquarePayment = /^[A-Za-z0-9]{20,}$/.test(payment_id); // Square IDs are alphanumeric
+
+    if (!isValidPrefix && !isSquarePayment) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid payment. Please complete payment through the checkout form.'
       });
     }
 

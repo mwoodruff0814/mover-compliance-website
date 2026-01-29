@@ -210,18 +210,25 @@
                     <!-- Payment -->
                     <div class="border-t border-navy-100 pt-6">
                         <div class="flex items-center justify-between mb-4">
-                            <span class="text-lg font-semibold">Total</span>
+                            <span class="text-lg font-semibold text-navy-900">Total</span>
                             <span class="text-2xl font-bold text-gold-600">$299.00</span>
                         </div>
-                        <div id="card-container" class="mb-4 p-4 border border-navy-200 rounded-lg">
-                            <p class="text-navy-600 text-sm">Payment processing available after Square credentials are configured.</p>
+
+                        <!-- Card Payment Section -->
+                        <div id="payment-section">
+                            <label class="block text-sm font-medium text-navy-900 mb-2">Card Details *</label>
+                            <div id="card-container" class="mb-4 p-4 border border-navy-200 rounded-lg min-h-[50px]">
+                                <p class="text-navy-400 text-sm">Loading payment form...</p>
+                            </div>
+                            <div id="payment-status" class="hidden text-sm mb-4"></div>
                         </div>
+
                         <div id="form-error" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4"></div>
                     </div>
 
-                    <button type="submit" id="submit-btn" class="w-full bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold py-4 rounded-lg transition-all disabled:opacity-50">
+                    <button type="submit" id="submit-btn" disabled class="w-full bg-gold-500 hover:bg-gold-600 text-navy-900 font-bold py-4 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                         <span id="submit-text">Order Tariff - $299</span>
-                        <span id="submit-loading" class="hidden">Processing...</span>
+                        <span id="submit-loading" class="hidden">Processing Payment...</span>
                     </button>
                 </form>
             </div>
@@ -237,7 +244,16 @@
 
     <script src="js/main.js"></script>
     <script src="js/auth.js"></script>
+    <!-- Square Web Payments SDK -->
+    <script src="https://web.squarecdn.com/v1/square.js"></script>
     <script>
+        let card = null;
+        let payments = null;
+
+        // Square credentials - loaded from server
+        let SQUARE_APP_ID = null;
+        let SQUARE_LOCATION_ID = null;
+
         // Pre-fill if logged in
         if (Auth.isLoggedIn()) {
             const user = Auth.getUser();
@@ -257,41 +273,136 @@
             InterstateCompliance.formatPhoneNumber(this);
         });
 
+        // Initialize Square payment form
+        async function initSquarePayment() {
+            const cardContainer = document.getElementById('card-container');
+            const paymentStatus = document.getElementById('payment-status');
+            const submitBtn = document.getElementById('submit-btn');
+
+            try {
+                // Fetch Square config from server
+                const configResponse = await fetch('/api/payments/config');
+                const configData = await configResponse.json();
+
+                if (!configData.success || !configData.data.configured) {
+                    throw new Error('Payment system not configured');
+                }
+
+                SQUARE_APP_ID = configData.data.applicationId;
+                SQUARE_LOCATION_ID = configData.data.locationId;
+
+                if (!window.Square) {
+                    throw new Error('Square SDK not loaded');
+                }
+
+                payments = window.Square.payments(SQUARE_APP_ID, SQUARE_LOCATION_ID);
+                card = await payments.card();
+                await card.attach('#card-container');
+
+                // Payment form ready - enable submit button
+                submitBtn.disabled = false;
+                paymentStatus.classList.add('hidden');
+
+            } catch (error) {
+                console.error('Square initialization error:', error);
+                cardContainer.innerHTML = `
+                    <div class="text-center py-4">
+                        <p class="text-red-600 font-medium mb-2">Payment system unavailable</p>
+                        <p class="text-navy-500 text-sm">Please contact us at (555) 123-4567 to complete your order.</p>
+                    </div>
+                `;
+                submitBtn.disabled = true;
+                paymentStatus.innerHTML = '<p class="text-red-600">Unable to load payment form. Please refresh or contact support.</p>';
+                paymentStatus.classList.remove('hidden');
+            }
+        }
+
+        // Initialize on page load
+        initSquarePayment();
+
         document.getElementById('tariff-form').addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            if (!card) {
+                alert('Payment form not loaded. Please refresh the page.');
+                return;
+            }
+
             const submitBtn = document.getElementById('submit-btn');
+            const submitText = document.getElementById('submit-text');
+            const submitLoading = document.getElementById('submit-loading');
             const errorDiv = document.getElementById('form-error');
 
             submitBtn.disabled = true;
+            submitText.classList.add('hidden');
+            submitLoading.classList.remove('hidden');
             errorDiv.classList.add('hidden');
 
             try {
+                // Validate required fields
+                const email = document.getElementById('email').value;
+                const company_name = document.getElementById('company_name').value;
+                const mc_number = document.getElementById('mc_number').value;
+                const usdot_number = document.getElementById('usdot_number').value;
+                const pricing_method = document.getElementById('pricing_method').value;
+                const service_territory = document.getElementById('service_territory').value;
+                const phone = document.getElementById('phone').value;
+
+                if (!email || !company_name || !mc_number || !usdot_number) {
+                    throw new Error('Please fill in all required fields');
+                }
+
+                if (!pricing_method || !service_territory) {
+                    throw new Error('Please select pricing method and service territory');
+                }
+
                 // Get accessorials
                 const accessorials = Array.from(document.querySelectorAll('input[name="accessorials"]:checked'))
                     .map(cb => cb.value);
 
+                // Tokenize the card
+                const tokenResult = await card.tokenize();
+                if (tokenResult.status !== 'OK') {
+                    throw new Error(tokenResult.errors?.[0]?.message || 'Card validation failed. Please check your card details.');
+                }
+
+                // Register user if not logged in
                 if (!Auth.isLoggedIn()) {
-                    // Register first
                     const password = Math.random().toString(36).slice(-8) + 'A1!';
                     await Auth.register({
-                        email: document.getElementById('email').value,
+                        email: email,
                         password: password,
-                        company_name: document.getElementById('company_name').value,
-                        mc_number: document.getElementById('mc_number').value,
-                        usdot_number: document.getElementById('usdot_number').value,
-                        phone: document.getElementById('phone').value
+                        company_name: company_name,
+                        mc_number: mc_number,
+                        usdot_number: usdot_number,
+                        phone: phone
                     });
                 }
 
+                // Process payment with Square token
+                const paymentResponse = await Auth.request('/payments/process', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        source_id: tokenResult.token,
+                        product_type: 'tariff',
+                        buyer_email_address: email
+                    })
+                });
+
+                if (!paymentResponse.success) {
+                    throw new Error(paymentResponse.message || 'Payment failed. Please try again.');
+                }
+
+                // Create the order with the real payment ID
                 const result = await Auth.request('/orders/tariff', {
                     method: 'POST',
                     body: JSON.stringify({
-                        pricing_method: document.getElementById('pricing_method').value,
-                        service_territory: document.getElementById('service_territory').value,
+                        pricing_method: pricing_method,
+                        service_territory: service_territory,
                         accessorials: accessorials,
                         special_notes: document.getElementById('special_notes').value,
-                        payment_id: 'simulated_' + Date.now(),
-                        payment_amount: 299.00
+                        payment_id: paymentResponse.data.payment_id,
+                        payment_amount: paymentResponse.data.amount / 100
                     })
                 });
 
@@ -304,8 +415,10 @@
             } catch (error) {
                 errorDiv.textContent = error.message;
                 errorDiv.classList.remove('hidden');
-            } finally {
                 submitBtn.disabled = false;
+            } finally {
+                submitText.classList.remove('hidden');
+                submitLoading.classList.add('hidden');
             }
         });
     </script>

@@ -55,6 +55,29 @@ router.get('/prices', (req, res) => {
   });
 });
 
+// Get Square config for client-side SDK (public endpoint)
+router.get('/config', (req, res) => {
+  const appId = process.env.SQUARE_APPLICATION_ID;
+  const locationId = process.env.SQUARE_LOCATION_ID;
+
+  if (!appId || !locationId) {
+    return res.json({
+      success: false,
+      message: 'Payment system not configured',
+      data: { configured: false }
+    });
+  }
+
+  res.json({
+    success: true,
+    data: {
+      configured: true,
+      applicationId: appId,
+      locationId: locationId
+    }
+  });
+});
+
 // Process payment
 router.post('/process', optionalAuth, async (req, res) => {
   try {
