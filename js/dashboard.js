@@ -22,6 +22,18 @@ const Dashboard = {
     notificationsOpen: false,
 
     /**
+     * Get authenticated URL for document downloads
+     * Appends JWT token as query parameter for new tab downloads
+     */
+    getAuthenticatedUrl(url) {
+        if (!url) return url;
+        const token = Auth.getToken();
+        if (!token) return url;
+        const separator = url.includes('?') ? '&' : '?';
+        return `${url}${separator}token=${token}`;
+    },
+
+    /**
      * Initialize dashboard
      */
     async init() {
@@ -339,7 +351,7 @@ const Dashboard = {
         if (prefix === 'arb') {
             if (service.active && service.document_url) {
                 actionsHtml = `
-                    <a href="${service.document_url}" target="_blank" class="flex-1 text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
+                    <a href="${this.getAuthenticatedUrl(service.document_url)}" target="_blank" class="flex-1 text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
                         Download PDF
                     </a>
                     <button onclick="Dashboard.openPurchaseModal('arbitration')" class="flex-1 text-center border border-navy-200 hover:bg-navy-50 text-navy-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
@@ -362,7 +374,7 @@ const Dashboard = {
         } else if (prefix === 'tariff') {
             if (service.status === 'completed' && service.document_url) {
                 actionsHtml = `
-                    <a href="${service.document_url}" target="_blank" class="flex-1 text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
+                    <a href="${this.getAuthenticatedUrl(service.document_url)}" target="_blank" class="flex-1 text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
                         Download Tariff
                     </a>
                     <button onclick="Dashboard.openTariffEditModal(${service.id})" class="flex-1 text-center border border-navy-200 hover:bg-navy-50 text-navy-700 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
@@ -562,7 +574,7 @@ const Dashboard = {
                         <div class="border-t pt-4">
                             <p class="font-medium text-navy-800 mb-2">Arbitration Program</p>
                             <p class="text-sm text-navy-600">Status: ${services.arbitration.status}</p>
-                            ${services.arbitration.document_url ? `<a href="${services.arbitration.document_url}" target="_blank" class="text-sm text-gold-600 hover:text-gold-700">Download Document</a>` : ''}
+                            ${services.arbitration.document_url ? `<a href="${Dashboard.getAuthenticatedUrl(services.arbitration.document_url)}" target="_blank" class="text-sm text-gold-600 hover:text-gold-700">Download Document</a>` : ''}
                         </div>
                     `;
                 }
@@ -582,7 +594,7 @@ const Dashboard = {
                         <div class="border-t pt-4">
                             <p class="font-medium text-navy-800 mb-2">Tariff Publishing</p>
                             <p class="text-sm text-navy-600">Status: ${services.tariff.status}</p>
-                            ${services.tariff.document_url ? `<a href="${services.tariff.document_url}" target="_blank" class="text-sm text-gold-600 hover:text-gold-700">Download Tariff</a>` : ''}
+                            ${services.tariff.document_url ? `<a href="${Dashboard.getAuthenticatedUrl(services.tariff.document_url)}" target="_blank" class="text-sm text-gold-600 hover:text-gold-700">Download Tariff</a>` : ''}
                         </div>
                     `;
                 }
@@ -636,7 +648,7 @@ const Dashboard = {
                         <p class="text-sm text-navy-500">Created ${new Date(doc.created_at).toLocaleDateString()}</p>
                     </div>
                 </div>
-                <a href="${doc.document_url}" target="_blank" class="text-gold-600 hover:text-gold-700 font-medium text-sm flex items-center">
+                <a href="${Dashboard.getAuthenticatedUrl(doc.document_url)}" target="_blank" class="text-gold-600 hover:text-gold-700 font-medium text-sm flex items-center">
                     Download
                     <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
@@ -736,7 +748,7 @@ const Dashboard = {
                 </td>
                 <td class="px-6 py-4">
                     ${item.document_url ? `
-                        <a href="${item.document_url}" target="_blank" class="text-gold-600 hover:text-gold-700 text-sm font-medium">
+                        <a href="${Dashboard.getAuthenticatedUrl(item.document_url)}" target="_blank" class="text-gold-600 hover:text-gold-700 text-sm font-medium">
                             Download
                         </a>
                     ` : '<span class="text-navy-400 text-sm">-</span>'}
