@@ -2,7 +2,14 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const { query } = require('./config/database');
+
+// Ensure temp directory exists for PDF storage
+const tempDir = path.join(__dirname, '../temp');
+if (!fs.existsSync(tempDir)) {
+  fs.mkdirSync(tempDir, { recursive: true });
+}
 
 // Run database migrations on startup
 const runMigrations = async () => {
@@ -221,6 +228,9 @@ app.use('/js', express.static(path.join(__dirname, '../js')));
 
 // Serve images
 app.use('/images', express.static(path.join(__dirname, '../images')));
+
+// Serve generated PDFs from temp directory
+app.use('/temp', express.static(path.join(__dirname, '../temp')));
 
 // Serve other static assets from root (fonts, favicon, etc.)
 app.use(express.static(path.join(__dirname, '..'), {
