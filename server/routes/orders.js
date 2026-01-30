@@ -453,7 +453,7 @@ router.post('/boc3', authenticateToken, sanitizeBody, async (req, res) => {
       });
     }
 
-    if (!payment_amount || payment_amount < 99) {
+    if (!payment_amount || payment_amount < 0.99) {
       return res.status(400).json({
         success: false,
         message: 'Valid payment amount is required'
