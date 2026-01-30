@@ -86,7 +86,7 @@ router.post('/', sanitizeBody, async (req, res) => {
             },
             contact: {
               company: process.env.COMPANY_NAME || 'Interstate Compliance Solutions',
-              phone: process.env.COMPANY_PHONE || '1-800-555-0199',
+              phone: process.env.COMPANY_PHONE || '(330) 754-2648',
               email: process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'
             }
           }

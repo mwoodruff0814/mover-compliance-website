@@ -127,7 +127,7 @@ const generateArbitrationPDF = async (user, enrollment, returnBuffer = false) =>
         .fontSize(10)
         .text(process.env.COMPANY_ADDRESS || '123 Compliance Way', { align: 'center' })
         .text(process.env.COMPANY_CITY_STATE || 'Washington, DC 20001', { align: 'center' })
-        .text(`Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'}`, { align: 'center' })
+        .text(`Phone: ${process.env.COMPANY_PHONE || '(330) 754-2648'}`, { align: 'center' })
         .text(`Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}`, { align: 'center' });
 
       // Signature area at bottom
@@ -221,7 +221,7 @@ const generateArbitrationConsumerPDF = async (user, enrollment, returnBuffer = f
       const gold = '#c9a227';
 
       const companyName = process.env.COMPANY_NAME || 'Interstate Compliance Solutions';
-      const companyPhone = process.env.COMPANY_PHONE || '1-800-555-0199';
+      const companyPhone = process.env.COMPANY_PHONE || '(330) 754-2648';
       const companyEmail = process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com';
       const expiryDate = new Date(enrollment.expiry_date);
       const expiryFormatted = expiryDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });

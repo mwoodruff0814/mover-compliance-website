@@ -91,7 +91,7 @@ const templates = {
           </div>
           <div class="footer">
             <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
-            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '(330) 754-2648'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
           </div>
         </div>
       </body>
@@ -155,7 +155,7 @@ const templates = {
             </div>
             <div class="footer">
               <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
-              <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'}</p>
+              <p>Phone: ${process.env.COMPANY_PHONE || '(330) 754-2648'}</p>
             </div>
           </div>
         </body>
@@ -253,7 +253,7 @@ const templates = {
             <h2>Thank You for Contacting Us</h2>
             <p>Dear ${name},</p>
             <p>We have received your message and will get back to you within 24 hours.</p>
-            <p>If your matter is urgent, please call us at <strong>${process.env.COMPANY_PHONE || '1-800-555-0199'}</strong>.</p>
+            <p>If your matter is urgent, please call us at <strong>${process.env.COMPANY_PHONE || '(330) 754-2648'}</strong>.</p>
             <p>Thank you for your interest in our services!</p>
           </div>
           <div class="footer">
@@ -460,7 +460,7 @@ const templates = {
           </div>
           <div class="footer">
             <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
-            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '(330) 754-2648'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
           </div>
         </div>
       </body>
@@ -525,7 +525,7 @@ const templates = {
           </div>
           <div class="footer">
             <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
-            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '(330) 754-2648'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
           </div>
         </div>
       </body>
@@ -592,7 +592,7 @@ const templates = {
             </div>
             <div class="footer">
               <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
-              <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+              <p>Phone: ${process.env.COMPANY_PHONE || '(330) 754-2648'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
             </div>
           </div>
         </body>
@@ -664,7 +664,7 @@ const templates = {
           </div>
           <div class="footer">
             <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
-            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '(330) 754-2648'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
           </div>
         </div>
       </body>
@@ -714,7 +714,7 @@ const templates = {
           </div>
           <div class="footer">
             <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
-            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '(330) 754-2648'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
           </div>
         </div>
       </body>
@@ -761,11 +761,11 @@ const templates = {
               <a href="${process.env.FRONTEND_URL}/dashboard" class="button">RENEW NOW</a>
             </p>
 
-            <p>Need help? Contact us immediately at ${process.env.COMPANY_PHONE || '1-800-555-0199'}.</p>
+            <p>Need help? Contact us immediately at ${process.env.COMPANY_PHONE || '(330) 754-2648'}.</p>
           </div>
           <div class="footer">
             <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
-            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '(330) 754-2648'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
           </div>
         </div>
       </body>
@@ -822,7 +822,7 @@ const templates = {
           </div>
           <div class="footer">
             <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
-            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '(330) 754-2648'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
           </div>
         </div>
       </body>
@@ -880,7 +880,7 @@ const templates = {
           </div>
           <div class="footer">
             <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
-            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '(330) 754-2648'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
           </div>
         </div>
       </body>
@@ -935,11 +935,11 @@ const templates = {
 
             <p><strong>Don't let your compliance lapse!</strong> Update your payment information as soon as possible to avoid service interruption.</p>
 
-            <p>Need help? Call us at ${process.env.COMPANY_PHONE || '1-800-555-0199'}.</p>
+            <p>Need help? Call us at ${process.env.COMPANY_PHONE || '(330) 754-2648'}.</p>
           </div>
           <div class="footer">
             <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
-            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '(330) 754-2648'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
           </div>
         </div>
       </body>
@@ -989,7 +989,7 @@ const templates = {
           </div>
           <div class="footer">
             <p>${process.env.COMPANY_NAME || 'Interstate Compliance Solutions'}</p>
-            <p>Phone: ${process.env.COMPANY_PHONE || '1-800-555-0199'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
+            <p>Phone: ${process.env.COMPANY_PHONE || '(330) 754-2648'} | Email: ${process.env.COMPANY_EMAIL || 'info@interstatecompliancesolutions.com'}</p>
           </div>
         </div>
       </body>
