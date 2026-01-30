@@ -208,12 +208,16 @@ router.put('/tariff/:id/rates', authenticateToken, sanitizeBody, async (req, res
 
     const existingOrder = existingResult.rows[0];
 
-    // Check if expired
-    if (existingOrder.expiry_date && new Date(existingOrder.expiry_date) < new Date()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot edit an expired tariff. Please renew first.'
-      });
+    // Check if expired (use end of day UTC to account for timezone differences)
+    if (existingOrder.expiry_date) {
+      const expiryDate = new Date(existingOrder.expiry_date);
+      expiryDate.setUTCHours(23, 59, 59, 999); // End of expiry day in UTC
+      if (expiryDate < new Date()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot edit an expired tariff. Please renew first.'
+        });
+      }
     }
 
     // Update rates

@@ -60,9 +60,18 @@ router.get('/overview', authenticateToken, async (req, res) => {
     const boc3Data = boc3.rows[0] || null;
 
     const now = new Date();
+
+    // Helper to check if expiry date is still valid (use end of day UTC for timezone tolerance)
+    const isNotExpired = (expiryDate) => {
+      if (!expiryDate) return true;
+      const expiry = new Date(expiryDate);
+      expiry.setUTCHours(23, 59, 59, 999);
+      return expiry > now;
+    };
+
     const arbitrationActive = arbitrationData &&
       arbitrationData.status === 'active' &&
-      new Date(arbitrationData.expiry_date) > now;
+      isNotExpired(arbitrationData.expiry_date);
 
     // Calculate upcoming renewals for all services
     const renewals = [];
@@ -137,7 +146,7 @@ router.get('/overview', authenticateToken, async (req, res) => {
           },
           tariff: {
             id: tariffData?.id || null,
-            active: tariffData && tariffData.status === 'completed' && (!tariffData.expiry_date || new Date(tariffData.expiry_date) > now),
+            active: tariffData && tariffData.status === 'completed' && isNotExpired(tariffData.expiry_date),
             status: tariffData?.status || 'none',
             enrolled_date: tariffData?.enrolled_date || tariffData?.created_at || null,
             expiry_date: tariffData?.expiry_date || null,
@@ -146,7 +155,7 @@ router.get('/overview', authenticateToken, async (req, res) => {
           },
           boc3: {
             id: boc3Data?.id || null,
-            active: boc3Data && ['active', 'filed'].includes(boc3Data.status) && (!boc3Data.expiry_date || new Date(boc3Data.expiry_date) > now),
+            active: boc3Data && ['active', 'filed'].includes(boc3Data.status) && isNotExpired(boc3Data.expiry_date),
             status: boc3Data?.status || 'none',
             filing_type: boc3Data?.filing_type || null,
             filed_date: boc3Data?.filed_date || null,
@@ -337,15 +346,25 @@ router.get('/download/:docType', authenticateToken, async (req, res) => {
     const enrollment = arbResult.rows[0];
     const tariffOrder = tariffResult.rows[0];
 
+    // Helper to check if expired (use end of day UTC for timezone tolerance)
+    const isExpired = (expiryDate) => {
+      if (!expiryDate) return false;
+      const expiry = new Date(expiryDate);
+      expiry.setUTCHours(23, 59, 59, 999);
+      return expiry < new Date();
+    };
+
     switch (docType) {
       case 'arbitration-certificate':
         if (!enrollment) return res.status(404).json({ success: false, message: 'No active arbitration enrollment found' });
+        if (isExpired(enrollment.expiry_date)) return res.status(403).json({ success: false, message: 'Your arbitration enrollment has expired. Please renew to access documents.' });
         pdfBuffer = await generateArbitrationPDF(user, enrollment, true);
         filename = `Arbitration-Certificate-${user.mc_number || 'document'}.pdf`;
         break;
 
       case 'arbitration-consumer':
         if (!enrollment) return res.status(404).json({ success: false, message: 'No active arbitration enrollment found' });
+        if (isExpired(enrollment.expiry_date)) return res.status(403).json({ success: false, message: 'Your arbitration enrollment has expired. Please renew to access documents.' });
         pdfBuffer = await generateArbitrationConsumerPDF(user, enrollment, true);
         filename = `Consumer-Arbitration-Document-${user.mc_number || 'document'}.pdf`;
         break;
@@ -367,6 +386,7 @@ router.get('/download/:docType', authenticateToken, async (req, res) => {
 
       case 'tariff':
         if (!tariffOrder) return res.status(404).json({ success: false, message: 'No completed tariff order found' });
+        if (isExpired(tariffOrder.expiry_date)) return res.status(403).json({ success: false, message: 'Your tariff has expired. Please renew to access documents.' });
         pdfBuffer = await generateTariffPDF(user, tariffOrder, true);
         filename = `Tariff-${user.mc_number || 'document'}.pdf`;
         break;
