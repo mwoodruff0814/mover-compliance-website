@@ -2395,27 +2395,32 @@ const generateCarrierArbitrationInfoPDF = async (user, returnBuffer = false) => 
 
       // Helper functions
       const sectionHeader = (text) => {
-        doc.moveDown(1);
-        doc.fillColor(navy).fontSize(14).font('Helvetica-Bold');
+        // Check if we need a page break (less than 100 points remaining)
+        if (doc.y > 680) {
+          doc.addPage();
+        } else {
+          doc.moveDown(0.8);
+        }
+        doc.fillColor(navy).fontSize(12).font('Helvetica-Bold');
         doc.text(text);
-        doc.strokeColor(gold).lineWidth(1).moveTo(60, doc.y + 3).lineTo(552, doc.y + 3).stroke();
-        doc.moveDown(0.8);
+        doc.strokeColor(gold).lineWidth(1).moveTo(60, doc.y + 2).lineTo(552, doc.y + 2).stroke();
+        doc.moveDown(0.5);
         doc.font('Helvetica').fontSize(10).fillColor('#333');
       };
 
       const paragraph = (text) => {
-        doc.text(text, { align: 'justify', lineGap: 2 });
-        doc.moveDown(0.5);
+        doc.text(text, { align: 'justify', lineGap: 1 });
+        doc.moveDown(0.4);
       };
 
       const bulletPoint = (text) => {
-        doc.text(`    •  ${text}`, { indent: 0, lineGap: 2 });
+        doc.text(`    •  ${text}`, { indent: 0, lineGap: 1 });
       };
 
       // Title
-      doc.fillColor(navy).fontSize(16).font('Helvetica-Bold');
+      doc.fillColor(navy).fontSize(14).font('Helvetica-Bold');
       doc.text('Dispute Settlement (Arbitration) Program', { align: 'center' });
-      doc.moveDown(1);
+      doc.moveDown(0.5);
 
       // Section: Compliance
       sectionHeader('Compliance with Federal Statutory Requirements');
@@ -2424,7 +2429,7 @@ const generateCarrierArbitrationInfoPDF = async (user, returnBuffer = false) => 
 
       bulletPoint('Disputed loss and damage claims');
       bulletPoint('Disputes regarding additional charges that are billed to the shipper after the shipment was delivered');
-      doc.moveDown(0.5);
+      doc.moveDown(0.3);
 
       paragraph('The statute establishes different provisions under the authority of the Department of Transportation that define the program. One that you must abide by is that shippers must be provided with a pre-move description of the arbitration program that the carrier participates in, disclosing costs to use the program along with the legal effects of electing arbitration. This information must be provided to the shipper before the shipment is tendered to the carrier.');
 
@@ -2446,23 +2451,19 @@ const generateCarrierArbitrationInfoPDF = async (user, returnBuffer = false) => 
       bulletPoint('100% of the binding estimate amount or 110% of the non-binding estimate amount');
       bulletPoint('Charges applicable for any services (waiting time, extra pickup or delivery, storage-in-transit) that the shipper requested after the contract was signed that were not included in the estimate');
       bulletPoint('In the event that a shuttle service is required, you may collect for the shuttle charges at delivery – provided that the shuttle charges collected at delivery do not exceed 15% of the total charges due at delivery');
-      doc.moveDown(0.5);
+      doc.moveDown(0.3);
 
       paragraph('Any remaining charges must be billed to the shipper – it is these additional charges that are billed to the shipper (and are not collected at delivery) that are subject to arbitration.');
 
-      // New page for costs and procedures
-      doc.addPage();
-
-      // Section: Program Costs
+      // Section: Program Costs (no forced page break - let it flow naturally)
       sectionHeader('Program Costs');
 
       paragraph(`The cost of participating in the program is only $149.99 per year.`);
 
       paragraph('In the event the claim dispute cannot be resolved using the carrier\'s normal claims process, the shipper can elect to proceed to binding arbitration at National Arbitration & Mediation (NAM). NAM charges an administrative fee for each arbitration case, the cost of which is divided between the carrier and the shipper making the request.');
 
-      doc.moveDown(0.5);
-      doc.font('Helvetica-Bold').text('NAM\'s Administrative Fee Schedule:', { underline: true });
-      doc.moveDown(0.5);
+      doc.font('Helvetica-Bold').fontSize(10).text('NAM\'s Administrative Fee Schedule:');
+      doc.moveDown(0.3);
 
       // Fee table
       const feeTableData = [
