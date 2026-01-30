@@ -769,23 +769,24 @@ const generateTariffPDF = async (user, order, returnBuffer = false) => {
       // Weight x Distance Rate Table
       const tableX = 72;
       const tableWidth = 468;
-      const colWidths = [90, 75, 75, 85, 85]; // Weight, 0-250, 251-500, 501-1000, 1000+
+      const colWidths = [90, 95, 95, 95, 93]; // Weight, 0-250, 251-500, 501-1000, 1000+
       const rowHeight = 20;
 
       // Table Header
-      doc.fillColor(navy).rect(tableX, doc.y, tableWidth, 25).fill();
+      const headerY = doc.y;
+      doc.fillColor(navy).rect(tableX, headerY, tableWidth, 25).fill();
       doc.fillColor('white').fontSize(9).font('Helvetica-Bold');
       let headerX = tableX + 5;
-      doc.text('Weight', headerX, doc.y + 8, { width: colWidths[0] - 10 });
+      doc.text('Weight', headerX, headerY + 8, { width: colWidths[0] - 10 });
       headerX += colWidths[0];
-      doc.text('0-250 mi', headerX, doc.y - 17, { width: colWidths[1] - 5, align: 'center' });
+      doc.text('0-250 mi', headerX, headerY + 8, { width: colWidths[1] - 5, align: 'center' });
       headerX += colWidths[1];
-      doc.text('251-500 mi', headerX, doc.y - 17, { width: colWidths[2] - 5, align: 'center' });
+      doc.text('251-500 mi', headerX, headerY + 8, { width: colWidths[2] - 5, align: 'center' });
       headerX += colWidths[2];
-      doc.text('501-1000 mi', headerX, doc.y - 17, { width: colWidths[3] - 5, align: 'center' });
+      doc.text('501-1000 mi', headerX, headerY + 8, { width: colWidths[3] - 5, align: 'center' });
       headerX += colWidths[3];
-      doc.text('1000+ mi', headerX, doc.y - 17, { width: colWidths[4] - 5, align: 'center' });
-      doc.y += 25;
+      doc.text('1000+ mi', headerX, headerY + 8, { width: colWidths[4] - 5, align: 'center' });
+      doc.y = headerY + 25;
 
       // Weight tiers
       const weightTiers = [
@@ -799,22 +800,23 @@ const generateTariffPDF = async (user, order, returnBuffer = false) => {
 
       doc.fontSize(9).font('Helvetica');
       weightTiers.forEach((tier, i) => {
+        const rowY = doc.y;
         if (i % 2 === 0) {
-          doc.fillColor(lightGray).rect(tableX, doc.y, tableWidth, rowHeight).fill();
+          doc.fillColor(lightGray).rect(tableX, rowY, tableWidth, rowHeight).fill();
         }
         doc.fillColor(navy);
         let cellX = tableX + 5;
-        doc.font('Helvetica-Bold').text(tier.label, cellX, doc.y + 5, { width: colWidths[0] - 10 });
+        doc.font('Helvetica-Bold').text(tier.label, cellX, rowY + 5, { width: colWidths[0] - 10 });
         doc.font('Helvetica');
         cellX += colWidths[0];
 
         distanceTiers.forEach((dist, j) => {
           const rate = getMatrixRate(tier.weight, dist);
           const rateText = rate > 0 ? `$${rate.toFixed(2)}` : '$X.XX';
-          doc.text(rateText, cellX, doc.y + 5 - (j === 0 ? 0 : 20), { width: colWidths[j + 1] - 5, align: 'center' });
+          doc.text(rateText, cellX, rowY + 5, { width: colWidths[j + 1] - 5, align: 'center' });
           cellX += colWidths[j + 1];
         });
-        doc.y += rowHeight;
+        doc.y = rowY + rowHeight;
       });
 
       doc.moveDown(0.8);
@@ -842,13 +844,14 @@ const generateTariffPDF = async (user, order, returnBuffer = false) => {
       const sampleRate = getMatrixRate(4000, 500);
 
       // Sample charges mini-table
-      doc.fillColor(navy).rect(leftColX, doc.y, colWidth, 16).fill();
+      const sampleHeaderY = doc.y;
+      doc.fillColor(navy).rect(leftColX, sampleHeaderY, colWidth, 16).fill();
       doc.fillColor('white').fontSize(8).font('Helvetica-Bold');
-      doc.text('Weight', leftColX + 5, doc.y + 4, { width: 55 });
-      doc.text('Rate/lb', leftColX + 60, doc.y - 12, { width: 45 });
-      doc.text('Calculation', leftColX + 105, doc.y - 12, { width: 60 });
-      doc.text('Total', leftColX + 170, doc.y - 12, { width: 50 });
-      doc.y += 16;
+      doc.text('Weight', leftColX + 5, sampleHeaderY + 4, { width: 55 });
+      doc.text('Rate/lb', leftColX + 60, sampleHeaderY + 4, { width: 45 });
+      doc.text('Calculation', leftColX + 105, sampleHeaderY + 4, { width: 60 });
+      doc.text('Total', leftColX + 170, sampleHeaderY + 4, { width: 50 });
+      doc.y = sampleHeaderY + 16;
 
       // Show sample calculations using actual rates from matrix
       const sampleCalcs = [
@@ -860,15 +863,16 @@ const generateTariffPDF = async (user, order, returnBuffer = false) => {
 
       doc.fillColor(navy).fontSize(8).font('Helvetica');
       sampleCalcs.forEach((calc, i) => {
+        const calcRowY = doc.y;
         if (i % 2 === 0) {
-          doc.fillColor(lightGray).rect(leftColX, doc.y, colWidth, 14).fill();
+          doc.fillColor(lightGray).rect(leftColX, calcRowY, colWidth, 14).fill();
         }
         doc.fillColor(navy);
-        doc.text(`${calc.weight.toLocaleString()} lbs`, leftColX + 5, doc.y + 3, { width: 55 });
-        doc.text(calc.rate > 0 ? `$${calc.rate.toFixed(2)}` : '$X.XX', leftColX + 60, doc.y - 11, { width: 45 });
-        doc.text(calc.rate > 0 ? `${calc.weight.toLocaleString()} × $${calc.rate.toFixed(2)}` : 'Rate TBD', leftColX + 105, doc.y - 11, { width: 60 });
-        doc.text(calc.rate > 0 ? `$${(calc.weight * calc.rate).toFixed(2)}` : '$XX.XX', leftColX + 170, doc.y - 11, { width: 50 });
-        doc.y += 14;
+        doc.text(`${calc.weight.toLocaleString()} lbs`, leftColX + 5, calcRowY + 3, { width: 55 });
+        doc.text(calc.rate > 0 ? `$${calc.rate.toFixed(2)}` : '$X.XX', leftColX + 60, calcRowY + 3, { width: 45 });
+        doc.text(calc.rate > 0 ? `${calc.weight.toLocaleString()} × $${calc.rate.toFixed(2)}` : 'Rate TBD', leftColX + 105, calcRowY + 3, { width: 60 });
+        doc.text(calc.rate > 0 ? `$${(calc.weight * calc.rate).toFixed(2)}` : '$XX.XX', leftColX + 170, calcRowY + 3, { width: 50 });
+        doc.y = calcRowY + 14;
       });
 
       const leftColEndY = doc.y;
