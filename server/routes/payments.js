@@ -37,7 +37,7 @@ initSquare();
 const PRICES = {
   arbitration: 14999,              // $149.99
   tariff: 34999,                   // $349.99
-  boc3: 100,                       // $1.00 - TESTING PRICE
+  boc3: 10999,                     // $109.99
   bundle_startup: 49999,           // $499.99
   bundle_essentials: 22500,        // $225.00
   bundle_startup_renewal: 29999,   // $299.99 - Startup Bundle renewal
@@ -52,7 +52,7 @@ router.get('/prices', (req, res) => {
       prices: {
         arbitration: { amount: 14999, display: '$149.99', period: 'year' },
         tariff: { amount: 34999, display: '$349.99', period: 'year' },
-        boc3: { amount: 100, display: '$1.00', period: 'year' },  // TESTING PRICE
+        boc3: { amount: 10999, display: '$109.99', period: 'year' },
         bundle_startup: { amount: 49999, display: '$499.99', period: 'one-time', savings: '$109.98' },
         bundle_essentials: { amount: 22500, display: '$225.00', period: 'one-time', savings: '$34.98' },
         bundle_startup_renewal: { amount: 29999, display: '$299.99', period: 'year', savings: '$310.98' },
