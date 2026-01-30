@@ -1120,8 +1120,10 @@ const Dashboard = {
         try {
             const result = await Auth.request(`/orders/tariff/${tariffId}`);
             if (result.success) {
-                this.editTariffData = result.data;
-                this.renderTariffEditForm(result.data);
+                // API returns { order: {...}, pending_method_change: {...} }
+                const tariff = result.data.order || result.data;
+                this.editTariffData = tariff;
+                this.renderTariffEditForm(tariff);
                 document.getElementById('tariff-edit-actions').classList.remove('hidden');
             } else {
                 document.getElementById('tariff-edit-content').innerHTML = '<p class="text-red-600">Failed to load tariff details.</p>';
