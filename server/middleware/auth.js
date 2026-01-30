@@ -15,7 +15,8 @@ const generateToken = (userId) => {
 // Verify token and attach user to request
 const authenticateToken = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+  // Check header first, then query param (for SSE connections)
+  const token = (authHeader && authHeader.split(' ')[1]) || req.query.token;
 
   if (!token) {
     return res.status(401).json({
