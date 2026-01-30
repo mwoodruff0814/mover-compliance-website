@@ -162,32 +162,20 @@ router.get('/me', authenticateToken, async (req, res) => {
   });
 });
 
-// Update user profile
+// Update user profile (only email and phone - company info requires admin)
 router.put('/profile', authenticateToken, sanitizeBody, async (req, res) => {
   try {
-    const {
-      company_name,
-      contact_name,
-      phone,
-      address,
-      city,
-      state,
-      zip
-    } = req.body;
+    const { email, phone } = req.body;
 
+    // Only allow email and phone updates to prevent fraud
     const result = await query(
       `UPDATE users
-       SET company_name = COALESCE($1, company_name),
-           contact_name = COALESCE($2, contact_name),
-           phone = COALESCE($3, phone),
-           address = COALESCE($4, address),
-           city = COALESCE($5, city),
-           state = COALESCE($6, state),
-           zip = COALESCE($7, zip),
+       SET email = COALESCE($1, email),
+           phone = COALESCE($2, phone),
            updated_at = NOW()
-       WHERE id = $8
+       WHERE id = $3
        RETURNING id, email, company_name, mc_number, usdot_number, contact_name, phone, address, city, state, zip, updated_at`,
-      [company_name, contact_name, phone, address, city, state, zip, req.user.id]
+      [email ? email.toLowerCase() : null, phone, req.user.id]
     );
 
     res.json({

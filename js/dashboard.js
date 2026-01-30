@@ -1500,14 +1500,10 @@ const Dashboard = {
             btn.disabled = true;
             btn.textContent = 'Saving...';
 
+            // Only allow email and phone updates (company info requires admin)
             const result = await Auth.updateProfile({
-                company_name: document.getElementById('settings-company').value,
-                contact_name: document.getElementById('settings-contact').value,
-                phone: document.getElementById('settings-phone').value,
-                address: document.getElementById('settings-address').value,
-                city: document.getElementById('settings-city').value,
-                state: document.getElementById('settings-state').value,
-                zip: document.getElementById('settings-zip').value
+                email: document.getElementById('settings-email').value,
+                phone: document.getElementById('settings-phone').value
             });
 
             btn.disabled = false;
