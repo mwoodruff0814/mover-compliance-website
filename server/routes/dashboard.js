@@ -1,7 +1,7 @@
 const express = require('express');
 const { query } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
-const { generateRightsAndResponsibilitiesPDF, generateReadyToMovePDF } = require('../utils/pdf');
+const { generateRightsAndResponsibilitiesPDF, generateReadyToMovePDF, generateArbitrationPDF, generateArbitrationConsumerPDF, generateTariffPDF } = require('../utils/pdf');
 
 const router = express.Router();
 
@@ -167,39 +167,59 @@ router.get('/overview', authenticateToken, async (req, res) => {
   }
 });
 
-// Get all documents for user
+// Get all documents for user (generates missing documents automatically)
 router.get('/documents', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
+    const user = req.user;
 
+    // Get all services (including those without documents)
     const [arbitrationDocs, tariffDocs, boc3Docs] = await Promise.all([
       query(
         `SELECT id, document_url, documents, enrolled_date as created_at, expiry_date
          FROM arbitration_enrollments
-         WHERE user_id = $1 AND document_url IS NOT NULL
+         WHERE user_id = $1 AND status = 'active'
          ORDER BY created_at DESC`,
         [userId]
       ),
       query(
-        `SELECT id, 'Tariff Document' as name, document_url, created_at
+        `SELECT id, 'Tariff Document' as name, document_url, created_at, enrolled_date, expiry_date, rates, pricing_method
          FROM tariff_orders
-         WHERE user_id = $1 AND document_url IS NOT NULL AND status = 'completed'
+         WHERE user_id = $1 AND status = 'completed'
          ORDER BY created_at DESC`,
         [userId]
       ),
       query(
         `SELECT id, 'BOC-3 Filing' as name, document_url, created_at
          FROM boc3_orders
-         WHERE user_id = $1 AND document_url IS NOT NULL AND status IN ('completed', 'active', 'filed')
+         WHERE user_id = $1 AND status IN ('completed', 'active', 'filed')
          ORDER BY created_at DESC`,
         [userId]
       )
     ]);
 
-    // Expand arbitration documents (certificate, consumer doc, etc.)
+    // Generate missing arbitration documents
     const expandedArbDocs = [];
     for (const arb of arbitrationDocs.rows) {
-      const docs = arb.documents || {};
+      let docs = arb.documents || {};
+
+      // Generate documents if missing
+      if (!docs.certificate && !arb.document_url) {
+        try {
+          docs.certificate = await generateArbitrationPDF(user, arb);
+          docs.consumer_document = await generateArbitrationConsumerPDF(user, arb);
+          docs.ready_to_move = await generateReadyToMovePDF(user);
+          docs.rights_responsibilities = await generateRightsAndResponsibilitiesPDF(user);
+
+          await query(
+            'UPDATE arbitration_enrollments SET document_url = $1, documents = $2 WHERE id = $3',
+            [docs.certificate, JSON.stringify(docs), arb.id]
+          );
+        } catch (e) {
+          console.error('Failed to generate arbitration docs:', e);
+        }
+      }
+
       if (docs.certificate || arb.document_url) {
         expandedArbDocs.push({
           id: `arb-${arb.id}-cert`,
@@ -239,10 +259,35 @@ router.get('/documents', authenticateToken, async (req, res) => {
       }
     }
 
+    // Generate missing tariff documents
+    const expandedTariffDocs = [];
+    for (const tariff of tariffDocs.rows) {
+      let docUrl = tariff.document_url;
+
+      if (!docUrl) {
+        try {
+          docUrl = await generateTariffPDF(user, tariff);
+          await query('UPDATE tariff_orders SET document_url = $1 WHERE id = $2', [docUrl, tariff.id]);
+        } catch (e) {
+          console.error('Failed to generate tariff doc:', e);
+        }
+      }
+
+      if (docUrl) {
+        expandedTariffDocs.push({
+          id: tariff.id,
+          name: 'Tariff Document',
+          document_url: docUrl,
+          created_at: tariff.created_at,
+          type: 'tariff'
+        });
+      }
+    }
+
     const documents = [
       ...expandedArbDocs,
-      ...tariffDocs.rows.map(d => ({ ...d, type: 'tariff' })),
-      ...boc3Docs.rows.map(d => ({ ...d, type: 'boc3' }))
+      ...expandedTariffDocs,
+      ...boc3Docs.rows.filter(d => d.document_url).map(d => ({ ...d, type: 'boc3' }))
     ].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     res.json({
