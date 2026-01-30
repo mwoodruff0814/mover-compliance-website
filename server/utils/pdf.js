@@ -2026,10 +2026,11 @@ const generateReadyToMovePDF = async (user, returnBuffer = false) => {
       doc.text(`Phone: ${user.phone || 'N/A'}  |  Email: ${user.email || 'N/A'}`, 110, boxY + 48, { width: 392, align: 'center' });
 
       doc.y = boxY + 95;
+      doc.x = 54; // Reset to left margin
 
       // Introduction
       doc.fillColor(darkGray).fontSize(10).font('Helvetica');
-      doc.text('This brochure provides important information from the Federal Motor Carrier Safety Administration (FMCSA) to help you prepare for your interstate move. Use the checklists below to stay organized before, during, and after your move.', {
+      doc.text('This brochure provides important information from the Federal Motor Carrier Safety Administration (FMCSA) to help you prepare for your interstate move. Use the checklists below to stay organized before, during, and after your move.', 54, doc.y, {
         align: 'justify',
         width: 504
       });
