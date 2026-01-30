@@ -370,16 +370,22 @@ router.get('/download/:docType', authenticateToken, async (req, res) => {
         break;
 
       case 'carrier-info':
+        if (!enrollment) return res.status(404).json({ success: false, message: 'No active arbitration enrollment found' });
+        if (isExpired(enrollment.expiry_date)) return res.status(403).json({ success: false, message: 'Your arbitration enrollment has expired. Please renew to access documents.' });
         pdfBuffer = await generateCarrierArbitrationInfoPDF(user, true);
         filename = `Carrier-Program-Information-${user.mc_number || 'document'}.pdf`;
         break;
 
       case 'ready-to-move':
+        if (!enrollment) return res.status(404).json({ success: false, message: 'No active arbitration enrollment found' });
+        if (isExpired(enrollment.expiry_date)) return res.status(403).json({ success: false, message: 'Your arbitration enrollment has expired. Please renew to access documents.' });
         pdfBuffer = await generateReadyToMovePDF(user, true);
         filename = `Ready-to-Move-${user.mc_number || 'document'}.pdf`;
         break;
 
       case 'rights-responsibilities':
+        if (!enrollment) return res.status(404).json({ success: false, message: 'No active arbitration enrollment found' });
+        if (isExpired(enrollment.expiry_date)) return res.status(403).json({ success: false, message: 'Your arbitration enrollment has expired. Please renew to access documents.' });
         pdfBuffer = await generateRightsAndResponsibilitiesPDF(user, true);
         filename = `Rights-and-Responsibilities-${user.mc_number || 'document'}.pdf`;
         break;
