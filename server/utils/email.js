@@ -138,7 +138,7 @@ const templates = {
                 <p><strong>Order ID:</strong> #${order.id}</p>
                 <p><strong>Service:</strong> ${orderNames[orderType]}</p>
                 <p><strong>Status:</strong> ${order.status}</p>
-                <p><strong>Amount:</strong> $${order.amount_paid?.toFixed(2) || 'N/A'}</p>
+                <p><strong>Amount:</strong> $${order.amount_paid ? Number(order.amount_paid).toFixed(2) : 'N/A'}</p>
                 <p><strong>Date:</strong> ${new Date(order.created_at).toLocaleDateString()}</p>
               </div>
 
@@ -350,7 +350,7 @@ const templates = {
             </div>
             <div class="content">
               <p style="text-align: center;"><span class="product">${orderNames[orderType]}</span></p>
-              <p style="text-align: center;"><span class="amount">$${order.amount_paid?.toFixed(2) || 'N/A'}</span></p>
+              <p style="text-align: center;"><span class="amount">$${order.amount_paid ? Number(order.amount_paid).toFixed(2) : 'N/A'}</span></p>
 
               <div class="details">
                 <p class="label">Customer</p>
