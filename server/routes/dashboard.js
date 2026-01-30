@@ -133,7 +133,7 @@ router.get('/overview', authenticateToken, async (req, res) => {
             status: arbitrationData?.status || 'none',
             enrolled_date: arbitrationData?.enrolled_date || null,
             expiry_date: arbitrationData?.expiry_date || null,
-            document_url: arbitrationData?.document_url || null
+            document_url: arbitrationActive ? '/api/dashboard/download/arbitration-certificate' : null
           },
           tariff: {
             id: tariffData?.id || null,
@@ -141,7 +141,7 @@ router.get('/overview', authenticateToken, async (req, res) => {
             status: tariffData?.status || 'none',
             enrolled_date: tariffData?.enrolled_date || tariffData?.created_at || null,
             expiry_date: tariffData?.expiry_date || null,
-            document_url: tariffData?.document_url || null,
+            document_url: tariffData?.status === 'completed' ? '/api/dashboard/download/tariff' : null,
             pricing_method: tariffData?.pricing_method || null
           },
           boc3: {
@@ -173,24 +173,24 @@ router.get('/documents', authenticateToken, async (req, res) => {
     const userId = req.user.id;
     const user = req.user;
 
-    // Get all services (including those without documents)
+    // Get all active services
     const [arbitrationDocs, tariffDocs, boc3Docs] = await Promise.all([
       query(
-        `SELECT id, document_url, documents, enrolled_date as created_at, expiry_date
+        `SELECT id, enrolled_date as created_at, expiry_date
          FROM arbitration_enrollments
          WHERE user_id = $1 AND status = 'active'
          ORDER BY created_at DESC`,
         [userId]
       ),
       query(
-        `SELECT id, 'Tariff Document' as name, document_url, created_at, enrolled_date, expiry_date, rates, pricing_method
+        `SELECT id, created_at
          FROM tariff_orders
          WHERE user_id = $1 AND status = 'completed'
          ORDER BY created_at DESC`,
         [userId]
       ),
       query(
-        `SELECT id, 'BOC-3 Filing' as name, document_url, created_at
+        `SELECT id, 'BOC-3 Filing' as name, created_at
          FROM boc3_orders
          WHERE user_id = $1 AND status IN ('completed', 'active', 'filed')
          ORDER BY created_at DESC`,
@@ -198,100 +198,58 @@ router.get('/documents', authenticateToken, async (req, res) => {
       )
     ]);
 
-    // Generate missing arbitration documents
+    // Build document list with on-demand download URLs (PDFs generated when downloaded)
     const expandedArbDocs = [];
     for (const arb of arbitrationDocs.rows) {
-      let docs = arb.documents || {};
-
-      // Generate documents if missing
-      if (!docs.certificate && !arb.document_url) {
-        try {
-          docs.certificate = await generateArbitrationPDF(user, arb);
-          docs.consumer_document = await generateArbitrationConsumerPDF(user, arb);
-          docs.carrier_info = await generateCarrierArbitrationInfoPDF(user);
-          docs.ready_to_move = await generateReadyToMovePDF(user);
-          docs.rights_responsibilities = await generateRightsAndResponsibilitiesPDF(user);
-
-          await query(
-            'UPDATE arbitration_enrollments SET document_url = $1, documents = $2 WHERE id = $3',
-            [docs.certificate, JSON.stringify(docs), arb.id]
-          );
-        } catch (e) {
-          console.error('Failed to generate arbitration docs:', e);
-        }
-      }
-
-      if (docs.certificate || arb.document_url) {
-        expandedArbDocs.push({
-          id: `arb-${arb.id}-cert`,
-          name: 'Arbitration Enrollment Certificate',
-          document_url: docs.certificate || arb.document_url,
-          created_at: arb.created_at,
-          expiry_date: arb.expiry_date,
-          type: 'arbitration'
-        });
-      }
-      if (docs.consumer_document) {
-        expandedArbDocs.push({
-          id: `arb-${arb.id}-consumer`,
-          name: 'Consumer Arbitration Document',
-          document_url: docs.consumer_document,
-          created_at: arb.created_at,
-          type: 'arbitration'
-        });
-      }
-      if (docs.carrier_info) {
-        expandedArbDocs.push({
-          id: `arb-${arb.id}-carrier`,
-          name: 'Carrier Program Information',
-          document_url: docs.carrier_info,
-          created_at: arb.created_at,
-          type: 'arbitration'
-        });
-      }
-      if (docs.ready_to_move) {
-        expandedArbDocs.push({
-          id: `arb-${arb.id}-rtm`,
-          name: 'Ready to Move Brochure',
-          document_url: docs.ready_to_move,
-          created_at: arb.created_at,
-          type: 'arbitration'
-        });
-      }
-      if (docs.rights_responsibilities) {
-        expandedArbDocs.push({
-          id: `arb-${arb.id}-rr`,
-          name: 'Your Rights and Responsibilities',
-          document_url: docs.rights_responsibilities,
-          created_at: arb.created_at,
-          type: 'arbitration'
-        });
-      }
+      // Add all arbitration documents with on-demand download URLs
+      expandedArbDocs.push({
+        id: `arb-${arb.id}-cert`,
+        name: 'Arbitration Enrollment Certificate',
+        document_url: '/api/dashboard/download/arbitration-certificate',
+        created_at: arb.created_at,
+        expiry_date: arb.expiry_date,
+        type: 'arbitration'
+      });
+      expandedArbDocs.push({
+        id: `arb-${arb.id}-consumer`,
+        name: 'Consumer Arbitration Document',
+        document_url: '/api/dashboard/download/arbitration-consumer',
+        created_at: arb.created_at,
+        type: 'arbitration'
+      });
+      expandedArbDocs.push({
+        id: `arb-${arb.id}-carrier`,
+        name: 'Carrier Program Information',
+        document_url: '/api/dashboard/download/carrier-info',
+        created_at: arb.created_at,
+        type: 'arbitration'
+      });
+      expandedArbDocs.push({
+        id: `arb-${arb.id}-rtm`,
+        name: 'Ready to Move Brochure',
+        document_url: '/api/dashboard/download/ready-to-move',
+        created_at: arb.created_at,
+        type: 'arbitration'
+      });
+      expandedArbDocs.push({
+        id: `arb-${arb.id}-rr`,
+        name: 'Your Rights and Responsibilities',
+        document_url: '/api/dashboard/download/rights-responsibilities',
+        created_at: arb.created_at,
+        type: 'arbitration'
+      });
     }
 
-    // Generate missing tariff documents
+    // Add tariff documents with on-demand download URLs
     const expandedTariffDocs = [];
     for (const tariff of tariffDocs.rows) {
-      let docUrl = tariff.document_url;
-
-      if (!docUrl) {
-        try {
-          docUrl = await generateTariffPDF(user, tariff);
-          await query('UPDATE tariff_orders SET document_url = $1 WHERE id = $2', [docUrl, tariff.id]);
-        } catch (e) {
-          console.error('Failed to generate tariff doc:', e);
-        }
-      }
-
-      if (docUrl) {
-        expandedTariffDocs.push({
-          id: tariff.id,
-          name: 'Tariff Document',
-          document_url: docUrl,
-          created_at: tariff.created_at,
-          type: 'tariff'
-        });
-      }
+      expandedTariffDocs.push({
+        id: tariff.id,
+        name: 'Tariff Document',
+        document_url: '/api/dashboard/download/tariff',
+        created_at: tariff.created_at,
+        type: 'tariff'
+      });
     }
 
     const documents = [
@@ -310,6 +268,71 @@ router.get('/documents', authenticateToken, async (req, res) => {
       success: false,
       message: 'Failed to load documents'
     });
+  }
+});
+
+// Download document on-demand (generates fresh PDF each time)
+router.get('/download/:docType', authenticateToken, async (req, res) => {
+  try {
+    const { docType } = req.params;
+    const user = req.user;
+    const userId = user.id;
+
+    let pdfBuffer;
+    let filename;
+
+    // Get enrollment/order data if needed
+    const arbResult = await query('SELECT * FROM arbitration_enrollments WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1', [userId]);
+    const tariffResult = await query('SELECT * FROM tariff_orders WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1', [userId]);
+
+    const enrollment = arbResult.rows[0];
+    const tariffOrder = tariffResult.rows[0];
+
+    switch (docType) {
+      case 'arbitration-certificate':
+        if (!enrollment) return res.status(404).json({ success: false, message: 'No arbitration enrollment found' });
+        pdfBuffer = await generateArbitrationPDF(user, enrollment, true);
+        filename = `Arbitration-Certificate-${user.mc_number || 'document'}.pdf`;
+        break;
+
+      case 'arbitration-consumer':
+        if (!enrollment) return res.status(404).json({ success: false, message: 'No arbitration enrollment found' });
+        pdfBuffer = await generateArbitrationConsumerPDF(user, enrollment, true);
+        filename = `Consumer-Arbitration-Document-${user.mc_number || 'document'}.pdf`;
+        break;
+
+      case 'carrier-info':
+        pdfBuffer = await generateCarrierArbitrationInfoPDF(user, true);
+        filename = `Carrier-Program-Information-${user.mc_number || 'document'}.pdf`;
+        break;
+
+      case 'ready-to-move':
+        pdfBuffer = await generateReadyToMovePDF(user, true);
+        filename = `Ready-to-Move-${user.mc_number || 'document'}.pdf`;
+        break;
+
+      case 'rights-responsibilities':
+        pdfBuffer = await generateRightsAndResponsibilitiesPDF(user, true);
+        filename = `Rights-and-Responsibilities-${user.mc_number || 'document'}.pdf`;
+        break;
+
+      case 'tariff':
+        if (!tariffOrder) return res.status(404).json({ success: false, message: 'No tariff order found' });
+        pdfBuffer = await generateTariffPDF(user, tariffOrder, true);
+        filename = `Tariff-${user.mc_number || 'document'}.pdf`;
+        break;
+
+      default:
+        return res.status(400).json({ success: false, message: 'Invalid document type' });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(pdfBuffer);
+
+  } catch (error) {
+    console.error('Download document error:', error);
+    res.status(500).json({ success: false, message: 'Failed to generate document' });
   }
 });
 
@@ -566,21 +589,21 @@ router.get('/history', authenticateToken, async (req, res) => {
 
     const [expiredArbitration, expiredTariff, expiredBoc3] = await Promise.all([
       query(
-        `SELECT id, 'arbitration' as type, 'Arbitration Program' as name, status, enrolled_date, expiry_date, document_url, created_at
+        `SELECT id, 'arbitration' as type, 'Arbitration Program' as name, status, enrolled_date, expiry_date, created_at
          FROM arbitration_enrollments
          WHERE user_id = $1 AND (expiry_date < $2 OR status = 'expired')
          ORDER BY expiry_date DESC`,
         [userId, now]
       ),
       query(
-        `SELECT id, 'tariff' as type, 'Tariff Publishing' as name, status, enrolled_date, expiry_date, document_url, created_at
+        `SELECT id, 'tariff' as type, 'Tariff Publishing' as name, status, enrolled_date, expiry_date, created_at
          FROM tariff_orders
          WHERE user_id = $1 AND (expiry_date < $2 OR status = 'expired')
          ORDER BY expiry_date DESC`,
         [userId, now]
       ),
       query(
-        `SELECT id, 'boc3' as type, 'BOC-3 Process Agent' as name, status, enrolled_date, expiry_date, document_url, created_at
+        `SELECT id, 'boc3' as type, 'BOC-3 Process Agent' as name, status, enrolled_date, expiry_date, created_at
          FROM boc3_orders
          WHERE user_id = $1 AND (expiry_date < $2 OR status = 'expired')
          ORDER BY expiry_date DESC`,
@@ -588,9 +611,15 @@ router.get('/history', authenticateToken, async (req, res) => {
       )
     ]);
 
+    // Add on-demand download URLs to history items
+    const addDocUrl = (items, docType) => items.map(item => ({
+      ...item,
+      document_url: `/api/dashboard/download/${docType}`
+    }));
+
     const history = [
-      ...expiredArbitration.rows,
-      ...expiredTariff.rows,
+      ...addDocUrl(expiredArbitration.rows, 'arbitration-certificate'),
+      ...addDocUrl(expiredTariff.rows, 'tariff'),
       ...expiredBoc3.rows
     ].sort((a, b) => new Date(b.expiry_date || b.created_at) - new Date(a.expiry_date || a.created_at));
 
