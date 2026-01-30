@@ -232,6 +232,15 @@ app.use('/images', express.static(path.join(__dirname, '../images')));
 // Serve generated PDFs from temp directory
 app.use('/temp', express.static(path.join(__dirname, '../temp')));
 
+// Fallback: serve PDFs from root path (for old document URLs without /temp prefix)
+app.get('/*.pdf', (req, res, next) => {
+  const pdfPath = path.join(__dirname, '../temp', req.path);
+  if (fs.existsSync(pdfPath)) {
+    return res.sendFile(pdfPath);
+  }
+  next();
+});
+
 // Serve other static assets from root (fonts, favicon, etc.)
 app.use(express.static(path.join(__dirname, '..'), {
   index: false
