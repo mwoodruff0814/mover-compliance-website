@@ -1,59 +1,12 @@
 const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs');
-const cloudinary = require('cloudinary').v2;
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
-
-// Ensure temp directory exists (fallback for local dev)
+// Ensure temp directory exists
 const tempDir = path.join(__dirname, '..', '..', 'temp');
 if (!fs.existsSync(tempDir)) {
   fs.mkdirSync(tempDir, { recursive: true });
 }
-
-/**
- * Upload PDF buffer to Cloudinary
- * @param {Buffer} buffer - PDF buffer
- * @param {string} fileName - File name for the PDF
- * @returns {Promise<string>} - Cloudinary URL
- */
-const uploadToCloudinary = (buffer, fileName) => {
-  return new Promise((resolve, reject) => {
-    // Check if Cloudinary is configured
-    if (!process.env.CLOUDINARY_CLOUD_NAME) {
-      // Fallback to local storage
-      const filePath = path.join(tempDir, fileName);
-      fs.writeFileSync(filePath, buffer);
-      return resolve(`/temp/${fileName}`);
-    }
-
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        resource_type: 'raw',
-        folder: 'compliance-documents',
-        public_id: fileName.replace('.pdf', ''),
-        format: 'pdf'
-      },
-      (error, result) => {
-        if (error) {
-          console.error('Cloudinary upload error:', error);
-          // Fallback to local storage
-          const filePath = path.join(tempDir, fileName);
-          fs.writeFileSync(filePath, buffer);
-          resolve(`/temp/${fileName}`);
-        } else {
-          resolve(result.secure_url);
-        }
-      }
-    );
-    uploadStream.end(buffer);
-  });
-};
 
 /**
  * Generate Arbitration Enrollment Certificate PDF for enrolled carriers
@@ -76,21 +29,16 @@ const generateArbitrationPDF = async (user, enrollment, returnBuffer = false) =>
       });
 
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
 
       if (returnBuffer) {
+        doc.on('data', chunk => chunks.push(chunk));
         doc.on('end', () => resolve(Buffer.concat(chunks)));
       } else {
         const fileName = `arbitration-certificate-${user.mc_number?.replace(/[^a-zA-Z0-9]/g, '') || user.id}-${Date.now()}.pdf`;
-        doc.on('end', async () => {
-          try {
-            const buffer = Buffer.concat(chunks);
-            const url = await uploadToCloudinary(buffer, fileName);
-            resolve(url);
-          } catch (err) {
-            reject(err);
-          }
-        });
+        const filePath = path.join(tempDir, fileName);
+        const writeStream = fs.createWriteStream(filePath);
+        doc.pipe(writeStream);
+        writeStream.on('finish', () => resolve(`/temp/${fileName}`));
       }
 
       // Colors
@@ -256,21 +204,16 @@ const generateArbitrationConsumerPDF = async (user, enrollment, returnBuffer = f
       });
 
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
 
       if (returnBuffer) {
+        doc.on('data', chunk => chunks.push(chunk));
         doc.on('end', () => resolve(Buffer.concat(chunks)));
       } else {
         const fileName = `arbitration-consumer-${user.mc_number?.replace(/[^a-zA-Z0-9]/g, '') || user.id}-${Date.now()}.pdf`;
-        doc.on('end', async () => {
-          try {
-            const buffer = Buffer.concat(chunks);
-            const url = await uploadToCloudinary(buffer, fileName);
-            resolve(url);
-          } catch (err) {
-            reject(err);
-          }
-        });
+        const filePath = path.join(tempDir, fileName);
+        const writeStream = fs.createWriteStream(filePath);
+        doc.pipe(writeStream);
+        writeStream.on('finish', () => resolve(`/temp/${fileName}`));
       }
 
       // Colors
@@ -441,21 +384,16 @@ const generateTariffPDF = async (user, order, returnBuffer = false) => {
       });
 
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
 
       if (returnBuffer) {
+        doc.on('data', chunk => chunks.push(chunk));
         doc.on('end', () => resolve(Buffer.concat(chunks)));
       } else {
         const fileName = `tariff-${user.mc_number?.replace(/[^a-zA-Z0-9]/g, '') || user.id}-${Date.now()}.pdf`;
-        doc.on('end', async () => {
-          try {
-            const buffer = Buffer.concat(chunks);
-            const url = await uploadToCloudinary(buffer, fileName);
-            resolve(url);
-          } catch (err) {
-            reject(err);
-          }
-        });
+        const filePath = path.join(tempDir, fileName);
+        const writeStream = fs.createWriteStream(filePath);
+        doc.pipe(writeStream);
+        writeStream.on('finish', () => resolve(`/temp/${fileName}`));
       }
 
       // Colors
@@ -1625,21 +1563,16 @@ const generateRightsAndResponsibilitiesPDF = async (user, returnBuffer = false) 
       });
 
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
 
       if (returnBuffer) {
+        doc.on('data', chunk => chunks.push(chunk));
         doc.on('end', () => resolve(Buffer.concat(chunks)));
       } else {
         const fileName = `rights-responsibilities-${user.mc_number?.replace(/[^a-zA-Z0-9]/g, '') || user.id}-${Date.now()}.pdf`;
-        doc.on('end', async () => {
-          try {
-            const buffer = Buffer.concat(chunks);
-            const url = await uploadToCloudinary(buffer, fileName);
-            resolve(url);
-          } catch (err) {
-            reject(err);
-          }
-        });
+        const filePath = path.join(tempDir, fileName);
+        const writeStream = fs.createWriteStream(filePath);
+        doc.pipe(writeStream);
+        writeStream.on('finish', () => resolve(`/temp/${fileName}`));
       }
 
       const navy = '#0a1628';
@@ -2028,21 +1961,16 @@ const generateReadyToMovePDF = async (user, returnBuffer = false) => {
       });
 
       const chunks = [];
-      doc.on('data', chunk => chunks.push(chunk));
 
       if (returnBuffer) {
+        doc.on('data', chunk => chunks.push(chunk));
         doc.on('end', () => resolve(Buffer.concat(chunks)));
       } else {
         const fileName = `ready-to-move-${user.mc_number?.replace(/[^a-zA-Z0-9]/g, '') || user.id}-${Date.now()}.pdf`;
-        doc.on('end', async () => {
-          try {
-            const buffer = Buffer.concat(chunks);
-            const url = await uploadToCloudinary(buffer, fileName);
-            resolve(url);
-          } catch (err) {
-            reject(err);
-          }
-        });
+        const filePath = path.join(tempDir, fileName);
+        const writeStream = fs.createWriteStream(filePath);
+        doc.pipe(writeStream);
+        writeStream.on('finish', () => resolve(`/temp/${fileName}`));
       }
 
       const navy = '#003366';
