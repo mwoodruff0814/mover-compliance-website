@@ -2393,7 +2393,10 @@ const generateCarrierArbitrationInfoPDF = async (user, returnBuffer = false) => 
       // ===== PAGE 2: CONTENT =====
       doc.addPage();
 
-      // Helper functions
+      // Helper functions - use explicit x position for consistent left alignment
+      const leftMargin = 60;
+      const textWidth = 492; // 612 - 60 - 60 = 492
+
       const sectionHeader = (text) => {
         // Check if we need a page break (less than 100 points remaining)
         if (doc.y > 680) {
@@ -2402,19 +2405,19 @@ const generateCarrierArbitrationInfoPDF = async (user, returnBuffer = false) => 
           doc.moveDown(0.8);
         }
         doc.fillColor(navy).fontSize(12).font('Helvetica-Bold');
-        doc.text(text);
-        doc.strokeColor(gold).lineWidth(1).moveTo(60, doc.y + 2).lineTo(552, doc.y + 2).stroke();
+        doc.text(text, leftMargin, doc.y, { width: textWidth });
+        doc.strokeColor(gold).lineWidth(1).moveTo(leftMargin, doc.y + 2).lineTo(leftMargin + textWidth, doc.y + 2).stroke();
         doc.moveDown(0.5);
         doc.font('Helvetica').fontSize(10).fillColor('#333');
       };
 
       const paragraph = (text) => {
-        doc.text(text, { align: 'justify', lineGap: 1 });
+        doc.text(text, leftMargin, doc.y, { width: textWidth, align: 'left', lineGap: 1 });
         doc.moveDown(0.4);
       };
 
       const bulletPoint = (text) => {
-        doc.text(`    •  ${text}`, { indent: 0, lineGap: 1 });
+        doc.text(`    •  ${text}`, leftMargin, doc.y, { width: textWidth, lineGap: 1 });
       };
 
       // Title
@@ -2462,7 +2465,7 @@ const generateCarrierArbitrationInfoPDF = async (user, returnBuffer = false) => 
 
       paragraph('In the event the claim dispute cannot be resolved using the carrier\'s normal claims process, the shipper can elect to proceed to binding arbitration at National Arbitration & Mediation (NAM). NAM charges an administrative fee for each arbitration case, the cost of which is divided between the carrier and the shipper making the request.');
 
-      doc.font('Helvetica-Bold').fontSize(10).text('NAM\'s Administrative Fee Schedule:');
+      doc.font('Helvetica-Bold').fontSize(10).text('NAM\'s Administrative Fee Schedule:', leftMargin, doc.y, { width: textWidth });
       doc.moveDown(0.3);
 
       // Fee table
@@ -2510,23 +2513,23 @@ const generateCarrierArbitrationInfoPDF = async (user, returnBuffer = false) => 
       // Section: Procedures
       sectionHeader('Arbitration Program Procedures');
 
-      doc.font('Helvetica-Bold').text('Prior to the Move:', { underline: false });
-      doc.font('Helvetica');
+      doc.font('Helvetica-Bold').fontSize(10).text('Prior to the Move:', leftMargin, doc.y, { width: textWidth });
+      doc.font('Helvetica').fontSize(10);
       paragraph('The carrier will provide each shipper with a notice of the availability of an arbitration program. Carriers should use the arbitration consumer document provided. You can hand it to each shipper or post it on your website and direct your customers to it.');
 
       paragraph('Also under the statute, you may be held liable for the shipper\'s attorney fees if you do not inform the shipper during the claim settlement process that arbitration is available, and as a result, the case proceeds to civil court instead of arbitration. In other words, if you are denying the claim or offering a compromise settlement, be sure to mention the arbitration program and include the arbitration information in your claims correspondence to the shipper.');
 
-      doc.font('Helvetica-Bold').text('Proceeding to Arbitration:', { underline: false });
+      doc.font('Helvetica-Bold').text('Proceeding to Arbitration:', leftMargin, doc.y, { width: textWidth });
       doc.font('Helvetica');
       paragraph('If a resolution cannot be reached between the shipper and the carrier using the carrier\'s normal claims process, the shipper has the option of continuing on to arbitration with NAM. The shipper can request arbitration by writing to us within 90 calendar days after the carrier\'s final offer of settlement or denial of the claim.');
 
       paragraph('The shipper will have 30 days to complete the forms and return them, along with their portion of the administrative fee, directly to NAM to initiate the arbitration process.');
 
-      doc.font('Helvetica-Bold').text('NAM Opens the Case:', { underline: false });
+      doc.font('Helvetica-Bold').text('NAM Opens the Case:', leftMargin, doc.y, { width: textWidth });
       doc.font('Helvetica');
       paragraph('NAM sends a copy of the forms and shipper\'s supporting documents to the carrier along with an invoice for the remaining portion of the administrative fee. Within 30 calendar days, the carrier must reply to NAM by sending a completed and signed agreement form along with all relevant claims materials and its portion of the administrative fee.');
 
-      doc.font('Helvetica-Bold').text('Review and Decision:', { underline: false });
+      doc.font('Helvetica-Bold').text('Review and Decision:', leftMargin, doc.y, { width: textWidth });
       doc.font('Helvetica');
       paragraph('NAM assigns the case to an arbitration panel who begin the review process. The standard written review process is generally completed within days after the materials are sent to the arbitration panel, with any awards to the parties made at that time. The arbitrator\'s decision is binding on both parties.');
 
