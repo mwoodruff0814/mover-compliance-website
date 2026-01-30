@@ -1157,13 +1157,15 @@ const Dashboard = {
             </div>
         `;
 
-        // Render editable rates based on pricing method
-        if (pricingMethod === 'weight' && rates.transportation) {
-            ratesHtml += this.renderWeightRatesEdit(rates.transportation);
-        } else if (pricingMethod === 'cubic' && rates.transportation) {
-            ratesHtml += this.renderCubicRatesEdit(rates.transportation);
-        } else if (pricingMethod === 'flat' && rates.flat) {
-            ratesHtml += this.renderFlatRatesEdit(rates.flat);
+        // Render editable rates based on pricing method (show empty form if no rates yet)
+        if (pricingMethod === 'weight') {
+            ratesHtml += this.renderWeightRatesEdit(rates.transportation || {});
+        } else if (pricingMethod === 'cubic') {
+            ratesHtml += this.renderCubicRatesEdit(rates.transportation || {});
+        } else if (pricingMethod === 'flat') {
+            ratesHtml += this.renderFlatRatesEdit(rates.flat || {});
+        } else if (pricingMethod === 'mixed') {
+            ratesHtml += this.renderWeightRatesEdit(rates.transportation || {});
         }
 
         // Common rates (loading, unloading, accessorial)
