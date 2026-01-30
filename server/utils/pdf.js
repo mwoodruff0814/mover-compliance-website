@@ -2321,10 +2321,234 @@ const generateReadyToMovePDF = async (user, returnBuffer = false) => {
   });
 };
 
+/**
+ * Generate Carrier Arbitration Program Information PDF
+ * Detailed information about the dispute settlement program for carriers
+ */
+const generateCarrierArbitrationInfoPDF = async (user, returnBuffer = false) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const doc = new PDFDocument({
+        size: 'LETTER',
+        margins: { top: 50, bottom: 50, left: 60, right: 60 },
+        info: {
+          Title: 'Dispute Settlement Program - Carrier Information',
+          Author: process.env.COMPANY_NAME || 'Interstate Compliance Solutions',
+          Subject: 'Arbitration Program Information for Carriers'
+        }
+      });
+
+      const chunks = [];
+
+      if (returnBuffer) {
+        doc.on('data', chunk => chunks.push(chunk));
+        doc.on('end', () => resolve(Buffer.concat(chunks)));
+      } else {
+        const fileName = `carrier-arbitration-info-${user.mc_number?.replace(/[^a-zA-Z0-9]/g, '') || user.id}-${Date.now()}.pdf`;
+        const filePath = path.join(tempDir, fileName);
+        const writeStream = fs.createWriteStream(filePath);
+        doc.pipe(writeStream);
+        writeStream.on('finish', () => resolve(`/temp/${fileName}`));
+      }
+
+      const navy = '#0a1628';
+      const gold = '#c9a227';
+      const companyName = process.env.COMPANY_NAME || 'INTERSTATE COMPLIANCE SOLUTIONS';
+
+      // ===== PAGE 1: TITLE PAGE =====
+      doc.moveDown(4);
+
+      // Title
+      doc.fillColor(navy).fontSize(24).font('Helvetica-Bold');
+      doc.text(companyName.toUpperCase(), { align: 'center' });
+      doc.moveDown(0.5);
+      doc.fontSize(20);
+      doc.text('DISPUTE SETTLEMENT PROGRAM', { align: 'center' });
+      doc.moveDown(3);
+
+      doc.fontSize(16).font('Helvetica');
+      doc.text('PROGRAM INFORMATION FOR CARRIERS', { align: 'center' });
+      doc.moveDown(6);
+
+      // Divider
+      doc.strokeColor(gold).lineWidth(2).moveTo(150, doc.y).lineTo(462, doc.y).stroke();
+      doc.moveDown(4);
+
+      doc.fontSize(12).font('Helvetica');
+      doc.text('Administered by:', { align: 'center' });
+      doc.moveDown(0.5);
+      doc.font('Helvetica-Bold');
+      doc.text('National Arbitration & Mediation, Inc. (NAM)', { align: 'center' });
+      doc.font('Helvetica');
+      doc.text('990 Stewart Avenue - First Floor', { align: 'center' });
+      doc.text('Garden City, NY 11530', { align: 'center' });
+      doc.moveDown(2);
+
+      doc.font('Helvetica-Bold');
+      doc.text(companyName, { align: 'center' });
+      doc.font('Helvetica');
+      doc.text(process.env.COMPANY_PHONE || '(555) 123-4567', { align: 'center' });
+      doc.text(process.env.COMPANY_EMAIL || 'support@interstatecompliancesolutions.com', { align: 'center' });
+
+      // ===== PAGE 2: CONTENT =====
+      doc.addPage();
+
+      // Helper functions
+      const sectionHeader = (text) => {
+        doc.moveDown(1);
+        doc.fillColor(navy).fontSize(14).font('Helvetica-Bold');
+        doc.text(text);
+        doc.strokeColor(gold).lineWidth(1).moveTo(60, doc.y + 3).lineTo(552, doc.y + 3).stroke();
+        doc.moveDown(0.8);
+        doc.font('Helvetica').fontSize(10).fillColor('#333');
+      };
+
+      const paragraph = (text) => {
+        doc.text(text, { align: 'justify', lineGap: 2 });
+        doc.moveDown(0.5);
+      };
+
+      const bulletPoint = (text) => {
+        doc.text(`    •  ${text}`, { indent: 0, lineGap: 2 });
+      };
+
+      // Title
+      doc.fillColor(navy).fontSize(16).font('Helvetica-Bold');
+      doc.text('Dispute Settlement (Arbitration) Program', { align: 'center' });
+      doc.moveDown(1);
+
+      // Section: Compliance
+      sectionHeader('Compliance with Federal Statutory Requirements');
+
+      paragraph('Interstate carriers are required to offer neutral binding arbitration on interstate shipments for individual shippers as a means of resolving certain types of disputed claims. This requirement is a condition of maintaining registration, and under the Household Goods Movers Oversight and Reform Act of 2005, this has been expanded to include:');
+
+      bulletPoint('Disputed loss and damage claims');
+      bulletPoint('Disputes regarding additional charges that are billed to the shipper after the shipment was delivered');
+      doc.moveDown(0.5);
+
+      paragraph('The statute establishes different provisions under the authority of the Department of Transportation that define the program. One that you must abide by is that shippers must be provided with a pre-move description of the arbitration program that the carrier participates in, disclosing costs to use the program along with the legal effects of electing arbitration. This information must be provided to the shipper before the shipment is tendered to the carrier.');
+
+      paragraph('Also, you may be held liable for the shipper\'s attorney fees if you do not inform the shipper during the claim settlement process that arbitration is available, and as a result, the case proceeds to civil court instead of arbitration. In other words, be sure to mention the arbitration program and include the arbitration information in your claims correspondence to the shipper. Make sure that the shipper is aware of your arbitration program.');
+
+      paragraph('Arbitration program information is contained in a document that will be provided to the carrier once it signs up for the arbitration program. This is the information the carrier prints out and provides to each customer (shipper) prior to loading the shipment.');
+
+      // Section: Arbitration Limits
+      sectionHeader('Arbitration Limits');
+
+      paragraph('The regulations require that disputes of $10,000 or less on interstate shipments must be submitted to binding arbitration at the shipper\'s request if no settlement can be reached with the carrier using the carrier\'s normal claim process. Arbitration is not mandatory for claims of more than $10,000. If the claim involves a dispute of more than $10,000, binding arbitration can be used to settle the dispute if both the carrier and the shipper agree but there is no requirement for the carrier.');
+
+      // Section: Types of Disputes
+      sectionHeader('Types of Disputes Subject to Arbitration');
+
+      paragraph('Most disputed claims for loss and damage are eligible for consideration under the mandatory arbitration provisions, only certain types of disputed charges fall within the mandatory provisions. Disputes regarding charges that you collected from the shipper when the shipment was delivered are not subject to mandatory arbitration (you can decide to use arbitration on a voluntary basis). Disputes regarding additional charges that you billed to the shipper after the shipment was delivered are subject to the mandatory arbitration provisions.');
+
+      paragraph('Under the regulations, you are authorized to collect the following charges when the shipment is delivered:');
+      bulletPoint('100% of the binding estimate amount or 110% of the non-binding estimate amount');
+      bulletPoint('Charges applicable for any services (waiting time, extra pickup or delivery, storage-in-transit) that the shipper requested after the contract was signed that were not included in the estimate');
+      bulletPoint('In the event that a shuttle service is required, you may collect for the shuttle charges at delivery – provided that the shuttle charges collected at delivery do not exceed 15% of the total charges due at delivery');
+      doc.moveDown(0.5);
+
+      paragraph('Any remaining charges must be billed to the shipper – it is these additional charges that are billed to the shipper (and are not collected at delivery) that are subject to arbitration.');
+
+      // New page for costs and procedures
+      doc.addPage();
+
+      // Section: Program Costs
+      sectionHeader('Program Costs');
+
+      paragraph(`The cost of participating in the program is only $149.99 per year.`);
+
+      paragraph('In the event the claim dispute cannot be resolved using the carrier\'s normal claims process, the shipper can elect to proceed to binding arbitration at National Arbitration & Mediation (NAM). NAM charges an administrative fee for each arbitration case, the cost of which is divided between the carrier and the shipper making the request.');
+
+      doc.moveDown(0.5);
+      doc.font('Helvetica-Bold').text('NAM\'s Administrative Fee Schedule:', { underline: true });
+      doc.moveDown(0.5);
+
+      // Fee table
+      const feeTableData = [
+        ['Claim Amount', 'NAM Administrative Fee'],
+        ['$10,000 or less', '$635 ($295 from shipper; $340 from carrier)'],
+        ['$10,001 - $20,000', '$685 ($320 from shipper; $365 from carrier)'],
+        ['$20,001 - $30,000', '$735 ($345 from shipper; $390 from carrier)'],
+        ['$30,001 - $40,000', '$785 ($370 from shipper; $415 from carrier)'],
+        ['$40,001 - $50,000', '$835 ($395 from shipper; $440 from carrier)'],
+        ['Over $50,000', '$835 plus 1% of amount over $50,000']
+      ];
+
+      const tableX = 80;
+      const col1Width = 140;
+      const col2Width = 300;
+      const rowHeight = 22;
+
+      // Table header
+      doc.fillColor(navy).rect(tableX, doc.y, col1Width + col2Width, rowHeight).fill();
+      doc.fillColor('white').fontSize(9).font('Helvetica-Bold');
+      doc.text(feeTableData[0][0], tableX + 5, doc.y - rowHeight + 7, { width: col1Width - 10 });
+      doc.text(feeTableData[0][1], tableX + col1Width + 5, doc.y - rowHeight + 7, { width: col2Width - 10 });
+      doc.y += rowHeight;
+
+      // Table rows
+      doc.font('Helvetica').fillColor('#333');
+      for (let i = 1; i < feeTableData.length; i++) {
+        const bgColor = i % 2 === 0 ? '#f5f5f5' : '#ffffff';
+        doc.fillColor(bgColor).rect(tableX, doc.y, col1Width + col2Width, rowHeight).fill();
+        doc.fillColor('#333').fontSize(9);
+        doc.text(feeTableData[i][0], tableX + 5, doc.y + 6, { width: col1Width - 10 });
+        doc.text(feeTableData[i][1], tableX + col1Width + 5, doc.y + 6, { width: col2Width - 10 });
+        doc.y += rowHeight;
+      }
+      doc.moveDown(1);
+
+      // Section: More Information
+      sectionHeader('More Information');
+
+      paragraph('Remember, under the law, arbitration is optional and voluntary for the shipper (your customer) but may be mandatory for you as the carrier. As the carrier, you must agree to the shipper\'s request for arbitration of disputed claims of $10,000 or less, if no settlement can be reached. If your customer requests arbitration of a disputed claim over $10,000, you can decide to use the program but it is not mandatory.');
+
+      paragraph('If you have any questions, our staff will be available to provide information and assistance to our carrier participants upon request.');
+
+      // Section: Procedures
+      sectionHeader('Arbitration Program Procedures');
+
+      doc.font('Helvetica-Bold').text('Prior to the Move:', { underline: false });
+      doc.font('Helvetica');
+      paragraph('The carrier will provide each shipper with a notice of the availability of an arbitration program. Carriers should use the arbitration consumer document provided. You can hand it to each shipper or post it on your website and direct your customers to it.');
+
+      paragraph('Also under the statute, you may be held liable for the shipper\'s attorney fees if you do not inform the shipper during the claim settlement process that arbitration is available, and as a result, the case proceeds to civil court instead of arbitration. In other words, if you are denying the claim or offering a compromise settlement, be sure to mention the arbitration program and include the arbitration information in your claims correspondence to the shipper.');
+
+      doc.font('Helvetica-Bold').text('Proceeding to Arbitration:', { underline: false });
+      doc.font('Helvetica');
+      paragraph('If a resolution cannot be reached between the shipper and the carrier using the carrier\'s normal claims process, the shipper has the option of continuing on to arbitration with NAM. The shipper can request arbitration by writing to us within 90 calendar days after the carrier\'s final offer of settlement or denial of the claim.');
+
+      paragraph('The shipper will have 30 days to complete the forms and return them, along with their portion of the administrative fee, directly to NAM to initiate the arbitration process.');
+
+      doc.font('Helvetica-Bold').text('NAM Opens the Case:', { underline: false });
+      doc.font('Helvetica');
+      paragraph('NAM sends a copy of the forms and shipper\'s supporting documents to the carrier along with an invoice for the remaining portion of the administrative fee. Within 30 calendar days, the carrier must reply to NAM by sending a completed and signed agreement form along with all relevant claims materials and its portion of the administrative fee.');
+
+      doc.font('Helvetica-Bold').text('Review and Decision:', { underline: false });
+      doc.font('Helvetica');
+      paragraph('NAM assigns the case to an arbitration panel who begin the review process. The standard written review process is generally completed within days after the materials are sent to the arbitration panel, with any awards to the parties made at that time. The arbitrator\'s decision is binding on both parties.');
+
+      // Footer
+      doc.moveDown(2);
+      doc.strokeColor(gold).lineWidth(1).moveTo(60, doc.y).lineTo(552, doc.y).stroke();
+      doc.moveDown(0.5);
+      doc.fillColor('#666666').fontSize(8).font('Helvetica');
+      doc.text(`Generated for ${user.company_name || 'Carrier'} | MC#: ${user.mc_number || 'N/A'} | USDOT#: ${user.usdot_number || 'N/A'}`, { align: 'center' });
+      doc.text(`${companyName} | Document generated ${new Date().toLocaleDateString()}`, { align: 'center' });
+
+      doc.end();
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
 module.exports = {
   generateArbitrationPDF,
   generateArbitrationConsumerPDF,
   generateTariffPDF,
   generateRightsAndResponsibilitiesPDF,
-  generateReadyToMovePDF
+  generateReadyToMovePDF,
+  generateCarrierArbitrationInfoPDF
 };

@@ -2,7 +2,7 @@ const express = require('express');
 const { query } = require('../config/database');
 const { authenticateToken, optionalAuth } = require('../middleware/auth');
 const { validateRequest, schemas, formatMCNumber, formatUSDOT, sanitizeBody } = require('../middleware/validation');
-const { generateArbitrationPDF, generateArbitrationConsumerPDF, generateRightsAndResponsibilitiesPDF, generateReadyToMovePDF } = require('../utils/pdf');
+const { generateArbitrationPDF, generateArbitrationConsumerPDF, generateRightsAndResponsibilitiesPDF, generateReadyToMovePDF, generateCarrierArbitrationInfoPDF } = require('../utils/pdf');
 const { sendEnrollmentConfirmation } = require('../utils/email');
 const { generateServiceOrderId } = require('../utils/orderUtils');
 
@@ -104,9 +104,10 @@ router.post('/', authenticateToken, sanitizeBody, async (req, res) => {
     // Generate all documents
     const documents = {};
     try {
-      // Always generate: Certificate and Consumer Document
+      // Always generate: Certificate, Consumer Document, and Carrier Info
       documents.certificate = await generateArbitrationPDF(req.user, enrollment);
       documents.consumer_document = await generateArbitrationConsumerPDF(req.user, enrollment);
+      documents.carrier_info = await generateCarrierArbitrationInfoPDF(req.user);
 
       // First enrollment only: Ready to Move and Rights & Responsibilities
       if (isFirstEnrollment) {

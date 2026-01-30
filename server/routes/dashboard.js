@@ -1,7 +1,7 @@
 const express = require('express');
 const { query } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
-const { generateRightsAndResponsibilitiesPDF, generateReadyToMovePDF, generateArbitrationPDF, generateArbitrationConsumerPDF, generateTariffPDF } = require('../utils/pdf');
+const { generateRightsAndResponsibilitiesPDF, generateReadyToMovePDF, generateArbitrationPDF, generateArbitrationConsumerPDF, generateTariffPDF, generateCarrierArbitrationInfoPDF } = require('../utils/pdf');
 
 const router = express.Router();
 
@@ -208,6 +208,7 @@ router.get('/documents', authenticateToken, async (req, res) => {
         try {
           docs.certificate = await generateArbitrationPDF(user, arb);
           docs.consumer_document = await generateArbitrationConsumerPDF(user, arb);
+          docs.carrier_info = await generateCarrierArbitrationInfoPDF(user);
           docs.ready_to_move = await generateReadyToMovePDF(user);
           docs.rights_responsibilities = await generateRightsAndResponsibilitiesPDF(user);
 
@@ -235,6 +236,15 @@ router.get('/documents', authenticateToken, async (req, res) => {
           id: `arb-${arb.id}-consumer`,
           name: 'Consumer Arbitration Document',
           document_url: docs.consumer_document,
+          created_at: arb.created_at,
+          type: 'arbitration'
+        });
+      }
+      if (docs.carrier_info) {
+        expandedArbDocs.push({
+          id: `arb-${arb.id}-carrier`,
+          name: 'Carrier Program Information',
+          document_url: docs.carrier_info,
           created_at: arb.created_at,
           type: 'arbitration'
         });
