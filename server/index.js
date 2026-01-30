@@ -279,7 +279,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // Clean URL routing - serve HTML files without .html extension
-const pages = ['admin', 'login', 'register', 'forgot-password', 'dashboard', 'arbitration-program', 'tariff', 'boc-3', 'pricing', 'verify', 'contact', 'about', 'faqs', 'bundle-checkout'];
+const pages = ['admin', 'login', 'register', 'forgot-password', 'dashboard', 'arbitration-program', 'tariff', 'boc-3', 'pricing', 'verify', 'contact', 'about', 'faqs', 'bundle-checkout', 'thank-you'];
 
 pages.forEach(page => {
   app.get(`/${page}`, (req, res) => {
