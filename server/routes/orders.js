@@ -10,10 +10,10 @@ const router = express.Router();
 
 // Prices in cents
 const PRICES = {
-  TARIFF: 29900,           // $299.00
-  BOC3: 9900,              // $99.00
-  BUNDLE_STARTUP: 44900,   // $449.00
-  BUNDLE_ESSENTIALS: 14900, // $149.00
+  TARIFF: 34999,           // $349.99
+  BOC3: 10999,             // $109.99
+  BUNDLE_STARTUP: 49999,   // $499.99
+  BUNDLE_ESSENTIALS: 22500, // $225.00
   BUNDLE_RENEWAL: 17900    // $179.00
 };
 

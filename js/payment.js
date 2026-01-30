@@ -15,12 +15,13 @@ const Payment = {
 
     // Prices (loaded from API)
     prices: {
-        arbitration: { amount: 9900, display: '$99.00' },
-        tariff: { amount: 29900, display: '$299.00' },
-        boc3: { amount: 9900, display: '$99.00' },
-        bundle_startup: { amount: 44900, display: '$449.00' },
-        bundle_essentials: { amount: 24900, display: '$249.00' },
-        bundle_renewal: { amount: 17900, display: '$179.00' }
+        arbitration: { amount: 14999, display: '$149.99' },
+        tariff: { amount: 34999, display: '$349.99' },
+        boc3: { amount: 10999, display: '$109.99' },
+        bundle_startup: { amount: 49999, display: '$499.99' },
+        bundle_essentials: { amount: 22500, display: '$225.00' },
+        bundle_startup_renewal: { amount: 29999, display: '$299.99' },
+        bundle_essentials_renewal: { amount: 17900, display: '$179.00' }
     },
 
     /**
@@ -161,15 +162,19 @@ const Payment = {
         const bundles = {
             startup: {
                 includes: ['arbitration', 'tariff', 'boc3'],
-                price: 44900
+                price: 49999  // $499.99
             },
             essentials: {
                 includes: ['arbitration', 'boc3'],
-                price: 24900
+                price: 22500  // $225.00
             },
-            renewal: {
+            startup_renewal: {
+                includes: ['arbitration', 'tariff', 'boc3'],
+                price: 29999  // $299.99
+            },
+            essentials_renewal: {
                 includes: ['arbitration', 'boc3'],
-                price: 17900
+                price: 17900  // $179.00
             }
         };
 

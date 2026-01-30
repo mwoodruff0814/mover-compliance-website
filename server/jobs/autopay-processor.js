@@ -22,12 +22,17 @@ const initSquare = () => {
   customersApi = squareClient.customers;
 };
 
-// Service prices in cents
+// Service prices in cents (individual services renew at full price)
 const PRICES = {
-  arbitration: 9900,
-  tariff: 29900,
-  boc3: 9900,
-  bundle_renewal: 17900  // All bundles renew at $179
+  arbitration: 14999,      // $149.99
+  tariff: 34999,           // $349.99
+  boc3: 10999              // $109.99
+};
+
+// Bundle renewal prices (discounted from first-year rates)
+const BUNDLE_RENEWAL_PRICES = {
+  startup: 29999,          // $299.99 for Startup Bundle renewal
+  essentials: 17900        // $179.00 for Essentials Bundle renewal
 };
 
 const SERVICE_NAMES = {
@@ -35,6 +40,11 @@ const SERVICE_NAMES = {
   tariff: 'Tariff Publishing',
   boc3: 'BOC-3 Process Agent',
   bundle: 'Compliance Bundle'
+};
+
+const BUNDLE_NAMES = {
+  startup: 'Startup Bundle',
+  essentials: 'Essentials Bundle'
 };
 
 /**
@@ -72,8 +82,6 @@ const processAutopay = async () => {
 const processBundleAutopay = async (startDate, endDate) => {
   console.log('[Autopay Processor] Processing bundles...');
 
-  const price = PRICES.bundle_renewal;
-
   // Find bundles expiring between now and 3 days with autopay enabled
   const bundles = await query(`
     SELECT b.*, u.id as user_id, u.email, u.contact_name, u.company_name,
@@ -92,7 +100,12 @@ const processBundleAutopay = async (startDate, endDate) => {
   `, [startDate, endDate]);
 
   for (const bundle of bundles.rows) {
-    console.log(`[Autopay Processor] Processing bundle #${bundle.id} for user ${bundle.user_id}`);
+    // Determine renewal price based on bundle type
+    const bundleType = bundle.bundle_type || 'essentials';
+    const price = BUNDLE_RENEWAL_PRICES[bundleType] || BUNDLE_RENEWAL_PRICES.essentials;
+    const bundleName = BUNDLE_NAMES[bundleType] || 'Compliance Bundle';
+
+    console.log(`[Autopay Processor] Processing ${bundleName} #${bundle.id} for user ${bundle.user_id} at $${(price/100).toFixed(2)}`);
 
     const user = {
       id: bundle.user_id,
@@ -114,7 +127,7 @@ const processBundleAutopay = async (startDate, endDate) => {
         bundle.square_customer_id,
         bundle.autopay_card_id,
         price,
-        `Bundle renewal for ${bundle.company_name}`
+        `${bundleName} renewal for ${bundle.company_name}`
       );
 
       if (paymentResult.success) {
@@ -170,13 +183,13 @@ const processBundleAutopay = async (startDate, endDate) => {
           'autopay_processed',
           'bundle',
           bundle.id,
-          `Your Compliance Bundle has been renewed. New expiration: ${newExpiryDate.toLocaleDateString()}`
+          `Your ${bundleName} has been renewed. New expiration: ${newExpiryDate.toLocaleDateString()}`
         ]);
 
         // Send success email
-        await sendAutopaySuccess(user, 'Compliance Bundle', price, newExpiryDate, bundle.autopay_card_last4);
+        await sendAutopaySuccess(user, bundleName, price, newExpiryDate, bundle.autopay_card_last4);
 
-        console.log(`[Autopay Processor] Successfully renewed bundle #${bundle.id}`);
+        console.log(`[Autopay Processor] Successfully renewed ${bundleName} #${bundle.id}`);
       } else {
         throw new Error(paymentResult.error || 'Payment failed');
       }
@@ -192,11 +205,11 @@ const processBundleAutopay = async (startDate, endDate) => {
         'autopay_failed',
         'bundle',
         bundle.id,
-        `Failed to renew Compliance Bundle: ${error.message}`
+        `Failed to renew ${bundleName}: ${error.message}`
       ]);
 
       // Send failure email
-      await sendAutopayFailed(user, 'Compliance Bundle', error.message, bundle.expiry_date);
+      await sendAutopayFailed(user, bundleName, error.message, bundle.expiry_date);
     }
   }
 };

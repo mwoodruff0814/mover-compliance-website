@@ -355,7 +355,7 @@ const Dashboard = {
             } else if (!service.active && service.status !== 'pending') {
                 actionsHtml = `
                     <button onclick="Dashboard.openPurchaseModal('arbitration')" class="flex-1 text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
-                        Buy Now - $99
+                        Buy Now - $149.99
                     </button>
                 `;
             }
@@ -372,7 +372,7 @@ const Dashboard = {
             } else if (service.status !== 'pending' && service.status !== 'in_progress') {
                 actionsHtml = `
                     <button onclick="Dashboard.openPurchaseModal('tariff')" class="flex-1 text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
-                        Buy Now - $299
+                        Buy Now - $349.99
                     </button>
                 `;
             } else {
@@ -382,7 +382,7 @@ const Dashboard = {
             if (!service.active && service.status !== 'pending' && service.status !== 'filed') {
                 actionsHtml = `
                     <button onclick="Dashboard.openPurchaseModal('boc3')" class="flex-1 text-center bg-gold-500 hover:bg-gold-600 text-navy-900 font-medium py-2 px-4 rounded-lg transition-colors text-sm">
-                        Buy Now - $99
+                        Buy Now - $109.99
                     </button>
                 `;
             } else if (service.status === 'pending') {
@@ -1676,9 +1676,9 @@ const Dashboard = {
     currentProduct: null,
 
     products: {
-        arbitration: { name: 'Arbitration Program', price: 9900, display: '$99.00', period: '/year' },
-        tariff: { name: 'Tariff Publishing', price: 29900, display: '$299.00', period: '/year' },
-        boc3: { name: 'BOC-3 Process Agent', price: 9900, display: '$99.00', period: '/year' },
+        arbitration: { name: 'Arbitration Program', price: 14999, display: '$149.99', period: '/year' },
+        tariff: { name: 'Tariff Publishing', price: 34999, display: '$349.99', period: '/year' },
+        boc3: { name: 'BOC-3 Process Agent', price: 10999, display: '$109.99', period: '/year' },
         bundle_renewal: { name: 'Bundle Renewal', price: 17900, display: '$179.00', period: '/year' }
     },
 

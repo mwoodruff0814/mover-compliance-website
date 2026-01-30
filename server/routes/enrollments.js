@@ -10,7 +10,7 @@ const router = express.Router();
 
 // Prices in cents
 const PRICES = {
-  ARBITRATION: 9900 // $99.00
+  ARBITRATION: 14999 // $149.99
 };
 
 // Get user's arbitration enrollment status

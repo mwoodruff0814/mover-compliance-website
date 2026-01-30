@@ -35,12 +35,13 @@ initSquare();
 
 // Prices in cents
 const PRICES = {
-  arbitration: 9900,       // $99.00
-  tariff: 29900,           // $299.00
-  boc3: 9900,              // $99.00
-  bundle_startup: 44900,   // $449.00
-  bundle_essentials: 14900, // $149.00
-  bundle_renewal: 17900    // $179.00
+  arbitration: 14999,              // $149.99
+  tariff: 34999,                   // $349.99
+  boc3: 10999,                     // $109.99
+  bundle_startup: 49999,           // $499.99
+  bundle_essentials: 22500,        // $225.00
+  bundle_startup_renewal: 29999,   // $299.99 - Startup Bundle renewal
+  bundle_essentials_renewal: 17900 // $179.00 - Essentials Bundle renewal
 };
 
 // Get prices (public endpoint)
@@ -49,12 +50,13 @@ router.get('/prices', (req, res) => {
     success: true,
     data: {
       prices: {
-        arbitration: { amount: 9900, display: '$99.00', period: 'year' },
-        tariff: { amount: 29900, display: '$299.00', period: 'year' },
-        boc3: { amount: 9900, display: '$99.00', period: 'year' },
-        bundle_startup: { amount: 44900, display: '$449.00', period: 'one-time', savings: '$48.00' },
-        bundle_essentials: { amount: 14900, display: '$149.00', period: 'one-time', savings: '$49.00' },
-        bundle_renewal: { amount: 17900, display: '$179.00', period: 'year', savings: '$19.00' }
+        arbitration: { amount: 14999, display: '$149.99', period: 'year' },
+        tariff: { amount: 34999, display: '$349.99', period: 'year' },
+        boc3: { amount: 10999, display: '$109.99', period: 'year' },
+        bundle_startup: { amount: 49999, display: '$499.99', period: 'one-time', savings: '$109.98' },
+        bundle_essentials: { amount: 22500, display: '$225.00', period: 'one-time', savings: '$34.98' },
+        bundle_startup_renewal: { amount: 29999, display: '$299.99', period: 'year', savings: '$310.98' },
+        bundle_essentials_renewal: { amount: 17900, display: '$179.00', period: 'year', savings: '$80.98' }
       }
     }
   });
