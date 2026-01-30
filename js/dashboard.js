@@ -1550,6 +1550,98 @@ const Dashboard = {
                 InterstateCompliance.showToast(result.message || 'Failed to update password', 'error');
             }
         });
+
+        // Profile change request form
+        const changeTypeSelect = document.getElementById('change-type');
+        const changeHint = document.getElementById('change-hint');
+
+        changeTypeSelect?.addEventListener('change', (e) => {
+            const hints = {
+                company_name: 'Enter your new legal company name',
+                contact_name: 'Enter the new contact person\'s name',
+                address: 'Format: 123 Main St, City, ST 12345'
+            };
+            if (hints[e.target.value]) {
+                changeHint.textContent = hints[e.target.value];
+                changeHint.classList.remove('hidden');
+            } else {
+                changeHint.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('profile-change-form')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const changeType = document.getElementById('change-type').value;
+            const newValue = document.getElementById('change-new-value').value;
+            const reason = document.getElementById('change-reason').value;
+
+            if (!changeType) {
+                InterstateCompliance.showToast('Please select what you want to change', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+
+            try {
+                const result = await Auth.request('/auth/profile/request-change', {
+                    method: 'POST',
+                    body: JSON.stringify({ change_type: changeType, requested_value: newValue, reason })
+                });
+
+                btn.disabled = false;
+                btn.textContent = 'Submit Request';
+
+                if (result.success) {
+                    InterstateCompliance.showToast('Change request submitted! We\'ll review it shortly.', 'success');
+                    e.target.reset();
+                    changeHint.classList.add('hidden');
+                    this.loadProfileChangeRequests();
+                } else {
+                    InterstateCompliance.showToast(result.message || 'Failed to submit request', 'error');
+                }
+            } catch (error) {
+                btn.disabled = false;
+                btn.textContent = 'Submit Request';
+                InterstateCompliance.showToast('Failed to submit request', 'error');
+            }
+        });
+
+        // Load pending profile change requests
+        this.loadProfileChangeRequests();
+    },
+
+    /**
+     * Load profile change requests
+     */
+    async loadProfileChangeRequests() {
+        try {
+            const result = await Auth.request('/auth/profile/requests');
+            if (result.success && result.data.requests.length > 0) {
+                const pending = result.data.requests.filter(r => r.status === 'pending');
+                const container = document.getElementById('pending-profile-requests');
+                const list = document.getElementById('profile-requests-list');
+
+                if (pending.length > 0) {
+                    container.classList.remove('hidden');
+                    const typeLabels = { company_name: 'Company Name', contact_name: 'Contact Name', address: 'Address' };
+                    list.innerHTML = pending.map(req => `
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm">
+                            <div class="flex justify-between">
+                                <span class="font-medium text-yellow-800">${typeLabels[req.change_type] || req.change_type}</span>
+                                <span class="text-yellow-600 text-xs">Pending</span>
+                            </div>
+                            <p class="text-yellow-700 mt-1">New: ${req.requested_value}</p>
+                        </div>
+                    `).join('');
+                } else {
+                    container.classList.add('hidden');
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load profile requests:', error);
+        }
     },
 
     /**

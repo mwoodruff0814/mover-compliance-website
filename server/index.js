@@ -124,6 +124,22 @@ const runMigrations = async () => {
       );
     `);
 
+    // Create profile_change_requests table
+    await query(`
+      CREATE TABLE IF NOT EXISTS profile_change_requests (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        change_type VARCHAR(50) NOT NULL,
+        current_value TEXT,
+        requested_value TEXT NOT NULL,
+        reason TEXT,
+        status VARCHAR(20) DEFAULT 'pending',
+        admin_notes TEXT,
+        created_at TIMESTAMP DEFAULT NOW(),
+        reviewed_at TIMESTAMP
+      );
+    `);
+
     // Add order_id column to all order tables for randomized order IDs
     await query(`
       DO $$

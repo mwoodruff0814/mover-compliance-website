@@ -1110,6 +1110,141 @@ router.patch('/pricing-requests/:id', authenticateToken, requireAdmin, async (re
   }
 });
 
+// ==================== PROFILE CHANGE REQUESTS ====================
+
+// Get pending profile change requests
+router.get('/profile-requests', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { status = 'pending' } = req.query;
+
+    const result = await query(`
+      SELECT pcr.*, u.email, u.company_name, u.mc_number
+      FROM profile_change_requests pcr
+      JOIN users u ON pcr.user_id = u.id
+      ${status !== 'all' ? 'WHERE pcr.status = $1' : ''}
+      ORDER BY pcr.created_at DESC
+    `, status !== 'all' ? [status] : []);
+
+    res.json({
+      success: true,
+      data: { requests: result.rows }
+    });
+  } catch (error) {
+    console.error('Get profile requests error:', error);
+    res.status(500).json({ success: false, message: 'Failed to get requests' });
+  }
+});
+
+// Approve or reject profile change request
+router.patch('/profile-requests/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status, admin_notes } = req.body;
+
+    if (!['approved', 'rejected'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Status must be approved or rejected'
+      });
+    }
+
+    // Get the request
+    const requestResult = await query(
+      'SELECT * FROM profile_change_requests WHERE id = $1',
+      [id]
+    );
+
+    if (requestResult.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Request not found'
+      });
+    }
+
+    const request = requestResult.rows[0];
+
+    if (request.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: 'This request has already been processed'
+      });
+    }
+
+    // Update request status
+    await query(
+      `UPDATE profile_change_requests
+       SET status = $1, admin_notes = $2, reviewed_at = NOW()
+       WHERE id = $3`,
+      [status, admin_notes || null, id]
+    );
+
+    // If approved, apply the changes
+    if (status === 'approved') {
+      const changeType = request.change_type;
+      const newValue = request.requested_value;
+
+      if (changeType === 'address') {
+        // Parse address (expected format: "address, city, state zip")
+        const parts = newValue.split(',').map(p => p.trim());
+        if (parts.length >= 2) {
+          const address = parts[0];
+          const cityStateZip = parts.slice(1).join(',').trim();
+          const stateZipMatch = cityStateZip.match(/^(.+?)\s*,?\s*([A-Z]{2})\s*(\d{5})?$/i);
+
+          if (stateZipMatch) {
+            await query(
+              `UPDATE users SET address = $1, city = $2, state = $3, zip = $4, updated_at = NOW() WHERE id = $5`,
+              [address, stateZipMatch[1].trim(), stateZipMatch[2].toUpperCase(), stateZipMatch[3] || '', request.user_id]
+            );
+          } else {
+            // Simple update if can't parse
+            await query(
+              `UPDATE users SET address = $1, updated_at = NOW() WHERE id = $2`,
+              [newValue, request.user_id]
+            );
+          }
+        } else {
+          await query(
+            `UPDATE users SET address = $1, updated_at = NOW() WHERE id = $2`,
+            [newValue, request.user_id]
+          );
+        }
+      } else {
+        // Simple field update (company_name, contact_name)
+        await query(
+          `UPDATE users SET ${changeType} = $1, updated_at = NOW() WHERE id = $2`,
+          [newValue, request.user_id]
+        );
+      }
+    }
+
+    // Create notification for user
+    const typeLabels = {
+      company_name: 'company name',
+      contact_name: 'contact name',
+      address: 'address'
+    };
+    const notificationMessage = status === 'approved'
+      ? `Your request to change your ${typeLabels[request.change_type]} has been approved and applied.`
+      : `Your request to change your ${typeLabels[request.change_type]} was not approved. ${admin_notes || ''}`;
+
+    await query(
+      `INSERT INTO notifications (user_id, type, service_type, service_id, message)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [request.user_id, 'profile_change_result', 'profile', request.id, notificationMessage]
+    );
+
+    res.json({
+      success: true,
+      message: `Request ${status}`,
+      data: { status }
+    });
+  } catch (error) {
+    console.error('Process profile request error:', error);
+    res.status(500).json({ success: false, message: 'Failed to process request' });
+  }
+});
+
 // Test autopay processor (admin only)
 router.post('/test-autopay', authenticateToken, requireAdmin, async (req, res) => {
   try {

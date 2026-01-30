@@ -192,6 +192,103 @@ router.put('/profile', authenticateToken, sanitizeBody, async (req, res) => {
   }
 });
 
+// Request profile change (for company name, address, etc.)
+router.post('/profile/request-change', authenticateToken, sanitizeBody, async (req, res) => {
+  try {
+    const { change_type, requested_value, reason } = req.body;
+    const userId = req.user.id;
+
+    // Validate change type
+    const validTypes = ['company_name', 'contact_name', 'address'];
+    if (!validTypes.includes(change_type)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid change type. Must be: company_name, contact_name, or address'
+      });
+    }
+
+    if (!requested_value || !requested_value.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'New value is required'
+      });
+    }
+
+    if (!reason || !reason.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Reason for change is required'
+      });
+    }
+
+    // Check for existing pending request of same type
+    const pendingResult = await query(
+      `SELECT id FROM profile_change_requests
+       WHERE user_id = $1 AND change_type = $2 AND status = 'pending'`,
+      [userId, change_type]
+    );
+
+    if (pendingResult.rows.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'You already have a pending request for this change type'
+      });
+    }
+
+    // Get current value
+    let currentValue = '';
+    if (change_type === 'address') {
+      currentValue = `${req.user.address || ''}, ${req.user.city || ''}, ${req.user.state || ''} ${req.user.zip || ''}`.trim();
+    } else {
+      currentValue = req.user[change_type] || '';
+    }
+
+    // Create request
+    const result = await query(
+      `INSERT INTO profile_change_requests
+       (user_id, change_type, current_value, requested_value, reason)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [userId, change_type, currentValue, requested_value.trim(), reason.trim()]
+    );
+
+    res.json({
+      success: true,
+      message: 'Change request submitted. An admin will review it shortly.',
+      data: { request: result.rows[0] }
+    });
+  } catch (error) {
+    console.error('Profile change request error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to submit change request'
+    });
+  }
+});
+
+// Get user's profile change requests
+router.get('/profile/requests', authenticateToken, async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT * FROM profile_change_requests
+       WHERE user_id = $1
+       ORDER BY created_at DESC`,
+      [req.user.id]
+    );
+
+    res.json({
+      success: true,
+      data: { requests: result.rows }
+    });
+  } catch (error) {
+    console.error('Get profile requests error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get change requests'
+    });
+  }
+});
+
 // Change password
 router.put('/password', authenticateToken, async (req, res) => {
   try {
